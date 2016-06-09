@@ -26,6 +26,8 @@ class KeyCommandsSpec extends WordSpec
 
   private var dumpedValue: Array[Byte] = _
 
+  private val clientServerInfo = client.info("server").!
+
   private def setUpSortData(): Unit = {
     client.rPush("LIST", "1")
     client.rPush("LIST", "3")
@@ -414,10 +416,18 @@ class KeyCommandsSpec extends WordSpec
       }
     }
     "the source key exists but destination key is identical to source key" should {
-      "return an error" taggedAs (V100) in {
+      "do nothing if version > 3.2.0" taggedAs (V100) in {
+        val version = clientServerInfo("redis_version") 
         client.set("sourceKey", SomeValue)
-        a [RedisErrorResponseException] should be thrownBy { 
-          client.rename("sourceKey", "sourceKey").!
+        if (version >= "3.2.0") {
+             client.rename("sourceKey", "sourceKey").!
+             client.exists("sourceKey").futureValue should be (true)
+        } else if (version >= "2.0.0" && version <= "3.0.0") {
+          a [RedisErrorResponseException] should be thrownBy { 
+             client.rename("sourceKey", "sourceKey").!
+          }
+        } else {
+          "when version unknown" is (pending)
         }
       }
     }
@@ -449,14 +459,22 @@ class KeyCommandsSpec extends WordSpec
       }
     }
     "the source key exists but destination key is identical to source key" should {
-      "return an error" taggedAs (V100) in {
+      val version = clientServerInfo("redis_version") 
+      "return false if ver >= 3.2.0 " taggedAs (V100) in {
         client.set("sourceKey", SomeValue)
-        a [RedisErrorResponseException] should be thrownBy { 
-          client.renameNX("sourceKey", "sourceKey").!
+        if (version >= "3.2.0") {
+            client.renameNX("sourceKey", "sourceKey").futureValue should be(false)
+        } else if ( version >= "2.0.0" && version <= "3.0.0") {
+          a [RedisErrorResponseException] should be thrownBy { 
+            client.renameNX("sourceKey", "sourceKey").futureValue should be(false)
+          }
+        } else {
+          "when version unknown" is (pending)
         }
       }
     }
     "the source key exists and destination key is different" should {
+      client.set("sourceKey", SomeValue)
       "succeed" taggedAs (V100) in {
         client.renameNX("sourceKey", "destKey").futureValue should be (true)
         client.exists("sourceKey").futureValue should be (false)
