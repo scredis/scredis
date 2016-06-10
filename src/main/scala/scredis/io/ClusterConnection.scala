@@ -75,7 +75,8 @@ abstract class ClusterConnection(
       val newConnections = slotRanges.foldLeft(connections) {
         case (cons, ClusterSlotRange(_, master, slaves)) =>
           val nodes = master :: slaves
-          cons ++ nodes.flatMap { server =>
+          cons ++ nodes.flatMap { nodeInfo =>
+            val server = nodeInfo.server
             if (cons contains server) Nil
             else List( (server, (makeConnection(server),0)) )
           }
@@ -84,7 +85,7 @@ abstract class ClusterConnection(
       val newSlots =
         slotRanges.foldLeft(hashSlots) {
           case (slots, ClusterSlotRange((begin, end), master, replicas)) =>
-            val masterOpt = Option(master)
+            val masterOpt = Option(master) map (_.server)
             (begin.toInt to end.toInt).foldLeft(slots) { (s, i) => s.updated(i, masterOpt) }
         }
       this.synchronized {

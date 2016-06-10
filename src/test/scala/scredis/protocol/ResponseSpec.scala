@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 
 import org.scalatest._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import scredis.{Server, ClusterSlotRange}
+import scredis.{Server, ClusterSlotRange, ClusterSlotRangeNodeInfo}
 
 class ResponseSpec extends WordSpec with GeneratorDrivenPropertyChecks with Inside
   with GivenWhenThen
@@ -19,7 +19,9 @@ class ResponseSpec extends WordSpec with GeneratorDrivenPropertyChecks with Insi
         val parsed = response.parsedAsClusterSlotsResponse[Vector]
         println(parsed)
         parsed should have size (3)
-        parsed.head should be (ClusterSlotRange((5461,10922),Server("127.0.0.1",7002),List(Server("127.0.0.1",7004))))
+        parsed.head should be (ClusterSlotRange((5461,10922),
+                               ClusterSlotRangeNodeInfo(Server("127.0.0.1",7002),None),
+                               List(ClusterSlotRangeNodeInfo(Server("127.0.0.1",7004),None))))
       }
     }
   }

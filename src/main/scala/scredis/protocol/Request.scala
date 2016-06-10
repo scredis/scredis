@@ -53,9 +53,11 @@ abstract class Request[A](command: Command, args: Any*) {
       } catch {
         case e @ RedisTransactionAbortedException => failure(e)
         case e: RedisReaderException => failure(e)
-        case e: Throwable => failure(
-          RedisProtocolException(s"Unexpected response for request '$this': $response", e)
-        )
+        case e: Throwable => e.printStackTrace(); 
+            if (e.getCause()!=null) e.getCause().printStackTrace()
+           failure(
+            RedisProtocolException(s"Unexpected response for request '$this': $response", e)
+           )
       }
     }
   }

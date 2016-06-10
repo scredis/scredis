@@ -412,7 +412,16 @@ package object scredis {
    * @param master the master node for this slot range
    * @param replicas replicas of the master
    */
-  case class ClusterSlotRange(range: (Long,Long), master: Server, replicas: List[Server])
+  case class ClusterSlotRange(range: (Long,Long), 
+                              master: ClusterSlotRangeNodeInfo, 
+                              replicas: List[ClusterSlotRangeNodeInfo])
+
+  /**
+   * Information about cluster node in slot range.
+   * @param server - server 
+   * @param nodeId - optional id of node in cluster.
+   */
+  case class ClusterSlotRangeNodeInfo(server: Server, nodeId: Option[String])
 
   /**
    * Information returned by CLUSTER NODES and CLUSTER SLAVES command.
@@ -439,6 +448,8 @@ package object scredis {
    * Connection information for a server node in a Redis cluster
    * @param host host name or ip of the server
    * @param port port of the server
+   * @param nodeId - optional nodeId in cluster. available in redis-3.2 or later
    */
   case class Server(host: String, port: Int)
+
 }
