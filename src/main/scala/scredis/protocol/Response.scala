@@ -3,7 +3,7 @@ package scredis.protocol
 import java.nio.ByteBuffer
 
 import akka.util.ByteString
-import scredis.{Server, ClusterSlotRange}
+import scredis.{Server, ClusterSlotRange, ClusterSlotRangeNodeInfo}
 import scredis.exceptions._
 import scredis.serialization.Reader
 
@@ -154,6 +154,7 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
     }
   }
 
+
   def parsedAsClusterSlotsResponse[CC[X] <: Traversable[X]](
     implicit cbf: CanBuildFrom[Nothing, ClusterSlotRange, CC[ClusterSlotRange]]) : CC[ClusterSlotRange] = {
     val builder = cbf()
@@ -166,23 +167,38 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
             val end = Protocol.decode(buffer).asInstanceOf[IntegerResponse].value
 
             // master for this slotrange
-            Protocol.decode(buffer).asInstanceOf[ArrayResponse] // mast host/port header
+            val mha = Protocol.decode(buffer).asInstanceOf[ArrayResponse] // mast host/port header
             val masterHost = Protocol.decode(buffer).asInstanceOf[BulkStringResponse].parsed[String].get
             val masterPort = Protocol.decode(buffer).asInstanceOf[IntegerResponse].value
+            val masterNodeId: Option[String] = if (mha.length > 2) {
+                              Some(Protocol.decode(buffer).asInstanceOf[BulkStringResponse].flattened[String])
+                            } else None
+            val master = ClusterSlotRangeNodeInfo(Server(masterHost,masterPort.toInt),masterNodeId)
 
-
-
-            var r = 3 // first replica begins at index 3
-            var replicaList: List[Server] = Nil
+            // first replica begins at index 3 
+            var r = 3 
+            var replicaList: List[ClusterSlotRangeNodeInfo] = Nil
             while (r < a.length) {
-              Protocol.decode(buffer).asInstanceOf[ArrayResponse] // replica header
-              val replicaHost = Protocol.decode(buffer).asInstanceOf[BulkStringResponse].parsed[String].get
+              val rh =   Protocol.decode(buffer).asInstanceOf[ArrayResponse] 
+              val replicaHost = Protocol.decode(buffer).asInstanceOf[BulkStringResponse].flattened[String]
               val replicaPort = Protocol.decode(buffer).asInstanceOf[IntegerResponse].value
-              replicaList = Server(replicaHost, replicaPort.toInt) :: replicaList
+              val replicaNodeId = if (rh.length > 2) {
+                         Some(Protocol.decode(buffer).asInstanceOf[BulkStringResponse].flattened[String])
+                     } else {
+                         None
+                     }
+              // skip additional fields (which can be added in future according to doc)
+              var skipIndex=3
+              while(skipIndex < rh.length) {
+                 Protocol.decode(buffer)
+                 skipIndex += 1
+              }
+              val replica = ClusterSlotRangeNodeInfo(Server(replicaHost,replicaPort.toInt),replicaNodeId)
+              replicaList = replica :: replicaList
               r += 1
             }
 
-            builder += ClusterSlotRange((begin, end), Server(masterHost, masterPort.toInt), replicaList)
+            builder += ClusterSlotRange((begin, end), master, replicaList)
 
           case other => throw RedisProtocolException(s"Expected an array parsing CLUSTER SLOTS reply, got $other")
         }
