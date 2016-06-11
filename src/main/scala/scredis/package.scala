@@ -448,7 +448,6 @@ package object scredis {
    * Connection information for a server node in a Redis cluster
    * @param host host name or ip of the server
    * @param port port of the server
-   * @param nodeId - optional nodeId in cluster. available in redis-3.2 or later
    */
   case class Server(host: String, port: Int)
 
