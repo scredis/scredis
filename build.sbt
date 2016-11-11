@@ -6,16 +6,17 @@ name := "scredis"
 version := "2.1.0-SNAPSHOT"
 
 scalaVersion := "2.11.8"
+crossScalaVersions := Seq("2.11.8", "2.12.0")
 
 scalacOptions ++= Seq("-deprecation")
 
 libraryDependencies ++= Seq(
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
   "com.typesafe" % "config" % "1.3.0",
-  "com.typesafe.akka" %% "akka-actor" % "2.4.6",
-  "org.scalatest" %% "scalatest" % "2.2.4" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.12.2" % "test",
-  "com.storm-enroute" %% "scalameter" % "0.6" % "test",
+  "com.typesafe.akka" %% "akka-actor" % "2.4.12",
+  "org.scalatest" %% "scalatest" % "3.0.0" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
+  "com.storm-enroute" %% "scalameter" % "0.8.2" % "test",
   "org.slf4j" % "slf4j-simple" % "1.7.12" % "test"
 )
 

@@ -771,7 +771,7 @@ class StringCommandsSpec extends WordSpec
     }
   }
 
-  override def afterAll(configMap: ConfigMap) {
+  override def afterAll():Unit = {
     client.flushAll().!
     client.quit().!
   }
