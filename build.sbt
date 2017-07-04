@@ -5,19 +5,19 @@ name := "scredis"
 
 version := "2.1.0-SNAPSHOT"
 
-scalaVersion := "2.11.8"
-crossScalaVersions := Seq("2.11.8", "2.12.0")
+scalaVersion := "2.12.2"
+crossScalaVersions := Seq("2.11.11", "2.12.2")
 
 scalacOptions ++= Seq("-deprecation")
 
 libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
-  "com.typesafe" % "config" % "1.3.0",
-  "com.typesafe.akka" %% "akka-actor" % "2.4.12",
-  "org.scalatest" %% "scalatest" % "3.0.0" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
+  "com.typesafe" % "config" % "1.3.1",
+  "com.typesafe.akka" %% "akka-actor" % "2.5.3",
+  "org.scalatest" %% "scalatest" % "3.0.3" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.13.5" % "test",
   "com.storm-enroute" %% "scalameter" % "0.8.2" % "test",
-  "org.slf4j" % "slf4j-simple" % "1.7.12" % "test"
+  "org.slf4j" % "slf4j-simple" % "1.7.25" % "test"
 )
 
 publishTo <<= version { (v: String) =>

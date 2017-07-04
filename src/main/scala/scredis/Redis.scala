@@ -311,7 +311,7 @@ class Redis private[scredis] (
       awaitTermination(3 seconds)
       systemOrName match {
         case Left(system) => // Do not shutdown provided ActorSystem
-        case Right(name) => system.shutdown()
+        case Right(name) => system.terminate()
       }
     }
   }

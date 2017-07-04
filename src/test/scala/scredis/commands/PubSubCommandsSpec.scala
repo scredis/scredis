@@ -11,7 +11,7 @@ import scredis.serialization.UTF8StringWriter
 import scredis.tags._
 import scredis.util.TestUtils._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Promise
 import scala.language.postfixOps
@@ -217,7 +217,7 @@ class PubSubCommandsSpec extends WordSpec
         )
         
         unsubscribes.poll(2) should have size (2)
-        unsubscribes.forall(_.channelsCount == 3) should be (true)
+        unsubscribes.asScala.forall(_.channelsCount == 3) should be (true)
         clear()
       }
     }
@@ -264,7 +264,7 @@ class PubSubCommandsSpec extends WordSpec
           PMessage("*3", "CHANNEL3", "HELLO")
         )
         pUnsubscribes.poll(2) should have size (2)
-        pUnsubscribes.forall(_.patternsCount == 3) should be (true)
+        pUnsubscribes.asScala.forall(_.patternsCount == 3) should be (true)
         clear()
       }
     }
