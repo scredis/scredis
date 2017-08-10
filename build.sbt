@@ -1,12 +1,10 @@
 
-organization := "com.livestream"
+organization := "scredis.com.github"
 
 name := "scredis"
 
-version := "2.1.0-SNAPSHOT"
-
-scalaVersion := "2.12.2"
-crossScalaVersions := Seq("2.11.11", "2.12.2")
+scalaVersion := "2.12.3"
+crossScalaVersions := Seq("2.11.11", "2.12.3")
 
 scalacOptions ++= Seq("-deprecation")
 
@@ -20,27 +18,22 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-simple" % "1.7.25" % "test"
 )
 
-publishTo <<= version { (v: String) =>
-  val repository = "https://oss.sonatype.org/"
-  if (v.trim.endsWith("SNAPSHOT"))
-    Some("snapshots" at repository + "content/repositories/snapshots")
-  else
-    Some("releases" at repository + "service/local/staging/deploy/maven2")
-}
-
 // required so that test actor systems don't get messed up
 fork in Test := true
 
 publishMavenStyle := true
-
 publishArtifact in Test := false
-
 pomIncludeRepository := { _ => false }
+licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))
+
+bintrayVcsUrl := Some("https://github.com/scredis/scredis.git")
+bintrayRepository := "maven"
+bintrayPackageLabels := Seq("redis")
 
 scalacOptions += "-feature"
 
-pomExtra := (
-  <url>https://github.com/Livestream/scredis</url>
+pomExtra :=
+  <url>https://github.com/scredis/scredis</url>
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -49,8 +42,8 @@ pomExtra := (
     </license>
   </licenses>
   <scm>
-    <url>git@github.com:Livestream/scredis.git</url>
-    <connection>scm:git:git@github.com:Livestream/scredis.git</connection>
+    <url>https://github.com/scredis/scredis.git</url>
+    <connection>scm:https://github.com/scredis/scredis.git</connection>
   </scm>
   <developers>
     <developer>
@@ -59,7 +52,6 @@ pomExtra := (
       <url>https://github.com/curreli</url>
     </developer>
   </developers>
-)
 
 parallelExecution in Test := false
 
@@ -67,4 +59,3 @@ testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 
-git.remoteRepo := "git@github.com:Livestream/scredis.git"

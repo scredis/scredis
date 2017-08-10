@@ -1,3 +1,5 @@
+[ ![snapshot](https://api.bintray.com/packages/jastice/maven/scredis/images/download.svg) ](https://bintray.com/jastice/maven/scredis/_latestVersion)
+
 # scredis
 
 Scredis is a reactive, non-blocking and ultra-fast Scala [Redis](http://redis.io) client built on top of Akka IO. 
@@ -30,20 +32,19 @@ It has been (and still is) extensively used in production at Livestream.
 ## Getting started
 
 ### Binaries
+
 Scredis 2.x.x is compatible with Scala 2.10 and 2.11. Binary releases are hosted on the Sonatype Central Repository.
 
 ```scala
-resolvers += "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases/"
-
-libraryDependencies += "com.livestream" %% "scredis" % "2.0.6"
+libraryDependencies += "com.github.scredis" %% "scredis" % "2.0.6"
 ```
 
-Snapshots are hosted on a separate repository.
+Snapshots / development versions are hosted on a separate bintray repository.
 
 ```scala
-resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
+resolvers += Resolver.bintrayIvyRepo("jastice","maven")
 
-libraryDependencies += "com.livestream" %% "scredis" % "2.0.6-SNAPSHOT"
+libraryDependencies += "com.github.scredis" %% "scredis" % "<version>"
 ```
 
 ### Quick example
@@ -166,25 +167,6 @@ They can be started with the start-redis-test-instances.sh script.
 * 2,000,000 requests -> 5912.59 ms = 338,261 req/s
 * 3,000,000 requests -> 8752.69 ms = 342,752 req/s
 
-
-## Scredis 1.x.x
-
-### Binaries
-Scredis 1.x.x is compatible with Scala 2.9.x, 2.10 and 2.11. Binary releases are hosted on the Sonatype Central Repository.
-
-```scala
-resolvers += "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases/"
-
-libraryDependencies += "com.livestream" %% "scredis" % "1.1.2"
-```
-
-Snapshots are hosted on a separate repository.
-
-```scala
-resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
-
-libraryDependencies += "com.livestream" %% "scredis" % "1.1.2-SNAPSHOT"
-```
 
 ## License
 
