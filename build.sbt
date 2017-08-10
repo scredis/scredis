@@ -1,5 +1,5 @@
 
-organization := "scredis.com.github"
+organization := "com.github.scredis"
 
 name := "scredis"
 
