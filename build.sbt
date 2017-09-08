@@ -26,9 +26,14 @@ publishArtifact in Test := false
 pomIncludeRepository := { _ => false }
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))
 
-bintrayVcsUrl := Some("https://github.com/scredis/scredis.git")
-bintrayRepository := "maven"
-bintrayPackageLabels := Seq("redis")
+publishTo := {
+  val artifactory = "http://artifactory.service.iad1.consul:8081/artifactory/"
+  val (name, url) = if (version.value.contains("-SNAPSHOT"))
+    ("Artifactory Realm", artifactory + "libs-snapshot;build.timestamp=" + new java.util.Date().getTime)
+  else
+    ("Artifactory Realm", artifactory + "libs-release;build.timestamp=" + new java.util.Date().getTime)
+  Some(Resolver.url(name, new URL(url)))
+}
 
 scalacOptions += "-feature"
 
