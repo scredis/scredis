@@ -43,7 +43,7 @@ libraryDependencies += "com.github.scredis" %% "scredis" % "2.1.1"
 Snapshots / development versions are hosted on a separate bintray repository.
 
 ```scala
-resolvers += Resolver.bintrayIvyRepo("jastice","maven")
+resolvers += Resolver.bintrayRepo("jastice","maven")
 
 libraryDependencies += "com.github.scredis" %% "scredis" % "<version>"
 ```
