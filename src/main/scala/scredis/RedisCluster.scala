@@ -29,7 +29,8 @@ class RedisCluster private[scredis](
     akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
     tryAgainWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.TryAgainWait,
     clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
-    systemOpt:Option[ActorSystem] = None
+    systemOpt:Option[ActorSystem] = None,
+    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
   )
   extends ClusterConnection(
     nodes = nodes,
@@ -42,7 +43,8 @@ class RedisCluster private[scredis](
     akkaIODispatcherPath = akkaIODispatcherPath,
     tryAgainWait = tryAgainWait,
     clusterDownWait = clusterDownWait,
-    systemOpt = systemOpt
+    systemOpt = systemOpt,
+    failCommandOnConnecting = failCommandOnConnecting
   ) with Connection
   with ClusterCommands
   with HashCommands
@@ -77,7 +79,8 @@ class RedisCluster private[scredis](
     akkaDecoderDispatcherPath = config.IO.Akka.DecoderDispatcherPath,
     tryAgainWait = config.IO.Cluster.TryAgainWait,
     clusterDownWait = config.IO.Cluster.ClusterDownWait,
-    systemOpt = systemOpt
+    systemOpt = systemOpt,
+    failCommandOnConnecting = config.Global.FailCommandOnConnecting
   )
 
   /**
@@ -132,7 +135,8 @@ object RedisCluster {
     akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
     tryAgainWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.TryAgainWait,
     clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
-    systemOpt: Option[ActorSystem] = None
+    systemOpt: Option[ActorSystem] = None,
+    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
   ) = new RedisCluster(
     nodes = nodes,
     maxRetries = maxRetries,
@@ -144,7 +148,8 @@ object RedisCluster {
     akkaIODispatcherPath = akkaIODispatcherPath,
     tryAgainWait = tryAgainWait,
     clusterDownWait = clusterDownWait,
-    systemOpt = systemOpt
+    systemOpt = systemOpt,
+    failCommandOnConnecting = failCommandOnConnecting
   )
 
 

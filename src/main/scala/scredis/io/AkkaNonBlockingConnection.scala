@@ -30,7 +30,8 @@ abstract class AkkaNonBlockingConnection(
   tcpReceiveBufferSizeHint: Int,
   akkaListenerDispatcherPath: String,
   akkaIODispatcherPath: String,
-  akkaDecoderDispatcherPath: String
+  akkaDecoderDispatcherPath: String,
+  failCommandOnConnecting: Boolean
 ) extends AbstractAkkaConnection(
   system = system,
   host = host,
@@ -66,7 +67,8 @@ abstract class AkkaNonBlockingConnection(
       tcpSendBufferSizeHint,
       tcpReceiveBufferSizeHint,
       akkaIODispatcherPath,
-      akkaDecoderDispatcherPath
+      akkaDecoderDispatcherPath,
+      failCommandOnConnecting
     ).withDispatcher(akkaListenerDispatcherPath),
     UniqueNameGenerator.getUniqueName(s"${nameOpt.getOrElse(s"$host-$port")}-listener-actor")
   )

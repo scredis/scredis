@@ -38,7 +38,8 @@ class SubscriberListenerActor(
   tcpSendBufferSizeHint = tcpSendBufferSizeHint,
   tcpReceiveBufferSizeHint = tcpReceiveBufferSizeHint,
   akkaIODispatcherPath = akkaIODispatcherPath,
-  akkaDecoderDispatcherPath = akkaDecoderDispatcherPath
+  akkaDecoderDispatcherPath = akkaDecoderDispatcherPath,
+  failCommandOnConnecting = false
 ) {
   
   import SubscriberListenerActor._

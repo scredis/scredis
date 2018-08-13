@@ -103,7 +103,7 @@ class RedisConfig(config: Config = ConfigFactory.load().getConfig("scredis")) {
     val MaxConcurrentRequestsOpt = optionally("max-concurrent-requests") {
       config.getInt("max-concurrent-requests")
     }
-    
+    val FailCommandOnConnecting = config.getBoolean("fail-command-on-connecting")
     object EncodeBufferPool {
       private implicit val config = Global.config.getConfig("encode-buffer-pool")
       val PoolMaxCapacity = config.getInt("pool-max-capacity")

@@ -33,7 +33,8 @@ abstract class ClusterConnection(
     akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
     tryAgainWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.TryAgainWait,
     clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
-    systemOpt:Option[ActorSystem] = None
+    systemOpt:Option[ActorSystem] = None,
+    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
   ) extends NonBlockingConnection with LazyLogging {
 
   private val maxHashMisses = 100
@@ -117,7 +118,7 @@ abstract class ClusterConnection(
       database = 0, nameOpt = None, decodersCount = 2,
       receiveTimeoutOpt, connectTimeout, maxWriteBatchSize, tcpSendBufferSizeHint,
       tcpReceiveBufferSizeHint, akkaListenerDispatcherPath, akkaIODispatcherPath,
-      akkaDecoderDispatcherPath
+      akkaDecoderDispatcherPath, failCommandOnConnecting
     ) {}
   }
 
