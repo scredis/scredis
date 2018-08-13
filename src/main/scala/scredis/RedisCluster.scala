@@ -1,5 +1,6 @@
 package scredis
 
+import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import scredis.commands._
 import scredis.io.{ClusterConnection, Connection}
@@ -27,7 +28,8 @@ class RedisCluster private[scredis](
     akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
     akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
     tryAgainWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.TryAgainWait,
-    clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait
+    clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
+    systemOpt:Option[ActorSystem] = None
   )
   extends ClusterConnection(
     nodes = nodes,
@@ -39,7 +41,8 @@ class RedisCluster private[scredis](
     akkaListenerDispatcherPath = akkaListenerDispatcherPath,
     akkaIODispatcherPath = akkaIODispatcherPath,
     tryAgainWait = tryAgainWait,
-    clusterDownWait = clusterDownWait
+    clusterDownWait = clusterDownWait,
+    systemOpt = systemOpt
   ) with Connection
   with ClusterCommands
   with HashCommands
@@ -61,7 +64,7 @@ class RedisCluster private[scredis](
     *
     * @return the constructed $redisCluster
     */
-  def this(config: RedisConfig) = this(
+  def this(config: RedisConfig, systemOpt:Option[ActorSystem]) = this(
     nodes = config.Redis.ClusterNodes,
     maxRetries = 4,
     receiveTimeoutOpt = config.IO.ReceiveTimeoutOpt,
@@ -73,7 +76,8 @@ class RedisCluster private[scredis](
     akkaIODispatcherPath = config.IO.Akka.IODispatcherPath,
     akkaDecoderDispatcherPath = config.IO.Akka.DecoderDispatcherPath,
     tryAgainWait = config.IO.Cluster.TryAgainWait,
-    clusterDownWait = config.IO.Cluster.ClusterDownWait
+    clusterDownWait = config.IO.Cluster.ClusterDownWait,
+    systemOpt = systemOpt
   )
 
   /**
@@ -81,7 +85,16 @@ class RedisCluster private[scredis](
     *
     * @return the constructed $redisCluster
     */
-  def this() = this(RedisConfig())
+  def this() = this(RedisConfig(), None)
+
+
+  /**
+    * Constructs a $redisCluster instance using the default config.
+    *
+    * @param system Actor system
+    * @return the constructed $redisCluster
+    */
+  def this(system:ActorSystem) = this(RedisConfig(), Some(system))
 
 }
 
@@ -103,6 +116,7 @@ object RedisCluster {
     * @param akkaDecoderDispatcherPath path to decoder dispatcher definition
     * @param tryAgainWait time to wait after a TRYAGAIN response by a cluster node
     * @param clusterDownWait time to wait for a retry after CLUSTERDOWN response
+    * @param systemOpt Actor System (optionally)
     * @return the constructed $redisCluster
     */
   def apply(
@@ -117,7 +131,8 @@ object RedisCluster {
     akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
     akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
     tryAgainWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.TryAgainWait,
-    clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait
+    clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
+    systemOpt: Option[ActorSystem] = None
   ) = new RedisCluster(
     nodes = nodes,
     maxRetries = maxRetries,
@@ -128,7 +143,8 @@ object RedisCluster {
     akkaListenerDispatcherPath = akkaListenerDispatcherPath,
     akkaIODispatcherPath = akkaIODispatcherPath,
     tryAgainWait = tryAgainWait,
-    clusterDownWait = clusterDownWait
+    clusterDownWait = clusterDownWait,
+    systemOpt = systemOpt
   )
 
 
@@ -145,7 +161,7 @@ object RedisCluster {
     * @param config a [[scredis.RedisConfig]]
     * @return the constructed $redisCluster
     */
-  def apply(config: RedisConfig) = new RedisCluster(config)
+  def apply(config: RedisConfig, systemOpt:Option[ActorSystem]) = new RedisCluster(config, None)
 
   /**
     * Constructs a $redisCluster instance from a $tc.
@@ -155,7 +171,7 @@ object RedisCluster {
     * @param config a $typesafeConfig
     * @return the constructed $redis
     */
-  def apply(config: Config) = new RedisCluster(RedisConfig(config))
+  def apply(config: Config) = new RedisCluster(RedisConfig(config), None)
 
 
   /**
@@ -169,7 +185,7 @@ object RedisCluster {
     * @param configName config filename
     * @return the constructed $redis
     */
-  def apply(configName: String): RedisCluster = new RedisCluster(RedisConfig(configName))
+  def apply(configName: String): RedisCluster = new RedisCluster(RedisConfig(configName), None)
 
   /**
     * Constructs a $redisCluster instance from a config file and using the provided path.
@@ -180,6 +196,6 @@ object RedisCluster {
     * @param path path pointing to the scredis config object
     * @return the constructed $redis
     */
-  def apply(configName: String, path: String): RedisCluster = new RedisCluster(RedisConfig(configName, path))
+  def apply(configName: String, path: String): RedisCluster = new RedisCluster(RedisConfig(configName, path), None)
 
 }

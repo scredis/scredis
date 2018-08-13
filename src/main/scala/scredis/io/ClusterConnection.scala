@@ -32,13 +32,14 @@ abstract class ClusterConnection(
     akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
     akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
     tryAgainWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.TryAgainWait,
-    clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait
+    clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
+    systemOpt:Option[ActorSystem] = None
   ) extends NonBlockingConnection with LazyLogging {
 
   private val maxHashMisses = 100
   private val maxConnectionMisses = 3
 
-  private val scheduler = ActorSystem().scheduler
+  private val scheduler = systemOpt.map(_.scheduler).getOrElse(ActorSystem().scheduler)
 
   /** Set of active cluster node connections. Initialized from `nodes` parameter. */
   // TODO it may be more efficient to save the connections in hashSlots directly
@@ -60,7 +61,7 @@ abstract class ClusterConnection(
 
   /** Set up initial connections from configuration. */
   private def initialConnections: Map[Server, (NonBlockingConnection, Int)] =
-    nodes.map { server => (server, (makeConnection(server), 0))}.toMap
+    nodes.map { server => (server, (makeConnection(server, systemOpt), 0))}.toMap
 
 
   /**
@@ -78,7 +79,7 @@ abstract class ClusterConnection(
           cons ++ nodes.flatMap { nodeInfo =>
             val server = nodeInfo.server
             if (cons contains server) Nil
-            else List( (server, (makeConnection(server),0)) )
+            else List( (server, (makeConnection(server, systemOpt),0)) )
           }
       }
 
@@ -107,9 +108,9 @@ abstract class ClusterConnection(
   }
 
   /** Creates a new connection to a server. */
-  private def makeConnection(server: Server): NonBlockingConnection = {
+  private def makeConnection(server: Server, systemOpt:Option[ActorSystem]): NonBlockingConnection = {
     val systemName = RedisConfigDefaults.IO.Akka.ActorSystemName
-    val system = ActorSystem(UniqueNameGenerator.getUniqueName(systemName))
+    val system = systemOpt.getOrElse(ActorSystem(UniqueNameGenerator.getUniqueName(systemName)))
 
     new AkkaNonBlockingConnection(
       system = system, host = server.host, port = server.port, passwordOpt = None,
@@ -145,7 +146,7 @@ abstract class ClusterConnection(
     if (retry <= 0) Future.failed(RedisIOException(s"Gave up on request after $maxRetries retries: $request", error.orNull))
     else {
       val (connection,_) = connections.getOrElse(server, {
-        val con = makeConnection(server)
+        val con = makeConnection(server, systemOpt)
         connections = this.synchronized {
           connections.updated(server, (con,0))
         }
