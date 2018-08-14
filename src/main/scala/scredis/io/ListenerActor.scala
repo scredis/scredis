@@ -33,7 +33,8 @@ class ListenerActor(
   tcpSendBufferSizeHint: Int,
   tcpReceiveBufferSizeHint: Int,
   akkaIODispatcherPath: String,
-  akkaDecoderDispatcherPath: String
+  akkaDecoderDispatcherPath: String,
+  failCommandOnConnecting:Boolean
 ) extends Actor with LazyLogging {
   
   import ListenerActor._
@@ -285,7 +286,11 @@ class ListenerActor(
       isShuttingDownBeforeConnected = true
     }
     case request: Request[_] => {
-      queuedRequests.addLast(request)
+      if(failCommandOnConnecting) {
+        request.failure(RedisIOException("Trying to connect..."))
+      } else{
+        queuedRequests.addLast(request)
+      }
       if (!isConnecting) {
         reconnect()
       }

@@ -47,7 +47,8 @@ class BlockingClient(
   tcpReceiveBufferSizeHint: Int = RedisConfigDefaults.IO.TCPReceiveBufferSizeHint,
   akkaListenerDispatcherPath: String = RedisConfigDefaults.IO.Akka.ListenerDispatcherPath,
   akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
-  akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath
+  akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
+  failCommandOnConnecting: Boolean =  RedisConfigDefaults.Global.FailCommandOnConnecting
 )(implicit system: ActorSystem) extends AkkaBlockingConnection(
   system = system,
   host = host,
@@ -62,7 +63,8 @@ class BlockingClient(
   decodersCount = 2,
   akkaListenerDispatcherPath = akkaListenerDispatcherPath,
   akkaIODispatcherPath = akkaIODispatcherPath,
-  akkaDecoderDispatcherPath = akkaDecoderDispatcherPath
+  akkaDecoderDispatcherPath = akkaDecoderDispatcherPath,
+  failCommandOnConnecting = failCommandOnConnecting
 ) with BlockingListCommands {
   
   /**
@@ -83,7 +85,9 @@ class BlockingClient(
     tcpReceiveBufferSizeHint = config.IO.TCPReceiveBufferSizeHint,
     akkaListenerDispatcherPath = config.IO.Akka.ListenerDispatcherPath,
     akkaIODispatcherPath = config.IO.Akka.IODispatcherPath,
-    akkaDecoderDispatcherPath = config.IO.Akka.DecoderDispatcherPath
+    akkaDecoderDispatcherPath = config.IO.Akka.DecoderDispatcherPath,
+    failCommandOnConnecting = config.Global.FailCommandOnConnecting
+
   )
   
   /**
@@ -203,7 +207,8 @@ object BlockingClient {
     tcpReceiveBufferSizeHint: Int = RedisConfigDefaults.IO.TCPReceiveBufferSizeHint,
     akkaListenerDispatcherPath: String = RedisConfigDefaults.IO.Akka.ListenerDispatcherPath,
     akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
-    akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath
+    akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
+    failCommandOnConnecting: Boolean =  RedisConfigDefaults.Global.FailCommandOnConnecting
   )(implicit system: ActorSystem): BlockingClient = new BlockingClient(
     host = host,
     port = port,
@@ -216,7 +221,8 @@ object BlockingClient {
     tcpReceiveBufferSizeHint = tcpReceiveBufferSizeHint,
     akkaListenerDispatcherPath = akkaListenerDispatcherPath,
     akkaIODispatcherPath = akkaIODispatcherPath,
-    akkaDecoderDispatcherPath = akkaDecoderDispatcherPath
+    akkaDecoderDispatcherPath = akkaDecoderDispatcherPath,
+    failCommandOnConnecting = failCommandOnConnecting
   )
   
   /**

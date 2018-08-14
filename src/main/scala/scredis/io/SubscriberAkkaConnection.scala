@@ -52,7 +52,7 @@ abstract class SubscriberAkkaConnection(
   tcpReceiveBufferSizeHint = tcpReceiveBufferSizeHint,
   akkaListenerDispatcherPath = akkaListenerDispatcherPath,
   akkaIODispatcherPath = akkaIODispatcherPath,
-  akkaDecoderDispatcherPath = akkaDecoderDispatcherPath
+  akkaDecoderDispatcherPath = akkaDecoderDispatcherPath,
 ) with SubscriberConnection {
   
   private val lock = new Semaphore(1)

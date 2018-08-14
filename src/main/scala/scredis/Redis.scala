@@ -32,7 +32,8 @@ class Redis private[scredis] (
   tcpReceiveBufferSizeHint: Int,
   akkaListenerDispatcherPath: String,
   akkaIODispatcherPath: String,
-  akkaDecoderDispatcherPath: String
+  akkaDecoderDispatcherPath: String,
+  failCommandOnConnecting: Boolean
 ) extends AkkaNonBlockingConnection(
   system = systemOrName match {
     case Left(system) => system
@@ -51,7 +52,8 @@ class Redis private[scredis] (
   akkaListenerDispatcherPath = akkaListenerDispatcherPath,
   akkaIODispatcherPath = akkaIODispatcherPath,
   akkaDecoderDispatcherPath = akkaDecoderDispatcherPath,
-  decodersCount = 2
+  decodersCount = 2,
+  failCommandOnConnecting = failCommandOnConnecting
 ) with ConnectionCommands
   with ServerCommands
   with KeyCommands
@@ -144,7 +146,8 @@ class Redis private[scredis] (
     actorSystemName: String = RedisConfigDefaults.IO.Akka.ActorSystemName,
     akkaListenerDispatcherPath: String = RedisConfigDefaults.IO.Akka.ListenerDispatcherPath,
     akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
-    akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath
+    akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
+    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
   ) = this(
     systemOrName = Right(actorSystemName),
     host = host,
@@ -159,7 +162,8 @@ class Redis private[scredis] (
     tcpReceiveBufferSizeHint = tcpReceiveBufferSizeHint,
     akkaListenerDispatcherPath = akkaListenerDispatcherPath,
     akkaIODispatcherPath = akkaIODispatcherPath,
-    akkaDecoderDispatcherPath = akkaDecoderDispatcherPath
+    akkaDecoderDispatcherPath = akkaDecoderDispatcherPath,
+    failCommandOnConnecting = failCommandOnConnecting
   )
   
   /**
@@ -181,7 +185,8 @@ class Redis private[scredis] (
     actorSystemName = config.IO.Akka.ActorSystemName,
     akkaListenerDispatcherPath = config.IO.Akka.ListenerDispatcherPath,
     akkaIODispatcherPath = config.IO.Akka.IODispatcherPath,
-    akkaDecoderDispatcherPath = config.IO.Akka.DecoderDispatcherPath
+    akkaDecoderDispatcherPath = config.IO.Akka.DecoderDispatcherPath,
+    failCommandOnConnecting = config.Global.FailCommandOnConnecting
   )
   
   /**
@@ -380,7 +385,8 @@ object Redis {
     actorSystemName: String = RedisConfigDefaults.IO.Akka.ActorSystemName,
     akkaListenerDispatcherPath: String = RedisConfigDefaults.IO.Akka.ListenerDispatcherPath,
     akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
-    akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath
+    akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
+    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
   ): Redis = new Redis(
     host = host,
     port = port,
@@ -395,7 +401,8 @@ object Redis {
     actorSystemName = actorSystemName,
     akkaListenerDispatcherPath = akkaListenerDispatcherPath,
     akkaIODispatcherPath = akkaIODispatcherPath,
-    akkaDecoderDispatcherPath = akkaDecoderDispatcherPath
+    akkaDecoderDispatcherPath = akkaDecoderDispatcherPath,
+    failCommandOnConnecting = failCommandOnConnecting
   )
   
   /**
@@ -481,7 +488,8 @@ object Redis {
     tcpReceiveBufferSizeHint: Int = RedisConfigDefaults.IO.TCPReceiveBufferSizeHint,
     akkaListenerDispatcherPath: String = RedisConfigDefaults.IO.Akka.ListenerDispatcherPath,
     akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
-    akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath
+    akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
+    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
   )(implicit system: ActorSystem): Redis = new Redis(
     systemOrName = Left(system),
     host = host,
@@ -496,7 +504,8 @@ object Redis {
     tcpReceiveBufferSizeHint = tcpSendBufferSizeHint,
     akkaListenerDispatcherPath = akkaListenerDispatcherPath,
     akkaIODispatcherPath = akkaIODispatcherPath,
-    akkaDecoderDispatcherPath = akkaDecoderDispatcherPath
+    akkaDecoderDispatcherPath = akkaDecoderDispatcherPath,
+    failCommandOnConnecting = failCommandOnConnecting
   )
   
   /**
@@ -532,7 +541,8 @@ object Redis {
     tcpReceiveBufferSizeHint = config.IO.TCPReceiveBufferSizeHint,
     akkaListenerDispatcherPath = config.IO.Akka.ListenerDispatcherPath,
     akkaIODispatcherPath = config.IO.Akka.IODispatcherPath,
-    akkaDecoderDispatcherPath = config.IO.Akka.DecoderDispatcherPath
+    akkaDecoderDispatcherPath = config.IO.Akka.DecoderDispatcherPath,
+    failCommandOnConnecting = config.Global.FailCommandOnConnecting
   )
   
   /**
