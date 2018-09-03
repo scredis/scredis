@@ -1,17 +1,14 @@
 package scredis.io
 
-import com.typesafe.scalalogging.LazyLogging
+import java.util.concurrent.{CountDownLatch, TimeUnit}
 
 import akka.actor._
-
+import com.typesafe.scalalogging.LazyLogging
 import scredis.protocol.Request
-import scredis.protocol.requests.ConnectionRequests.{ Auth, Select, Quit }
-import scredis.protocol.requests.ServerRequests.{ ClientSetName, Shutdown }
+import scredis.protocol.requests.ConnectionRequests.{Auth, Quit, Select}
+import scredis.protocol.requests.ServerRequests.{ClientSetName, Shutdown}
 
-import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
-
-import java.util.concurrent.{ CountDownLatch, TimeUnit }
 
 abstract class AbstractAkkaConnection(
   protected val system: ActorSystem,

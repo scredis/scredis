@@ -1,23 +1,18 @@
 package scredis.io
 
-import com.typesafe.scalalogging.LazyLogging
+import java.util.concurrent.Semaphore
 
 import akka.actor._
-
-import scredis.{ Subscription, PubSubMessage }
-import scredis.protocol._
-import scredis.protocol.requests.PubSubRequests._
-import scredis.protocol.requests.ConnectionRequests.{ Auth, Quit }
-import scredis.protocol.requests.ServerRequests.ClientSetName
+import scredis.Subscription
 import scredis.exceptions.RedisIOException
+import scredis.protocol._
+import scredis.protocol.requests.ConnectionRequests.{Auth, Quit}
+import scredis.protocol.requests.PubSubRequests._
+import scredis.protocol.requests.ServerRequests.ClientSetName
 import scredis.util.UniqueNameGenerator
 
-import scala.util.Try
-import scala.concurrent.{ ExecutionContext, Future, Await }
+import scala.concurrent.Future
 import scala.concurrent.duration._
-
-import java.util.concurrent.Semaphore
-import java.net.InetSocketAddress
 
 /**
  * This trait represents a subscriber connection to a `Redis` server.
@@ -52,7 +47,7 @@ abstract class SubscriberAkkaConnection(
   tcpReceiveBufferSizeHint = tcpReceiveBufferSizeHint,
   akkaListenerDispatcherPath = akkaListenerDispatcherPath,
   akkaIODispatcherPath = akkaIODispatcherPath,
-  akkaDecoderDispatcherPath = akkaDecoderDispatcherPath,
+  akkaDecoderDispatcherPath = akkaDecoderDispatcherPath
 ) with SubscriberConnection {
   
   private val lock = new Semaphore(1)

@@ -15,7 +15,7 @@ import scredis.protocol.requests.ServerRequests
 import scredis.protocol.{Protocol, Request}
 import scredis.util.UniqueNameGenerator
 
-import scala.collection.mutable.{ListBuffer, Queue => MQueue}
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 import scala.concurrent.duration._
 

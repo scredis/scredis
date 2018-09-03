@@ -5,7 +5,7 @@ jdk: oraclejdk8
 dist: trusty
 
 script:
-  - sbt -Dfile.encoding=UTF8 compile # TODO: testing setup requires a bit more, later switch to `sbt test`
+  - sbt -Dfile.encoding=UTF8 +compile # TODO: testing setup requires a bit more, later switch to `sbt test`
 
 after_success:
   - '[[ $TRAVIS_BRANCH == "master" ]] || [[ $TRAVIS_BRANCH =~ ^v[0-9.]+$ ]] && sbt "+ publish"'
