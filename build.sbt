@@ -8,6 +8,12 @@ crossScalaVersions := Seq("2.11.12", "2.12.6")
 
 scalacOptions ++= Seq("-deprecation")
 
+enablePlugins(BuildInfoPlugin)
+
+buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion)
+buildInfoPackage := "scredis"
+buildInfoOptions += BuildInfoOption.BuildTime
+
 libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
   "com.typesafe" % "config" % "1.3.1",
