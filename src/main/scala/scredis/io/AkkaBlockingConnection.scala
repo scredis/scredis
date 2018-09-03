@@ -1,22 +1,15 @@
 package scredis.io
 
-import com.typesafe.scalalogging.LazyLogging
+import java.util.concurrent.locks.ReentrantLock
 
 import akka.actor._
-
-import scredis.Transaction
 import scredis.exceptions._
 import scredis.protocol._
-import scredis.protocol.requests.ConnectionRequests.Quit
-import scredis.protocol.requests.ServerRequests.Shutdown
 import scredis.util.UniqueNameGenerator
 
-import scala.util.Try
-import scala.concurrent.{ ExecutionContext, Future, Await }
+import scala.concurrent.Await
 import scala.concurrent.duration._
-
-import java.net.InetSocketAddress
-import java.util.concurrent.locks.ReentrantLock
+import scala.util.Try
 
 /**
  * This trait represents a blocking connection to a `Redis` server.

@@ -1,19 +1,13 @@
 package scredis.io
 
-import com.typesafe.scalalogging.LazyLogging
-
-import akka.actor.{ Actor, ActorRef }
+import akka.actor.Actor
 import akka.util.ByteString
-
-import scredis.{ PubSubMessage, Subscription }
-import scredis.protocol.{ Protocol, Request, ErrorResponse }
+import com.typesafe.scalalogging.LazyLogging
 import scredis.exceptions.RedisProtocolException
+import scredis.protocol.{ErrorResponse, Protocol, Request}
+import scredis.{PubSubMessage, Subscription}
 
-import scala.util.Success
-import scala.collection.mutable.{ Queue => MQueue }
-import scala.concurrent.{ ExecutionContext, Future }
-
-import java.nio.ByteBuffer
+import scala.concurrent.{ExecutionContext, Future}
 
 class DecoderActor extends Actor with LazyLogging {
   
