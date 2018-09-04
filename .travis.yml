@@ -8,8 +8,8 @@ services:
   - redis-server
 
 before_script:
-  - echo "REDIS VERSION:"
   - redis-server --version
+  - pwd && ls
   - redis-server ./src/test/resources/redis-6380.conf
 
 script:
