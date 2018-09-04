@@ -8,7 +8,6 @@ import scredis.util.UniqueNameGenerator
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.language.postfixOps
 
 /**
  * Defines a `Redis` [[scredis.Client]] supporting all non-blocking commands along with a lazily
@@ -69,6 +68,8 @@ class Redis private[scredis] (
   
   private var shouldShutdownBlockingClient = false
   private var shouldShutdownSubscriberClient = false
+
+  private val defaultBlockingTimeout: FiniteDuration = 5.seconds
   
   /**
    * Lazily initialized [[scredis.BlockingClient]].
@@ -243,7 +244,7 @@ class Redis private[scredis] (
   override def auth(password: String): Future[Unit] = {
     if (shouldShutdownBlockingClient) {
       try {
-        blocking.auth(password)(5 seconds)
+        blocking.auth(password)(defaultBlockingTimeout)
       } catch {
         case e: Throwable => logger.error("Could not authenticate blocking client", e)
       }
@@ -270,7 +271,7 @@ class Redis private[scredis] (
   override def clientSetName(name: String): Future[Unit] = {
     if (shouldShutdownBlockingClient) {
       try {
-        blocking.clientSetName(name)(5 seconds)
+        blocking.clientSetName(name)(defaultBlockingTimeout)
       } catch {
         case e: Throwable => logger.error("Could not set client name on blocking client", e)
       }
@@ -295,30 +296,31 @@ class Redis private[scredis] (
   override def quit(): Future[Unit] = {
     if (shouldShutdownBlockingClient) {
       try {
-        blocking.quit()(5 seconds)
-        blocking.awaitTermination(3 seconds)
+        blocking.quit()(defaultBlockingTimeout)
+        blocking.awaitTermination(defaultBlockingTimeout)
       } catch {
         case e: Throwable => logger.error("Could not shutdown blocking client", e)
       }
     }
     val future = if (shouldShutdownSubscriberClient) {
       subscriber.quit().map { _ =>
-        subscriber.awaitTermination(3 seconds)
+        subscriber.awaitTermination(defaultBlockingTimeout)
       }
     } else {
       Future.successful(())
     }
-    future.recover {
+    val quitFuture: Future[Unit] = future.recover {
       case e: Throwable => logger.error("Could not shutdown subscriber client", e)
     }.flatMap { _ =>
       super.quit()
-    }.map { _ =>
-      awaitTermination(3 seconds)
+    }.flatMap { _ =>
+      awaitTermination(defaultBlockingTimeout)
       systemOrName match {
-        case Left(system) => // Do not shutdown provided ActorSystem
-        case Right(name) => system.terminate()
+        case Left(_) => Future.successful(()) // Do not shutdown provided ActorSystem
+        case Right(_) => system.terminate().map(_ => ())
       }
     }
+    quitFuture
   }
 
   /**
@@ -332,7 +334,7 @@ class Redis private[scredis] (
   override def select(database: Int): Future[Unit] = {
     if (shouldShutdownBlockingClient) {
       try {
-        blocking.select(database)(5 seconds)
+        blocking.select(database)(defaultBlockingTimeout)
       } catch {
         case e: Throwable => Future.failed(e)
       }

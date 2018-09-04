@@ -2,10 +2,9 @@ package scredis.commands
 
 import scredis.io.NonBlockingConnection
 import scredis.protocol.requests.ListRequests._
-import scredis.serialization.{ Reader, Writer }
+import scredis.serialization.{Reader, Writer}
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 /**
  * This trait implements list commands.

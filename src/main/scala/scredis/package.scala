@@ -35,7 +35,7 @@ package object scredis {
    * Represents the type of a `Redis` key
    */
   sealed abstract class Type(val name: String) {
-    override def toString = name
+    override def toString: String = name
   }
   
   /**
@@ -62,7 +62,7 @@ package object scredis {
    * Base class of a BITOP operation
    */
   sealed abstract class BitOp(val name: String) {
-    override def toString = name
+    override def toString: String = name
   }
   
   /**
@@ -79,7 +79,7 @@ package object scredis {
    * Base class of a position used for the LINSERT command
    */
   sealed abstract class Position(val name: String) {
-    override def toString = name
+    override def toString: String = name
   }
   
   /**
@@ -95,7 +95,7 @@ package object scredis {
    * union or intersection of sorted sets
    */
   sealed abstract class Aggregate(val name: String) {
-    override def toString = name
+    override def toString: String = name
   }
   
   /**
@@ -120,10 +120,10 @@ package object scredis {
    */
   object Score {
     case object MinusInfinity extends Score("-inf") {
-      override def doubleValue = Double.MinValue
+      override def doubleValue: Double = Double.MinValue
     }
     case object PlusInfinity extends Score("+inf") {
-      override def doubleValue = Double.MaxValue
+      override def doubleValue: Double = Double.MaxValue
     }
     case class Value(value: Double) extends Score(value.toString) {
       override def doubleValue: Double = value
@@ -195,7 +195,7 @@ package object scredis {
    * Represents the type of a connected client
    */
   sealed abstract class ClientType(val name: String) {
-    override def toString = name
+    override def toString: String = name
   }
   
   /**
@@ -321,15 +321,12 @@ package object scredis {
       def readAs[R: Reader](): R = implicitly[Reader[R]].read(message)
       
       override def equals(other: Any): Boolean = other match {
-        case Message(channel, message) => (
-          this.channel == channel &&
-          this.message.sameElements(message)
-        )
+        case Message(ch, msg) => channel == ch && message.sameElements(msg)
         case _ => false
       }
       
-      override def toString = s"Message(channel=$channel, message=" +
-        s"${readAs[String]()(UTF8StringReader)})"
+      override def toString: String =
+        s"Message(channel=$channel, message=${readAs[String]()(UTF8StringReader)})"
       
     }
     

@@ -2,9 +2,6 @@ package scredis.serialization
 
 import scredis.exceptions.RedisWriterException
 
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
-
 /**
  * Represents the base class of all writers. You can define new writers by extending this class and
  * implementing the `writeImpl` method.

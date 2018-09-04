@@ -94,9 +94,7 @@ abstract class SubscriberAkkaConnection(
       Future.failed(RedisIOException("Connection has been closed"))
     } else {
       listenerActor ! request
-      request.future.onComplete {
-        case _ => lock.release()
-      }
+      request.future.onComplete(_ => lock.release())
       request.future.asInstanceOf[Future[Int]]
     }
   }
@@ -144,9 +142,7 @@ abstract class SubscriberAkkaConnection(
     unsubscribeAndThen {
       listenerActor ! SubscriberListenerActor.Shutdown(quit)
     }
-    quit.future.onComplete {
-      case _ => lock.release()
-    }
+    quit.future.onComplete(_ => lock.release())
     quit.future
   }
   

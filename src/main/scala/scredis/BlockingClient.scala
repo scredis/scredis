@@ -1,19 +1,14 @@
 package scredis
 
-import com.typesafe.config.Config
-
 import akka.actor.ActorSystem
-
-import scredis.io.AkkaBlockingConnection
-import scredis.protocol.Protocol
-import scredis.protocol.requests.ConnectionRequests.{ Auth, Select, Quit }
-import scredis.protocol.requests.ServerRequests.ClientSetName
+import com.typesafe.config.Config
 import scredis.commands._
-import scredis.exceptions._
+import scredis.io.AkkaBlockingConnection
+import scredis.protocol.requests.ConnectionRequests.{Auth, Quit, Select}
+import scredis.protocol.requests.ServerRequests.ClientSetName
 
-import scala.util.Try
-import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.util.Try
 
 /**
  * Defines a Redis client supporting all blocking commands.

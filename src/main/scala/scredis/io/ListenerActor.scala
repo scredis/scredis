@@ -110,8 +110,8 @@ class ListenerActor(
             passwordOpt = Some(password)
             doSend(auth)
           }
-          case select @ Select(database) => {
-            this.database = database
+          case select @ Select(db) => {
+            database = db
             doSend(select)
           }
           case setName @ ServerRequests.ClientSetName(name) => if (name.isEmpty) {
@@ -234,12 +234,12 @@ class ListenerActor(
   }
   
   protected def send: Receive = {
-    case request: Request[_] => send(request)
-    case t @ Transaction(requests) => {
+    case request: Request[_] =>
+      send(request)
+    case t @ Transaction(requests) =>
       send(t.multiRequest)
       send(requests: _*)
       send(t.execRequest)
-    }
   }
   
   protected def become(state: Receive): Unit = context.become(state orElse always orElse unhandled)
@@ -357,14 +357,14 @@ class ListenerActor(
           }
         }
         
-        authFuture.recover {
-          case e: Throwable => logger.error(s"Could not authenticate to $remote", e)
+        authFuture.failed.foreach { e =>
+          logger.error(s"Could not authenticate to $remote", e)
         }
-        selectFuture.recover {
-          case e: Throwable => logger.error(s"Could not select database '$database' in $remote", e)
+        selectFuture.failed.foreach { e =>
+          logger.error(s"Could not select database '$database' in $remote", e)
         }
-        setNameFuture.recover {
-          case e: Throwable => logger.error(s"Could not set client name in $remote", e)
+        setNameFuture.failed.foreach { e =>
+          logger.error(s"Could not set client name in $remote", e)
         }
       }
     }

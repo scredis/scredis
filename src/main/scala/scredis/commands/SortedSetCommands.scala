@@ -1,12 +1,11 @@
 package scredis.commands
 
-import scredis.io.{ Connection, NonBlockingConnection }
+import scredis.io.{Connection, NonBlockingConnection}
 import scredis.protocol.requests.SortedSetRequests._
-import scredis.serialization.{ Reader, Writer }
+import scredis.serialization.{Reader, Writer}
 import scredis.util.LinkedHashSet
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 /**
  * This trait implements sorted set commands.
