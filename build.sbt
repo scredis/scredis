@@ -46,13 +46,6 @@ pomExtra :=
     <url>https://github.com/scredis/scredis.git</url>
     <connection>scm:https://github.com/scredis/scredis.git</connection>
   </scm>
-  <developers>
-    <developer>
-      <id>curreli</id>
-      <name>Alexandre Curreli</name>
-      <url>https://github.com/curreli</url>
-    </developer>
-  </developers>
 
 parallelExecution in Test := false
 

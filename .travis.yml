@@ -15,9 +15,6 @@ before_script:
 script:
   - sbt +compile && sbt test
 
-after_script:
-  - kill `cat /var/run/redis8360.pid`
-
 after_success:
   - '[[ $TRAVIS_BRANCH == "master" ]] || [[ $TRAVIS_BRANCH =~ ^v[0-9.]+$ ]] && sbt "+ publish"'
 
