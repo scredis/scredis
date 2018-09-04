@@ -13,7 +13,9 @@ before_script:
   - redis-server ./src/test/resources/redis-6380.conf
 
 script:
-  - sbt +compile && sbt test
+  - sbt +compile
+#  - sbt +compile && sbt test
+
 
 after_success:
   - '[[ $TRAVIS_BRANCH == "master" ]] || [[ $TRAVIS_BRANCH =~ ^v[0-9.]+$ ]] && sbt "+ publish"'
