@@ -101,7 +101,10 @@ class RedisCluster private[scredis](
 
 }
 
-
+/**
+  * @define redisCluster [[scredis.RedisCluster]]
+  * @define typesafeConfig com.typesafe.Config
+  */
 object RedisCluster {
 
   /**
@@ -169,12 +172,12 @@ object RedisCluster {
   def apply(config: RedisConfig, systemOpt:Option[ActorSystem]) = new RedisCluster(config, None)
 
   /**
-    * Constructs a $redisCluster instance from a $tc.
+    * Constructs a $redisCluster instance from a $typesafeConfig.
     *
     * @note The config must contain the scredis object at its root.
     *
     * @param config a $typesafeConfig
-    * @return the constructed $redis
+    * @return the constructed $redisCluster
     */
   def apply(config: Config) = new RedisCluster(RedisConfig(config), None)
 
@@ -188,7 +191,7 @@ object RedisCluster {
     * }}}
     *
     * @param configName config filename
-    * @return the constructed $redis
+    * @return the constructed $redisCluster
     */
   def apply(configName: String): RedisCluster = new RedisCluster(RedisConfig(configName), None)
 
@@ -199,7 +202,7 @@ object RedisCluster {
     *
     * @param configName config filename
     * @param path path pointing to the scredis config object
-    * @return the constructed $redis
+    * @return the constructed $redisCluster
     */
   def apply(configName: String, path: String): RedisCluster = new RedisCluster(RedisConfig(configName, path), None)
 

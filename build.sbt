@@ -8,6 +8,9 @@ crossScalaVersions := Seq("2.11.12", scalaVersion.value)
 scalacOptions ++= Seq("-deprecation", "-feature", "-Xfatal-warnings",
   "-Ywarn-dead-code", "-Ywarn-infer-any", "-Ywarn-unused-import")
 
+scalacOptions in (Compile,doc) := Seq("-no-link-warnings")
+autoAPIMappings := true
+
 enablePlugins(BuildInfoPlugin)
 
 buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion)
@@ -39,13 +42,6 @@ bintrayPackageLabels := Seq("redis")
 
 pomExtra :=
   <url>https://github.com/scredis/scredis</url>
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
   <scm>
     <url>https://github.com/scredis/scredis.git</url>
     <connection>scm:https://github.com/scredis/scredis.git</connection>
