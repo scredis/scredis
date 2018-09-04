@@ -14,7 +14,6 @@ import scredis.util.TestUtils._
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Promise
-import scala.language.postfixOps
 import scala.language.implicitConversions
 
 class PubSubCommandsSpec extends WordSpec

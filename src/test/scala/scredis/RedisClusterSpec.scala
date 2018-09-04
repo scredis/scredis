@@ -16,7 +16,7 @@ class RedisClusterSpec extends WordSpec
 
   // we assume there is a local cluster started on ports 7000 - 7005
   // see testing.md
-  val cluster = RedisCluster(Server("localhost",7000))
+  lazy val cluster = RedisCluster(Server("localhost",7000))
 
   val badSeed1 = Server("localhost",7777)
   val badSeed2 = Server("localhost",2302)

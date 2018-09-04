@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 
 import org.scalatest._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import scredis.{Server, ClusterSlotRange, ClusterSlotRangeNodeInfo}
+import scredis.{ClusterSlotRange, ClusterSlotRangeNodeInfo, Server}
 
 class ResponseSpec extends WordSpec with GeneratorDrivenPropertyChecks with Inside
   with GivenWhenThen

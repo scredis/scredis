@@ -83,7 +83,7 @@ abstract class Request[A](command: Command, args: Any*) {
   def argsCount: Int = args.size
   def isReadOnly: Boolean = command.isReadOnly
   
-  override def toString = (command +: args).map {
+  override def toString: String = (command +: args).map {
     case bytes: Array[Byte] => UTF8StringReader.read(bytes)
     case x                  => x.toString
   }.mkString(" ")

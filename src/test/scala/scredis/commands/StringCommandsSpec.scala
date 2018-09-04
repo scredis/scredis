@@ -3,18 +3,14 @@ package scredis.commands
 import org.scalatest._
 import org.scalatest.concurrent._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-
 import scredis._
-import scredis.protocol.requests.StringRequests._
 import scredis.exceptions._
+import scredis.protocol.requests.StringRequests._
 import scredis.tags._
 import scredis.util.TestUtils._
 
-import scala.concurrent.duration._
-
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.language.postfixOps
-import scala.language.implicitConversions
+import scala.concurrent.duration._
 
 class StringCommandsSpec extends WordSpec
   with GivenWhenThen
@@ -26,7 +22,9 @@ class StringCommandsSpec extends WordSpec
   private val client = Client()
   private val SomeValue = "HelloWorld!虫àéç蟲"
 
-  override def beforeAll() {
+  val defaultTimeout: FiniteDuration = 500.milliseconds
+
+  override def beforeAll(): Unit = {
     client.lPush("LIST", "A").!
   }
 
@@ -601,7 +599,7 @@ class StringCommandsSpec extends WordSpec
       When("expireAfter is provided")
       Given("the target key does not exist")
       "successfully set the value at key and expire it" taggedAs (V2612) in {
-        client.set("KEY", SomeValue, ttlOpt = Some(500 milliseconds)).futureValue should be (true)
+        client.set("KEY", SomeValue, ttlOpt = Some(defaultTimeout)).futureValue should be (true)
         client.get("KEY").futureValue should contain (SomeValue)
         Thread.sleep(550)
         client.get("KEY").futureValue should be (empty)
@@ -635,7 +633,7 @@ class StringCommandsSpec extends WordSpec
       When("both expireAfter and a condition are provided")
       "succeed" taggedAs (V2612) in {
         client.set(
-          "KEY", "C", ttlOpt = Some(500 milliseconds), conditionOpt = Some(Condition.NX)
+          "KEY", "C", ttlOpt = Some(defaultTimeout), conditionOpt = Some(Condition.NX)
         ).futureValue should be (true)
         client.get("KEY").futureValue should contain ("C")
         Thread.sleep(550)

@@ -2,15 +2,13 @@ package scredis.commands
 
 import org.scalatest._
 import org.scalatest.concurrent._
-
 import scredis._
-import scredis.protocol.requests.SetRequests._
 import scredis.exceptions._
+import scredis.protocol.requests.SetRequests._
 import scredis.tags._
 import scredis.util.TestUtils._
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.duration._
 
 class SetCommandsSpec extends WordSpec
   with GivenWhenThen

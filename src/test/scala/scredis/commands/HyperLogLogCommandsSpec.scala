@@ -2,10 +2,9 @@ package scredis.commands
 
 import org.scalatest._
 import org.scalatest.concurrent._
-
 import scredis._
-import scredis.protocol.requests.HyperLogLogRequests._
 import scredis.exceptions._
+import scredis.protocol.requests.HyperLogLogRequests._
 import scredis.tags._
 import scredis.util.TestUtils._
 

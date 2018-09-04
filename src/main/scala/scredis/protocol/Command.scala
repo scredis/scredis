@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 abstract class Command(names: String*) {
   def encode(args: List[Any]): ByteBuffer = Protocol.encode(names.toList ::: args)
   def isReadOnly: Boolean = true
-  override def toString = names.mkString(" ")
+  override def toString: String = names.mkString(" ")
 }
 
 abstract class ZeroArgCommand(names: String*) extends Command(names: _*) {

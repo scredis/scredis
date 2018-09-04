@@ -2,16 +2,14 @@ package scredis.commands
 
 import org.scalatest._
 import org.scalatest.concurrent._
-
 import scredis._
-import scredis.protocol.requests.KeyRequests._
 import scredis.exceptions._
+import scredis.protocol.requests.KeyRequests._
 import scredis.tags._
 import scredis.util.TestUtils._
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
-import scala.language.postfixOps
 
 class KeyCommandsSpec extends WordSpec
   with GivenWhenThen
@@ -27,6 +25,8 @@ class KeyCommandsSpec extends WordSpec
   private var dumpedValue: Array[Byte] = _
 
   private val clientServerInfo = client.info("server").!
+
+  val defaultTimeout: FiniteDuration = 500.milliseconds
 
   private def setUpSortData(): Unit = {
     client.rPush("LIST", "1")
@@ -201,14 +201,14 @@ class KeyCommandsSpec extends WordSpec
       "return an error" taggedAs (V260) in {
         client.set("TO-MIGRATE", SomeValue)
         a [RedisErrorResponseException] should be thrownBy { 
-          client.migrate("TO-MIGRATE", "127.0.0.1", timeout = 500 milliseconds).!
+          client.migrate("TO-MIGRATE", "127.0.0.1", timeout = defaultTimeout).!
         }
       }
     }
     "migrating a key to a non-existing instance" should {
       "return an error" taggedAs (V260) in {
         a [RedisErrorResponseException] should be thrownBy { 
-          client.migrate("TO-MIGRATE", "127.0.0.1", 6378, timeout = 500 milliseconds).!
+          client.migrate("TO-MIGRATE", "127.0.0.1", 6378, timeout = defaultTimeout).!
         }
       }
     }
@@ -216,7 +216,7 @@ class KeyCommandsSpec extends WordSpec
       "succeed" taggedAs (V260) in {
         // Remove password on 6380
         client2.configSet("requirepass", "").futureValue should be (())
-        client.migrate("TO-MIGRATE", "127.0.0.1", 6380, timeout = 500 milliseconds).futureValue
+        client.migrate("TO-MIGRATE", "127.0.0.1", 6380, timeout = defaultTimeout).futureValue
         client.exists("TO-MIGRATE").futureValue should be (false)
         client2.get("TO-MIGRATE").futureValue should contain (SomeValue)
         // Set password back on 6380
@@ -226,7 +226,7 @@ class KeyCommandsSpec extends WordSpec
     "migrating a key to a valid instance in another database" should {
       "succeed" taggedAs (V260) in {
         client2.migrate(
-          "TO-MIGRATE", "127.0.0.1", 6379, database = 1, timeout = 500 milliseconds
+          "TO-MIGRATE", "127.0.0.1", 6379, database = 1, timeout = defaultTimeout
         ).futureValue
         client2.exists("TO-MIGRATE").futureValue should be (false)
         client.select(1).futureValue should be (())
@@ -384,7 +384,7 @@ class KeyCommandsSpec extends WordSpec
     "key exists and has a ttl" should {
       "return None" taggedAs (V260) in {
         client.pExpire("TO-TTL", 500)
-        client.pTtl("TO-TTL").futureValue.right.value should be <= (500L)
+        client.pTtl("TO-TTL").futureValue.right.value should be <= 500L
         client.del("TO-TTL")
       }
     }
@@ -410,7 +410,7 @@ class KeyCommandsSpec extends WordSpec
   Rename.toString when {
     "the key does not exist" should {
       "return an error" taggedAs (V100) in {
-        a [RedisErrorResponseException] should be thrownBy { 
+        a [RedisErrorResponseException] should be thrownBy {
           client.rename("sourceKey", "destKey").!
         }
       }
@@ -466,7 +466,7 @@ class KeyCommandsSpec extends WordSpec
             client.renameNX("sourceKey", "sourceKey").futureValue should be(false)
         } else if ( version >= "2.0.0" && version <= "3.0.0") {
           a [RedisErrorResponseException] should be thrownBy { 
-            client.renameNX("sourceKey", "sourceKey").futureValue should be(false)
+            client.renameNX("sourceKey", "sourceKey").!
           }
         } else {
           "when version unknown" is (pending)
@@ -499,7 +499,7 @@ class KeyCommandsSpec extends WordSpec
     }
     "applying a ttl" should {
       "restore the dumped value which should expire after the ttl" taggedAs (V260) in {
-        client.restore("RESTORED", dumpedValue, Some(500 milliseconds)).futureValue should be (())
+        client.restore("RESTORED", dumpedValue, Some(defaultTimeout)).futureValue should be (())
         client.get("RESTORED").futureValue should contain (SomeValue)
         Thread.sleep(600)
         client.get("RESTORED").futureValue should be (empty)

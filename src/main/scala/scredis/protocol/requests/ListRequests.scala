@@ -30,7 +30,7 @@ object ListRequests {
   
   case class BLPop[R: Reader](
     timeoutSeconds: Int, keys: String*
-  ) extends Request[Option[(String, R)]](BLPop, keys :+ timeoutSeconds) with Key {
+  ) extends Request[Option[(String, R)]](BLPop, (keys :+ timeoutSeconds: Seq[Any]) : _*) with Key {
     override def decode: PartialFunction[Response, Option[(String, R)]] = {
       case a: ArrayResponse => a.parsedAsPairs[String, R, List] {
         case b: BulkStringResponse => b.flattened[String]
@@ -43,7 +43,7 @@ object ListRequests {
   
   case class BRPop[R: Reader](
     timeoutSeconds: Int, keys: String*
-  ) extends Request[Option[(String, R)]](BRPop, keys :+ timeoutSeconds) with Key {
+  ) extends Request[Option[(String, R)]](BRPop, (keys :+ timeoutSeconds: Seq[Any]) : _*) with Key {
     override def decode: PartialFunction[Response, Option[(String, R)]] = {
       case a: ArrayResponse => a.parsedAsPairs[String, R, List] {
         case b: BulkStringResponse => b.flattened[String]

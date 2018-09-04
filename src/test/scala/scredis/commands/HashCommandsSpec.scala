@@ -2,10 +2,9 @@ package scredis.commands
 
 import org.scalatest._
 import org.scalatest.concurrent._
-
 import scredis._
-import scredis.protocol.requests.HashRequests._
 import scredis.exceptions._
+import scredis.protocol.requests.HashRequests._
 import scredis.tags._
 import scredis.util.TestUtils._
 

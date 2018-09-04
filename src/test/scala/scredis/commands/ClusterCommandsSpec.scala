@@ -33,13 +33,12 @@ class ClusterCommandsSpec extends WordSpec
       }
     }
   }
-
   ClusterCountFailureReports.toString when {
     "node ids are available" should {
-      val nodes = cluster.clusterNodes().futureValue
-      val nodeIds = Table("node", nodes.map{ node => node.nodeId}: _*)
-
       "return a number >= 0 for all nodes" in {
+        val nodes = cluster.clusterNodes().futureValue
+        val nodeIds = Table("node", nodes.map { node => node.nodeId }: _*)
+
         forAll(nodeIds) { id =>
           val failures = cluster.clusterCountFailureReports(id).futureValue
           failures should be >= 0l
@@ -81,12 +80,11 @@ class ClusterCommandsSpec extends WordSpec
 
   ClusterSlaves.toString when {
     "a master's id is known" should {
-
-      val nodes = cluster.clusterNodes().futureValue
-      val masterNodes = nodes.filter { node => node.flags.contains("master") }
-      val masters = Table("master", masterNodes:_*)
-
       "return slave information" in {
+        val nodes = cluster.clusterNodes().futureValue
+        val masterNodes = nodes.filter { node => node.flags.contains("master") }
+        val masters = Table("master", masterNodes:_*)
+
         forAll(masters) { master =>
           val slaves = cluster.clusterSlaves(master.nodeId).futureValue
           assert( slaves.forall { slave => slave.master.get == master.nodeId } )

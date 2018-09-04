@@ -2,7 +2,7 @@ package scredis.protocol.requests
 
 import org.scalatest._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import scredis.{Server, ClusterNode}
+import scredis.{ClusterNode, Server}
 
 class RequestSpec extends WordSpec with GeneratorDrivenPropertyChecks with Inside
   with GivenWhenThen

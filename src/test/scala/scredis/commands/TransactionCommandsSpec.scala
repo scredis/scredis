@@ -2,16 +2,14 @@ package scredis.commands
 
 import org.scalatest._
 import org.scalatest.concurrent._
-
 import scredis._
-import scredis.protocol.requests.TransactionRequests._
 import scredis.exceptions._
+import scredis.protocol.requests.TransactionRequests._
 import scredis.tags._
 import scredis.util.TestUtils._
 
-import scala.util.{ Success, Failure }
 import scala.concurrent.Future
-import scala.concurrent.duration._
+import scala.util.Success
 
 class TransactionCommandsSpec extends WordSpec
   with GivenWhenThen
