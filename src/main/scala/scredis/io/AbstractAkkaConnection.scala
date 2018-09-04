@@ -42,7 +42,7 @@ abstract class AbstractAkkaConnection(
     } else {
       passwordOpt = Some(password)
     }
-    case Select(database) => this.database = database
+    case Select(db) => database = db
     case ClientSetName(name) => if (name.isEmpty) {
       nameOpt = None
     } else {

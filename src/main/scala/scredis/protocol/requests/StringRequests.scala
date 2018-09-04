@@ -7,7 +7,6 @@ import scala.collection.generic.CanBuildFrom
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration
 import scala.language.higherKinds
-import scala.language.postfixOps
 
 object StringRequests {
   

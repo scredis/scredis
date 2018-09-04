@@ -2,9 +2,6 @@ package scredis.serialization
 
 import scredis.exceptions.RedisReaderException
 
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
-
 /**
  * Represents the base class of all readers. You can define new readers by extending this class and
  * implementing the `readImpl` method.

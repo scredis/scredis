@@ -1,15 +1,10 @@
 package scredis
 
-import com.typesafe.config.Config
-
 import akka.actor.ActorSystem
-
-import scredis.io.AkkaNonBlockingConnection
-import scredis.protocol.Protocol
+import com.typesafe.config.Config
 import scredis.commands._
-import scredis.exceptions._
+import scredis.io.AkkaNonBlockingConnection
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
 
 /**

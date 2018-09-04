@@ -1,9 +1,9 @@
 package scredis.commands
 
 import scredis.Subscription
-import scredis.io.{ Connection, SubscriberConnection }
-import scredis.protocol.requests.PubSubRequests._
 import scredis.exceptions.RedisInvalidArgumentException
+import scredis.io.SubscriberConnection
+import scredis.protocol.requests.PubSubRequests._
 
 import scala.concurrent.Future
 
@@ -26,7 +26,7 @@ trait SubscriberCommands { self: SubscriberConnection =>
    */
   def pSubscribe(patterns: String*)(subscription: Subscription): Future[Int] = {
     setSubscription(subscription)
-    if (!patterns.isEmpty) {
+    if (patterns.nonEmpty) {
       sendAsSubscriber(PSubscribe(patterns: _*))
     } else {
       Future.failed(RedisInvalidArgumentException("PSUBSCRIBE: patterns cannot be empty"))
@@ -61,7 +61,7 @@ trait SubscriberCommands { self: SubscriberConnection =>
    */
   def subscribe(channels: String*)(subscription: Subscription): Future[Int] = {
     setSubscription(subscription)
-    if (!channels.isEmpty) {
+    if (channels.nonEmpty) {
       sendAsSubscriber(Subscribe(channels: _*))
     } else {
       Future.failed(RedisInvalidArgumentException("SUBSCRIBE: channels cannot be empty"))

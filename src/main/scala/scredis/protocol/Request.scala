@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import scredis.exceptions._
 import scredis.serialization.UTF8StringReader
 
-import scala.concurrent.Promise
+import scala.concurrent.{Future, Promise}
 
 /** A trait for requests which operate on at least one key.
   * Needed to handle cluster sharding. */
@@ -20,7 +20,7 @@ abstract class Request[A](command: Command, args: Any*) {
   private var promise = Promise[A]()
   private var _buffer: ByteBuffer = null
   private var _bytes: Array[Byte] = null
-  def future = promise.future
+  def future: Future[A] = promise.future
   val repliesCount = 1
 
   /** Reset the state of this Request to reuse it. */

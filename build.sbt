@@ -1,12 +1,12 @@
 
+name := "scredis"
 organization := "com.github.scredis"
 
-name := "scredis"
-
 scalaVersion := "2.12.6"
-crossScalaVersions := Seq("2.11.12", "2.12.6")
+crossScalaVersions := Seq("2.11.12", scalaVersion.value)
 
-scalacOptions ++= Seq("-deprecation")
+scalacOptions ++= Seq("-deprecation", "-feature", "-Xfatal-warnings",
+  "-Ywarn-dead-code", "-Ywarn-infer-any", "-Ywarn-unused-import")
 
 enablePlugins(BuildInfoPlugin)
 
@@ -15,13 +15,14 @@ buildInfoPackage := "scredis"
 buildInfoOptions += BuildInfoOption.BuildTime
 
 libraryDependencies ++= Seq(
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
-  "com.typesafe" % "config" % "1.3.1",
-  "com.typesafe.akka" %% "akka-actor" % "2.5.3",
-  "org.scalatest" %% "scalatest" % "3.0.3" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.13.5" % "test",
-  "com.storm-enroute" %% "scalameter" % "0.8.2" % "test",
-  "org.slf4j" % "slf4j-simple" % "1.7.25" % "test"
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
+  "com.typesafe" % "config" % "1.3.3",
+  "com.typesafe.akka" %% "akka-actor" % "2.5.16",
+
+  "org.scalatest" %% "scalatest" % "3.0.5" % Test,
+  "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
+  "com.storm-enroute" %% "scalameter" % "0.8.2" % Test,
+  "org.slf4j" % "slf4j-simple" % "1.7.25" % Test
 )
 
 // required so that test actor systems don't get messed up
@@ -35,8 +36,6 @@ licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"
 bintrayVcsUrl := Some("https://github.com/scredis/scredis.git")
 bintrayRepository := "maven"
 bintrayPackageLabels := Seq("redis")
-
-scalacOptions += "-feature"
 
 pomExtra :=
   <url>https://github.com/scredis/scredis</url>

@@ -1,10 +1,10 @@
 package scredis
 
 import scredis.protocol.Request
-import scredis.protocol.requests.TransactionRequests.{ Multi, Exec }
+import scredis.protocol.requests.TransactionRequests.{Exec, Multi}
 
-import scala.util.{ Try, Success, Failure }
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success}
 
 private[scredis] final case class Transaction (requests: Seq[Request[_]]) {
   val multiRequest = Multi()

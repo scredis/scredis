@@ -3,10 +3,9 @@ package scredis.commands
 import scredis.io.NonBlockingConnection
 import scredis.protocol.Decoder
 import scredis.protocol.requests.ScriptingRequests._
-import scredis.serialization.{ Reader, Writer }
+import scredis.serialization.Writer
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 /**
  * This trait implements scripting commands.

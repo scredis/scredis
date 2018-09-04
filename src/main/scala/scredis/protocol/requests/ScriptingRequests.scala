@@ -1,7 +1,7 @@
 package scredis.protocol.requests
 
 import scredis.protocol._
-import scredis.serialization.{ Reader, Writer }
+import scredis.serialization.Writer
 
 object ScriptingRequests {
   

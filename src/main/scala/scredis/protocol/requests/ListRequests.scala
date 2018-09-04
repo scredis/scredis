@@ -1,10 +1,10 @@
 package scredis.protocol.requests
 
-import scala.language.higherKinds
 import scredis.protocol._
-import scredis.serialization.{ Reader, Writer }
+import scredis.serialization.{Reader, Writer}
 
 import scala.collection.generic.CanBuildFrom
+import scala.language.higherKinds
 
 object ListRequests {
   
@@ -30,21 +30,21 @@ object ListRequests {
   
   case class BLPop[R: Reader](
     timeoutSeconds: Int, keys: String*
-  ) extends Request[Option[(String, R)]](BLPop, keys :+ timeoutSeconds: _*) with Key {
-    override def decode = {
+  ) extends Request[Option[(String, R)]](BLPop, keys :+ timeoutSeconds) with Key {
+    override def decode: PartialFunction[Response, Option[(String, R)]] = {
       case a: ArrayResponse => a.parsedAsPairs[String, R, List] {
         case b: BulkStringResponse => b.flattened[String]
       } {
         case b: BulkStringResponse => b.flattened[R]
       }.headOption
     }
-    override val key = keys.head
+    override val key: String = keys.head
   }
   
   case class BRPop[R: Reader](
     timeoutSeconds: Int, keys: String*
-  ) extends Request[Option[(String, R)]](BRPop, keys :+ timeoutSeconds: _*) with Key {
-    override def decode = {
+  ) extends Request[Option[(String, R)]](BRPop, keys :+ timeoutSeconds) with Key {
+    override def decode: PartialFunction[Response, Option[(String, R)]] = {
       case a: ArrayResponse => a.parsedAsPairs[String, R, List] {
         case b: BulkStringResponse => b.flattened[String]
       } {
