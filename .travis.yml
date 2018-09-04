@@ -4,19 +4,19 @@ jdk: oraclejdk8
 
 dist: trusty
 
-git:
-  quiet: true
-  submodules: false
-
 services:
   - redis-server
 
 before_script:
   - echo "REDIS VERSION:"
   - redis-server --version
+  - redis-server ./src/test/resources/redis-6380.conf
 
 script:
   - sbt +compile && sbt test
+
+after_script:
+  - kill `cat /var/run/redis8360.pid`
 
 after_success:
   - '[[ $TRAVIS_BRANCH == "master" ]] || [[ $TRAVIS_BRANCH =~ ^v[0-9.]+$ ]] && sbt "+ publish"'

@@ -2,8 +2,8 @@ package scredis.protocol
 
 
 import akka.util.ByteString
-import org.scalatest._
 import org.scalacheck.Gen
+import org.scalatest._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 class ProtocolSpec extends WordSpec with GeneratorDrivenPropertyChecks with Inside

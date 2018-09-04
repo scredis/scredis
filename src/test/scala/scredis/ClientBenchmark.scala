@@ -1,3 +1,4 @@
+/*
 package scredis
 
 import org.scalameter.api._
@@ -6,7 +7,6 @@ import akka.actor.ActorSystem
 
 import scala.concurrent.{ Future, Await }
 import scala.concurrent.duration._
-/*
 object ClientBenchmark extends PerformanceTest {
   
   private var system: ActorSystem = _

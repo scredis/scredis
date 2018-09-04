@@ -2,11 +2,10 @@ package scredis.serialization
 
 import org.scalatest._
 import org.scalatest.concurrent._
-
 import scredis._
 import scredis.exceptions._
-import scredis.util.TestUtils._
 import scredis.tags._
+import scredis.util.TestUtils._
 
 class SerializationSpec extends WordSpec
   with GivenWhenThen
