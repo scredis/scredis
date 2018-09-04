@@ -4,12 +4,19 @@ jdk: oraclejdk8
 
 dist: trusty
 
+git:
+  quiet: true
+  submodules: false
+
 services:
   - redis-server
 
+before_script:
+  - echo "REDIS VERSION:"
+  - redis-server --version
+
 script:
-  - sbt -Dfile.encoding=UTF8 +compile
-  - sbt -Dfile.encoding=UTF8 test
+  - sbt +compile && sbt test
 
 after_success:
   - '[[ $TRAVIS_BRANCH == "master" ]] || [[ $TRAVIS_BRANCH =~ ^v[0-9.]+$ ]] && sbt "+ publish"'
