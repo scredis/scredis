@@ -37,6 +37,7 @@ pomIncludeRepository := { _ => false }
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))
 
 bintrayVcsUrl := Some("https://github.com/scredis/scredis.git")
+bintrayOrganization := Some("scredis")
 bintrayRepository := "maven"
 bintrayPackageLabels := Seq("redis")
 
