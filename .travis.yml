@@ -9,7 +9,7 @@ services:
 
 before_script:
   - redis-server --version
-  - pwd && ls
+  - mkdir /tmp/redis-6380
   - redis-server ./src/test/resources/redis-6380.conf
 
 script:
