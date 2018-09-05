@@ -35,6 +35,10 @@ publishMavenStyle := true
 publishArtifact in Test := false
 pomIncludeRepository := { _ => false }
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))
+scmInfo += Some(ScmInfo(
+  "https://github.com/scredis/scredis.git",
+  "scm:https://github.com/scredis/scredis.git"
+))
 
 bintrayVcsUrl := Some("https://github.com/scredis/scredis.git")
 bintrayOrganization := Some("scredis")
