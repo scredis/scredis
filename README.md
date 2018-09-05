@@ -34,17 +34,17 @@ It has been (and still is) extensively used in production at Livestream.
 
 ### Binaries
 
-Scredis 2.1+ is compatible with Scala 2.11 and 2.12. Binary releases are hosted on the Sonatype Central Repository.
+Scredis 2.1.7+ is compatible with Scala 2.11 and 2.12.
+Binary releases are hosted on the Sonatype Central Repository.
 
 ```scala
-// TODO this version is not yet published
-libraryDependencies += "com.github.scredis" %% "scredis" % "2.1.1"
+libraryDependencies += "com.github.scredis" %% "scredis" % "2.1.7"
 ```
 
 Snapshots / development versions are hosted on a separate bintray repository.
 
 ```scala
-resolvers += Resolver.bintrayRepo("jastice","maven")
+resolvers += Resolver.bintrayRepo("scredis","maven")
 
 libraryDependencies += "com.github.scredis" %% "scredis" % "<version>"
 ```
