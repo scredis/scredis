@@ -41,16 +41,8 @@ bintrayOrganization := Some("scredis")
 bintrayRepository := "maven"
 bintrayPackageLabels := Seq("redis")
 
-pomExtra :=
-  <url>https://github.com/scredis/scredis</url>
-  <scm>
-    <url>https://github.com/scredis/scredis.git</url>
-    <connection>scm:https://github.com/scredis/scredis.git</connection>
-  </scm>
-
 parallelExecution in Test := false
 
 testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
-
