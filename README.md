@@ -1,4 +1,4 @@
-[ ![snapshot](https://api.bintray.com/packages/jastice/maven/scredis/images/download.svg) ](https://bintray.com/jastice/maven/scredis/_latestVersion)
+[ ![snapshot](https://api.bintray.com/packages/scredis/maven/scredis/images/download.svg) ](https://bintray.com/scredis/maven/scredis/_latestVersion)
 [![Build Status](https://travis-ci.org/scredis/scredis.svg?branch=master)](https://travis-ci.org/scredis/scredis)
 
 # scredis
