@@ -36,10 +36,9 @@ trait ListCommands { self: NonBlockingConnection =>
    * Inserts an element before or after another element in a list.
    *
    * @param key list key
+   * @param position tell if a new value should be placed after of before pivot
    * @param pivot value after/before which the element should be inserted
    * @param value element to be inserted
-   * @param after when true, inserts the element after the pivot, when false the element is inserted
-   * before the pivot (default is true, i.e. after)
    * @return the length of the list after the insert operation, or None if the index is out of range
    * @throws $e if key contains a non-list value
    *
