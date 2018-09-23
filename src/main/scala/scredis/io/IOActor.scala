@@ -1,12 +1,10 @@
 package scredis.io
 
 import java.net.InetSocketAddress
-import java.util.LinkedList
 
 import akka.actor._
 import akka.io.{IO, Tcp}
 import akka.util.ByteString
-import com.typesafe.scalalogging.LazyLogging
 import scredis.exceptions.RedisIOException
 import scredis.protocol.{Protocol, Request}
 
@@ -21,7 +19,7 @@ class IOActor(
   maxWriteBatchSize: Int,
   tcpSendBufferSizeHint: Int,
   tcpReceiveBufferSizeHint: Int
-) extends Actor with LazyLogging {
+) extends Actor with ActorLogging {
   
   import IOActor._
   import Tcp._
@@ -30,19 +28,19 @@ class IOActor(
   private val scheduler = context.system.scheduler
   
   private val bufferPool = new scredis.util.BufferPool(
-    1,
-    maxWriteBatchSize + (0.25 * maxWriteBatchSize).toInt
+    maxCapacity = 1,
+    maxBufferSize = maxWriteBatchSize + (0.25 * maxWriteBatchSize).toInt
   )
   
   private var batch: Seq[Request[_]] = Nil
   private var canWrite = false
   private var timeoutCancellableOpt: Option[Cancellable] = None
   
-  protected val requests = new LinkedList[Request[_]]()
+  protected val requests = new java.util.LinkedList[Request[_]]()
   protected var connection: ActorRef = _
   
   protected def connect(): Unit = {
-    logger.info(s"Connecting to $remote")
+    log.info(s"Connecting to $remote")
     IO(Tcp) ! Connect(
       remoteAddress = remote,
       options = List[akka.io.Inet.SocketOption](
@@ -85,15 +83,14 @@ class IOActor(
     requests.foreach { request =>
       request.encoded match {
         case Left(bytes) => buffer.put(bytes)
-        case Right(buff) => {
+        case Right(buff) =>
           buffer.put(buff)
           Protocol.releaseBuffer(buff)
-        }
       }
     }
     buffer.flip()
     val data = ByteString(buffer)
-    logger.trace(s"Writing data: ${data.decodeString("UTF-8")}")
+    log.debug(s"Writing data: ${data.decodeString("UTF-8")}")
     connection ! Write(data, WriteAck)
     bufferPool.release(buffer)
     canWrite = false
@@ -101,7 +98,7 @@ class IOActor(
   }
   
   protected def write(): Unit = {
-    if (!this.batch.isEmpty) {
+    if (this.batch.nonEmpty) {
       requeueBatch()
     }
     if (requests.isEmpty) {
@@ -121,14 +118,13 @@ class IOActor(
   
   protected def always: Receive = {
     case Shutdown => abort()
-    case Terminated(_) => {
+    case Terminated(_) =>
       listenerActor ! ListenerActor.Shutdown
       become(awaitingShutdown)
-    }
   }
   
   protected def fail: Receive = {
-    case x => logger.error(s"Received unhandled message: $x")
+    case x => log.error(s"Received unhandled message: $x")
   }
   
   protected def become(state: Receive): Unit = context.become(state orElse always orElse fail)
@@ -141,8 +137,8 @@ class IOActor(
   def receive: Receive = fail
   
   def connecting: Receive = {
-    case Connected(remote, local) => {
-      logger.info(s"Connected to $remote")
+    case Connected(remoteConnected, localAddress) =>
+      log.info(s"Connected to $remoteConnected from $localAddress")
       connection = sender
       connection ! Register(listenerActor)
       context.watch(connection)
@@ -152,73 +148,62 @@ class IOActor(
       requeueBatch()
       write()
       become(connected)
-    }
-    case CommandFailed(_: Connect) => {
-      logger.error(s"Could not connect to $remote: Command failed")
+    case CommandFailed(_: Connect) =>
+      log.error(s"Could not connect to $remote: Command failed")
       timeoutCancellableOpt.foreach(_.cancel())
       context.stop(self)
-    }
-    case ConnectTimeout => {
-      logger.error(s"Could not connect to $remote: Connect timeout")
+    case ConnectTimeout =>
+      log.error(s"Could not connect to $remote: Connect timeout")
       context.stop(self)
-    }
   }
   
   def connected: Receive = {
-    case request: Request[_] => {
+    case request: Request[_] =>
       requests.addLast(request)
       if (canWrite) {
         write()
       }
-    }
-    case WriteAck => {
+    case WriteAck =>
       batch = Nil
       write()
-    }
-    case CommandFailed(_: Write) => {
-      logger.error(s"Write failed")
+    case CommandFailed(_: Write) =>
+      log.error(s"Write failed")
       write()
-    }
   }
   
   def awaitingShutdown: Receive = {
-    case request: Request[_] => {
-      request.failure(RedisIOException("Connection is beeing shutdown"))
+    case request: Request[_] =>
+      request.failure(RedisIOException("Connection is being shutdown"))
       listenerActor ! ListenerActor.Remove(1)
-    }
     case WriteAck =>
     case CommandFailed(_: Write) =>
     case ShutdownAck => context.stop(self)
   }
   
   def awaitingAbort: Receive = {
-    case request: Request[_] => {
-      request.failure(RedisIOException("Connection is beeing reset"))
+    case request: Request[_] =>
+      request.failure(RedisIOException("Connection is being reset"))
       listenerActor ! ListenerActor.Remove(1)
-    }
     case WriteAck =>
     case CommandFailed(_: Write) =>
-    case AbortAck => {
+    case AbortAck =>
       connection ! Abort
       timeoutCancellableOpt = Some {
         scheduler.scheduleOnce(3 seconds, self, AbortTimeout)
       }
       become(aborting)
-    }
   }
   
   def aborting: Receive = {
     case WriteAck =>
     case CommandFailed(_: Write) =>
     case Aborted =>
-    case Terminated(_) => {
+    case Terminated(_) =>
       timeoutCancellableOpt.foreach(_.cancel())
       context.stop(self)
-    }
-    case AbortTimeout => {
-      logger.error(s"A timeout occurred while resetting the connection")
+    case AbortTimeout =>
+      log.error(s"A timeout occurred while resetting the connection")
       context.stop(connection)
-    }
   }
   
 }
