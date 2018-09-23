@@ -1,8 +1,10 @@
 package scredis.protocol.requests
 
+import java.nio.charset.StandardCharsets
+
 import scala.language.postfixOps
 import scala.language.higherKinds
-import scredis.protocol.{ Command => PCommand, _ }
+import scredis.protocol.{Command => PCommand, _}
 import scredis.exceptions.RedisProtocolException
 import scredis.serialization.Writer
 
@@ -355,12 +357,20 @@ object ServerRequests {
   ) extends Request[CC[scredis.SlowLogEntry]](
     SlowLogGet, countOpt.toSeq: _*
   ) {
-    override def decode = {
+    override def decode: PartialFunction[Response, CC[scredis.SlowLogEntry]] = {
       case a: ArrayResponse =>
         a.parsed[scredis.SlowLogEntry, CC] {
         case a: ArrayResponse => {
           val data = a.parsed[Any, IndexedSeq] {
             case IntegerResponse(value) => value
+            case BulkStringResponse(valueOpt) =>
+              valueOpt.flatMap(bytes => {
+                if (bytes.length > 0) {
+                  Some(new String(bytes, StandardCharsets.UTF_8))
+                } else {
+                  None
+                }
+              })
             case a: ArrayResponse => a.parsed[String, List] {
               case b: BulkStringResponse => b.flattened[String]
             }
@@ -370,8 +380,8 @@ object ServerRequests {
             timestampSeconds = data(1).toString.toLong,
             executionTime = data(2).toString.toLong microseconds,
             command = data(3).asInstanceOf[List[String]],
-            clientIpAddress = None,
-            clientName = None
+            clientIpAddress = data(4).asInstanceOf[Option[String]],
+            clientName = data(5).asInstanceOf[Option[String]]
           )
         }
       }

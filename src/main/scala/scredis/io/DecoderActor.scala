@@ -29,7 +29,6 @@ class DecoderActor extends Actor with ActorLogging {
       while (requests.hasNext) {
         val request = requests.next()
         try {
-
           val response = Protocol.decode(buffer)
           request.complete(response)
         } catch {
