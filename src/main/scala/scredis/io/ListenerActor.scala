@@ -162,7 +162,7 @@ class ListenerActor(
   }
   
   protected def receiveData(data: ByteString): Int = {
-    log.info(s"[!!] Received data: ${data.decodeString("UTF-8").replace("\r\n", "\\r\\n")}")
+    log.debug(s"Received data: ${data.decodeString("UTF-8").replace("\r\n", "\\r\\n")}")
     
     timeoutCancellableOpt.foreach(_.cancel())
     timeoutCancellableOpt = None

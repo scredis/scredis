@@ -20,8 +20,10 @@ class ServerCommandsSpec extends WordSpec
   private val client2 = Client(port = 6380, passwordOpt = Some("foobar"))
   private val client3 = Client(port = 6380, passwordOpt = Some("foobar"))
 
-  private val clients = List(client, client1, client2, client3)
-  
+  private val clients = List(client, client1)
+
+  client.configSet("slowlog-log-slower-than", 0).futureValue should be (())
+
   BGRewriteAOF.toString should {
     "succeed" taggedAs (V100) in {
       client.bgRewriteAOF().futureValue should be (())
@@ -421,13 +423,15 @@ class ServerCommandsSpec extends WordSpec
     "count is not specified" should {
       "return all slowlog entries" taggedAs (V2212) in {
         val entries = client.slowLogGet().!
-        entries.size should be >= (0)
+        entries.size should be >= (1)
+        entries.head.clientIpAddress.get should startWith ("127.0.0.1")
+        entries.head.clientName should be (None)
       }
     }
     "count is specified" should {
       "return at most count slowlog entries" taggedAs (V2212) in {
         val entries = client.slowLogGet(countOpt = Some(3)).!
-        entries.size should be >= (0)
+        entries.size should be >= (1)
         entries.size should be <= (3)
       }
     }
