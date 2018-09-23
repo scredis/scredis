@@ -6,8 +6,8 @@
 Scredis is a reactive, non-blocking and ultra-fast Scala [Redis](http://redis.io) client built on top of Akka IO. 
 It has been (and still is) extensively used in production at Livestream.
 
-* [Documentation](https://github.com/Livestream/scredis/wiki)
-* [Scaladoc](http://livestream.github.io/scredis/api/snapshot/)
+* [Documentation](https://github.com/scredis/scredis/wiki)
+* [Scaladoc](http://scredis.github.io/scredis/api/snapshot/)
 
 ## Features
 * Supports all Redis commands up to v3.0.0
@@ -88,7 +88,7 @@ redis.quit()
 
 The following benchmarks have been performed using [ScalaMeter](http://scalameter.github.io/) with the 
 `SeparateJvmsExecutor`, configured with `Warmer.Default`, `Measurer.Default` and `Aggregator.average`.
-The source code can be found [here](https://github.com/Livestream/scredis/blob/master/src/test/scala/scredis/ClientBenchmark.scala).
+The source code can be found [here](https://github.com/scredis/scredis/blob/master/src/test/scala/scredis/ClientBenchmark.scala).
 
 ### Hardware
 * MacBook Pro (15-inch, Early 2011)

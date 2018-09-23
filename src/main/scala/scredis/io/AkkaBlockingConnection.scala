@@ -50,7 +50,7 @@ abstract class AkkaBlockingConnection(
   
   private val lock = new ReentrantLock()
   
-  protected implicit val listenerActor = system.actorOf(
+  protected val listenerActor = system.actorOf(
     Props(
       classOf[ListenerActor],
       host,
@@ -88,7 +88,7 @@ abstract class AkkaBlockingConnection(
   ): Try[A] = withLock {
     logger.debug(s"Sending blocking request: $request")
     updateState(request)
-    val future = Protocol.send(request)
+    val future = Protocol.send(request, listenerActor)
     Try(Await.result(future, timeout))
   }
   

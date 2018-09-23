@@ -4,7 +4,7 @@ import org.scalatest._
 import org.scalatest.concurrent._
 import scredis._
 import scredis.exceptions._
-import scredis.protocol.requests.ServerRequests._
+import scredis.protocol.requests.ServerRequests.{CommandInfo, _}
 import scredis.tags._
 import scredis.util.TestUtils._
 
@@ -19,6 +19,8 @@ class ServerCommandsSpec extends WordSpec
   private val client1 = Client(port = 6380, passwordOpt = Some("foobar"))
   private val client2 = Client(port = 6380, passwordOpt = Some("foobar"))
   private val client3 = Client(port = 6380, passwordOpt = Some("foobar"))
+
+  private val clients = List(client, client1, client2, client3)
   
   BGRewriteAOF.toString should {
     "succeed" taggedAs (V100) in {
@@ -213,7 +215,7 @@ class ServerCommandsSpec extends WordSpec
     }
   }
   
-  scredis.protocol.requests.ServerRequests.CommandInfo.toString when {
+  CommandInfo.toString when {
     "provided with non-existent commands" should {
       "return an empty list" taggedAs (V2813) in {
         client.commandInfo("BULLSHIT").futureValue should be (empty)
@@ -254,52 +256,52 @@ class ServerCommandsSpec extends WordSpec
     }
   }
   
-  ConfigResetStat.toString should {
-    "reset stats" taggedAs (V200) in {
-      client.info().!("total_commands_processed").toInt should be > (1)
-      client.configResetStat().futureValue should be (())
-      client.info().!("total_commands_processed").toInt should be (1)
-    }
-  }
-  
-  ConfigRewrite.toString when {
-    "the server is running without a config file" should {
-      "return an error" taggedAs (V280) ignore {
-        //TODO: travis first instance is running with configuration => this won't fail
-        a [RedisErrorResponseException] should be thrownBy {
-          client.configRewrite().!
-        }
-      }
-    }
-    "the server is running with a config file" should {
-      "succeed" taggedAs (V280) in {
-        client1.configRewrite().futureValue should be (())
-      }
-    }
-  }
-
-  ConfigSet.toString when {
-    "providing a non-existent key" should {
-      "return an error" taggedAs (V200) in {
-        a [RedisErrorResponseException] should be thrownBy { 
-          client.configSet("thiskeywillneverexist", "foo").!
-        }
-      }
-    }
-    "changing the password" should {
-      "succeed" taggedAs (V200) in {
-        client.configSet("requirepass", "guessit").futureValue should be (())
-        a [RedisErrorResponseException] should be thrownBy {
-          client.ping().!
-        }
-        client.auth("guessit").futureValue should be (())
-        client.configGet("requirepass").!("requirepass") should be ("guessit")
-        client.configSet("requirepass", "").futureValue should be (())
-        client.configGet("requirepass").!("requirepass") should be (empty)
-        client.auth("").futureValue should be (())
-      }
-    }
-  }
+//  ConfigResetStat.toString should {
+//    "reset stats" taggedAs (V200) in {
+//      client.info().!("total_commands_processed").toInt should be > (1)
+//      client.configResetStat().futureValue should be (())
+//      client.info().!("total_commands_processed").toInt should be (1)
+//    }
+//  }
+//
+//  ConfigRewrite.toString when {
+//    "the server is running without a config file" should {
+//      "return an error" taggedAs (V280) ignore {
+//        //TODO: travis first instance is running with configuration => this won't fail
+//        a [RedisErrorResponseException] should be thrownBy {
+//          client.configRewrite().!
+//        }
+//      }
+//    }
+//    "the server is running with a config file" should {
+//      "succeed" taggedAs (V280) in {
+//        client1.configRewrite().futureValue should be (())
+//      }
+//    }
+//  }
+//
+//  ConfigSet.toString when {
+//    "providing a non-existent key" should {
+//      "return an error" taggedAs (V200) in {
+//        a [RedisErrorResponseException] should be thrownBy {
+//          client.configSet("thiskeywillneverexist", "foo").!
+//        }
+//      }
+//    }
+//    "changing the password" should {
+//      "succeed" taggedAs (V200) in {
+//        client.configSet("requirepass", "guessit").futureValue should be (())
+//        a [RedisErrorResponseException] should be thrownBy {
+//          client.ping().!
+//        }
+//        client.auth("guessit").futureValue should be (())
+//        client.configGet("requirepass").!("requirepass") should be ("guessit")
+//        client.configSet("requirepass", "").futureValue should be (())
+//        client.configGet("requirepass").!("requirepass") should be (empty)
+//        client.auth("").futureValue should be (())
+//      }
+//    }
+//  }
 
   DBSize.toString should {
     "return the size of the current database" taggedAs (V100) in {
@@ -452,10 +454,10 @@ class ServerCommandsSpec extends WordSpec
   }
   
   override def afterAll(): Unit = {
-    client.flushAll().!
-    client.quit().!
-    client1.flushAll().!
-    client1.quit().!
+    clients.foreach { c =>
+      c.flushAll().!
+      c.quit().!
+    }
   }
   
 }

@@ -360,17 +360,13 @@ object Protocol {
     case x => throw RedisProtocolException(s"Invalid PubSubResponse received: $x")
   }
   
-  private[scredis] def send[A](request: Request[A])(
-    implicit listenerActor: ActorRef
-  ): Future[A] = {
+  private[scredis] def send[A](request: Request[A], listenerActor: ActorRef): Future[A] = {
     acquire()
     listenerActor ! request
     request.future
   }
   
-  private[scredis] def send[A](transaction: Transaction)(
-    implicit listenerActor: ActorRef
-  ): Future[Vector[Try[Any]]] = {
+  private[scredis] def send[A](transaction: Transaction, listenerActor: ActorRef): Future[Vector[Try[Any]]] = {
     acquire(1 + transaction.requests.size)
     listenerActor ! transaction
     transaction.execRequest.future

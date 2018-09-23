@@ -1,46 +1,44 @@
 package scredis.io
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorLogging}
 import akka.util.ByteString
-import com.typesafe.scalalogging.LazyLogging
 import scredis.exceptions.RedisProtocolException
 import scredis.protocol.{ErrorResponse, Protocol, Request}
 import scredis.{PubSubMessage, Subscription}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DecoderActor extends Actor with LazyLogging {
+class DecoderActor extends Actor with ActorLogging {
   
   import DecoderActor._
   
   private var subscriptionOpt: Option[Subscription] = None
   
   def receive: Receive = {
-    case Partition(data, requests, skip) => {
+    case Partition(data, requests, skip) =>
       val buffer = data.asByteBuffer
-      
+
       for (i <- 1 to skip) {
         try {
           Protocol.decode(buffer)
         } catch {
-          case e: Throwable => logger.error("Could not decode response", e)
+          case e: Throwable => log.error("Could not decode response", e)
         }
       }
-      
+
       while (requests.hasNext) {
         val request = requests.next()
         try {
+
           val response = Protocol.decode(buffer)
           request.complete(response)
         } catch {
-          case e: Throwable => {
-            logger.error("Could not decode response", e)
+          case e: Throwable =>
+            log.error("Could not decode response", e)
             request.failure(RedisProtocolException("Could not decode response", e))
-          }
         }
       }
-    }
-    case SubscribePartition(data) => {
+    case SubscribePartition(data) =>
       val buffer = data.asByteBuffer
       while (buffer.remaining > 0) {
         try {
@@ -67,26 +65,21 @@ class DecoderActor extends Actor with LazyLogging {
             case Left(_) =>
             case Right(message) => subscriptionOpt match {
               case Some(subscription) => if (subscription.isDefinedAt(message)) {
-                Future {
-                  subscription.apply(message)
-                }(ExecutionContext.global)
+                Future {subscription.apply(message)}(ExecutionContext.global)
               } else {
-                logger.debug(s"Received unregistered PubSubMessage: $message")
+                log.debug(s"Received unregistered PubSubMessage: $message")
               }
-              case None => logger.error("Received SubscribePartition without any subscription")
+              case None => log.error("Received SubscribePartition without any subscription")
             }
           }
         } catch {
-          case e: Throwable => logger.error(
-            s"Could not decode PubSubMessage: " 
-              +s"${data.decodeString("UTF-8").replace("\r\n", "\\r\\n")}",
-            e
-          )
+          case e: Throwable =>
+            val msg = data.decodeString("UTF-8").replace("\r\n", "\\r\\n")
+            log.error(s"Could not decode PubSubMessage: $msg", e)
         }
       }
-    }
     case Subscribe(subscription) => subscriptionOpt = Some(subscription)
-    case x => logger.error(s"Received unexpected message: $x")
+    case x => log.error(s"Received unexpected message: $x")
   }
   
 }

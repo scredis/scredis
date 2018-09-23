@@ -8,3 +8,4 @@ target/
 appendonly.aof
 dump.rdb
 tmp/
+logs/

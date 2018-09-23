@@ -278,7 +278,9 @@ package object scredis {
     uid: Long,
     timestampSeconds: Long,
     executionTime: FiniteDuration,
-    command: Seq[String]
+    command: Seq[String],
+    clientIpAddress: Option[String],
+    clientName: Option[String]
   )
   
   /**

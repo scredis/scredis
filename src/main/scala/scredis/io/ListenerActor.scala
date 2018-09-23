@@ -7,7 +7,6 @@ import akka.actor._
 import akka.io.Tcp
 import akka.routing._
 import akka.util.ByteString
-import com.typesafe.scalalogging.LazyLogging
 import scredis.Transaction
 import scredis.exceptions.RedisIOException
 import scredis.protocol.requests.ConnectionRequests.{Auth, Quit, Select}
@@ -35,12 +34,12 @@ class ListenerActor(
   akkaIODispatcherPath: String,
   akkaDecoderDispatcherPath: String,
   failCommandOnConnecting:Boolean
-) extends Actor with LazyLogging {
+) extends Actor with ActorLogging {
   
   import ListenerActor._
   import context.dispatcher
   
-  override val supervisorStrategy = OneForOneStrategy() {
+  override val supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {
     case e: Exception => SupervisorStrategy.Stop
   }
   
@@ -110,10 +109,9 @@ class ListenerActor(
             passwordOpt = Some(password)
             doSend(auth)
           }
-          case select @ Select(db) => {
+          case select @ Select(db) =>
             database = db
             doSend(select)
-          }
           case setName @ ServerRequests.ClientSetName(name) => if (name.isEmpty) {
             nameOpt = None
             doSend(setName)
@@ -121,13 +119,12 @@ class ListenerActor(
             nameOpt = Some(name)
             doSend(setName)
           }
-          case request @ (Quit() | ServerRequests.Shutdown(_)) => {
+          case request @ (Quit() | ServerRequests.Shutdown(_)) =>
             isShuttingDown = true
             this.isShuttingDown = true
             doSend(request)
             become(shuttingDown)
             // FIXME shutdown request does not complete on success
-          }
           case _ => doSend(request)
         }
       }
@@ -164,8 +161,8 @@ class ListenerActor(
     decoders.route(DecoderActor.Partition(data, requests.toList.iterator, skip), self)
   }
   
-  protected def receive(data: ByteString): Int = {
-    logger.debug(s"Received data: ${data.decodeString("UTF-8").replace("\r\n", "\\r\\n")}")
+  protected def receiveData(data: ByteString): Int = {
+    log.info(s"[!!] Received data: ${data.decodeString("UTF-8").replace("\r\n", "\\r\\n")}")
     
     timeoutCancellableOpt.foreach(_.cancel())
     timeoutCancellableOpt = None
@@ -197,21 +194,18 @@ class ListenerActor(
   }
   
   protected def unhandled: Receive = {
-    case x => logger.error(s"Received unexpected message: $x")
+    case x => log.error(s"Received unexpected message: $x")
   }
   
   protected def always: Receive = {
-    case Remove(count) => for (i <- 1 to count) {
-      requests.pop()
-    }
-    case Abort => {
+    case Remove(count) =>
+      (1 to count).foreach(_ => requests.pop())
+    case Abort =>
       ioActor ! IOActor.AbortAck
       become(reconnecting)
-    }
-    case Shutdown => {
+    case Shutdown =>
       ioActor ! IOActor.ShutdownAck
       become(reconnecting)
-    }
     case _: Tcp.ConnectionClosed =>
   }
   
@@ -224,13 +218,12 @@ class ListenerActor(
   
   protected def queue: Receive = {
     case request: Request[_] => queuedRequests.addLast(request)
-    case t @ Transaction(requests) => {
+    case t @ Transaction(requests) =>
       queuedRequests.addLast(t.multiRequest)
       requests.foreach { request =>
         queuedRequests.addLast(request)
       }
       queuedRequests.addLast(t.execRequest)
-    }
   }
   
   protected def send: Receive = {
@@ -253,7 +246,7 @@ class ListenerActor(
   }
   
   protected def handleReceiveTimeout(): Unit = {
-    logger.error("Receive timeout")
+    log.error("Receive timeout")
     isReceiveTimeout = true
     remainingByteStringOpt = None
     timeoutCancellableOpt = None
@@ -280,12 +273,11 @@ class ListenerActor(
   def receive: Receive = unhandled
   
   def connecting: Receive = {
-    case request: Quit => {
+    case request: Quit =>
       request.success(())
       failAllQueuedRequests(RedisIOException("Connection has been shutdown by QUIT command"))
       isShuttingDownBeforeConnected = true
-    }
-    case request: Request[_] => {
+    case request: Request[_] =>
       if(failCommandOnConnecting) {
         request.failure(RedisIOException("Trying to connect..."))
       } else{
@@ -294,8 +286,7 @@ class ListenerActor(
       if (!isConnecting) {
         reconnect()
       }
-    }
-    case t @ Transaction(requests) => {
+    case t @ Transaction(requests) =>
       queuedRequests.addLast(t.multiRequest)
       requests.foreach { request =>
         queuedRequests.addLast(request)
@@ -304,15 +295,14 @@ class ListenerActor(
       if (!isConnecting) {
         reconnect()
       }
-    }
-    case Connected => {
+    case Connected =>
       isConnecting = false
-      
+
       if (isShuttingDownBeforeConnected) {
         shutdown()
       } else {
         onConnect()
-        
+
         val authRequestOpt = passwordOpt.map { password =>
           Auth(password)
         }
@@ -324,7 +314,7 @@ class ListenerActor(
         val setNameRequestOpt = nameOpt.map { name =>
           ServerRequests.ClientSetName(name)
         }
-        
+
         val authFuture = authRequestOpt match {
           case Some(request) => request.future
           case None => Future.successful(())
@@ -337,13 +327,13 @@ class ListenerActor(
           case Some(request) => request.future
           case None => Future.successful(())
         }
-        
+
         val requests = List[Option[Request[Unit]]](
           authRequestOpt, selectRequestOpt, setNameRequestOpt
         ).flatten
-        
+
         initializationRequestsCount = requests.size
-        
+
         if (initializationRequestsCount > 0) {
           send(requests: _*)
           become(initializing)
@@ -356,28 +346,26 @@ class ListenerActor(
             become(initialized)
           }
         }
-        
+
         authFuture.failed.foreach { e =>
-          logger.error(s"Could not authenticate to $remote", e)
+          log.error(s"Could not authenticate to $remote", e)
         }
         selectFuture.failed.foreach { e =>
-          logger.error(s"Could not select database '$database' in $remote", e)
+          log.error(s"Could not select database '$database' in $remote", e)
         }
         setNameFuture.failed.foreach { e =>
-          logger.error(s"Could not set client name in $remote", e)
+          log.error(s"Could not set client name in $remote", e)
         }
       }
-    }
     case ReceiveTimeout =>
-    case Terminated(_) => {
+    case Terminated(_) =>
       isConnecting = false
       failAllQueuedRequests(RedisIOException(s"Could not connect to $remote"))
-    }
   }
   
   def initializing: Receive = queue orElse {
-    case Tcp.Received(data) => {
-      val responsesCount = receive(data)
+    case Tcp.Received(data) =>
+      val responsesCount = receiveData(data)
       initializationRequestsCount -= responsesCount
       if (initializationRequestsCount == 0) {
         onInitialized()
@@ -388,55 +376,50 @@ class ListenerActor(
           become(initialized)
         }
       }
-    }
     case ReceiveTimeout => handleReceiveTimeout()
-    case Terminated(_) => {
-      logger.error(s"Could not initialize connection to $remote")
+    case Terminated(_) =>
+      log.error(s"Could not initialize connection to $remote")
       failAllQueuedRequests(RedisIOException(s"Could not initialize connection to $remote"))
       reconnect()
-    }
   }
   
   def initialized: Receive = send orElse {
-    case Tcp.Received(data) => receive(data)
+    case Tcp.Received(data) => receiveData(data)
     case ReceiveTimeout => handleReceiveTimeout()
-    case Terminated(_) => {
-      logger.info("Connection has been shutdown abruptly")
+    case Terminated(_) =>
+      log.info("Connection has been shutdown abruptly")
       failAllSentRequests(RedisIOException("Connection has been shutdown abruptly"))
       reconnect()
-    }
   }
   
   def reconnecting: Receive = queue orElse {
     case Tcp.Received(_) =>
     case ReceiveTimeout =>
-    case Terminated(_) => {
+    case Terminated(_) =>
       if (isReceiveTimeout) {
-        logger.info(s"Connection has been reset due to receive timeout")
+        log.info(s"Connection has been reset due to receive timeout")
         failAllSentRequests(RedisIOException("Receive timeout"))
       } else {
-        logger.info(s"Connection has been shutdown abruptly")
+        log.info(s"Connection has been shutdown abruptly")
         failAllSentRequests(RedisIOException("Connection has been shutdown abruptly"))
       }
       reconnect()
-    }
   }
   
   def shuttingDown: Receive = fail orElse {
-    case Tcp.Received(data) => receive(data)
+    case Tcp.Received(data) => receiveData(data)
     case ReceiveTimeout => handleReceiveTimeout()
     case Shutdown => ioActor ! IOActor.ShutdownAck
     case Terminated(_) => shutdown()
   }
   
   def awaitingDecodersShutdown: Receive = fail orElse {
-    case Terminated(_) => {
+    case Terminated(_) =>
       decodersCount -= 1
       if (decodersCount == 0) {
-        logger.info("Connection has been shutdown gracefully")
+        log.info("Connection has been shutdown gracefully")
         context.stop(self)
       }
-    }
   }
   
 }

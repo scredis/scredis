@@ -356,7 +356,8 @@ object ServerRequests {
     SlowLogGet, countOpt.toSeq: _*
   ) {
     override def decode = {
-      case a: ArrayResponse => a.parsed[scredis.SlowLogEntry, CC] {
+      case a: ArrayResponse =>
+        a.parsed[scredis.SlowLogEntry, CC] {
         case a: ArrayResponse => {
           val data = a.parsed[Any, IndexedSeq] {
             case IntegerResponse(value) => value
@@ -367,8 +368,10 @@ object ServerRequests {
           scredis.SlowLogEntry(
             uid = data(0).toString.toLong,
             timestampSeconds = data(1).toString.toLong,
-            executionTime = (data(2).toString.toLong microseconds),
-            command = data(3).asInstanceOf[List[String]]
+            executionTime = data(2).toString.toLong microseconds,
+            command = data(3).asInstanceOf[List[String]],
+            clientIpAddress = None,
+            clientName = None
           )
         }
       }
