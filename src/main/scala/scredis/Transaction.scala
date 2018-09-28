@@ -7,12 +7,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 private[scredis] final case class Transaction (requests: Seq[Request[_]]) {
-  val multiRequest = Multi()
   val execRequest = Exec(requests.map(_.decode))
-  val future = execRequest.future
+  private val future = execRequest.future
   
   future.onComplete {
-    case Success(results) => {
+    case Success(results) =>
       var i = 0
       requests.foreach { request =>
         if (!request.future.isCompleted) {
@@ -23,7 +22,6 @@ private[scredis] final case class Transaction (requests: Seq[Request[_]]) {
         }
         i += 1
       }
-    }
     case Failure(e) => requests.foreach { request =>
       if (!request.future.isCompleted) {
         request.failure(e)
@@ -31,6 +29,9 @@ private[scredis] final case class Transaction (requests: Seq[Request[_]]) {
     }
   }
   
-  override def toString = requests.mkString("Transaction(", ", ", ")")
-  
+  override def toString: String = requests.mkString("Transaction(", ", ", ")")
+}
+
+private[scredis] object Transaction {
+  val MultiRequest = Multi()
 }
