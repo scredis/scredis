@@ -380,8 +380,8 @@ object ServerRequests {
             timestampSeconds = data(1).toString.toLong,
             executionTime = data(2).toString.toLong microseconds,
             command = data(3).asInstanceOf[List[String]],
-            clientIpAddress = data(4).asInstanceOf[Option[String]],
-            clientName = data(5).asInstanceOf[Option[String]]
+            clientIpAddress = data.lift(4).flatMap(_.asInstanceOf[Option[String]]),
+            clientName = data.lift(5).flatMap(_.asInstanceOf[Option[String]])
           )
         }
       }

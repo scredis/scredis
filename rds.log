@@ -1,0 +1,72 @@
+755:C 30 Sep 18:55:42.653 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+755:C 30 Sep 18:55:42.653 # Redis version=4.0.11, bits=64, commit=00000000, modified=0, pid=755, just started
+755:C 30 Sep 18:55:42.653 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
+755:M 30 Sep 18:55:42.656 * Running mode=standalone, port=6379.
+755:M 30 Sep 18:55:42.656 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+755:M 30 Sep 18:55:42.656 # Server initialized
+755:M 30 Sep 18:55:42.656 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+755:M 30 Sep 18:55:42.656 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+755:M 30 Sep 18:55:42.656 * DB loaded from disk: 0.000 seconds
+755:M 30 Sep 18:55:42.656 * Ready to accept connections
+755:M 30 Sep 18:56:19.882 * Background append only file rewriting started by pid 1543
+755:M 30 Sep 18:56:19.918 * AOF rewrite child asks to stop sending diffs.
+1543:C 30 Sep 18:56:19.918 * Parent agreed to stop sending diffs. Finalizing AOF...
+1543:C 30 Sep 18:56:19.918 * Concatenating 0.00 MB of AOF diff received from parent.
+1543:C 30 Sep 18:56:19.919 * SYNC append only file rewrite performed
+1543:C 30 Sep 18:56:19.919 * AOF rewrite: 0 MB of memory used by copy-on-write
+755:M 30 Sep 18:56:19.931 * Background AOF rewrite terminated with success
+755:M 30 Sep 18:56:19.931 * Residual parent diff successfully flushed to the rewritten AOF (0.00 MB)
+755:M 30 Sep 18:56:19.931 * Background AOF rewrite finished successfully
+755:M 30 Sep 18:56:20.917 * Background saving started by pid 1547
+1547:C 30 Sep 18:56:20.932 * DB saved on disk
+1547:C 30 Sep 18:56:20.933 * RDB: 0 MB of memory used by copy-on-write
+755:M 30 Sep 18:56:20.934 * Background saving terminated with success
+755:M 30 Sep 18:56:21.827 * DB saved on disk
+755:M 30 Sep 18:56:22.742 * Slave 127.0.0.1:6380 asks for synchronization
+755:M 30 Sep 18:56:22.742 * Partial resynchronization not accepted: Replication ID mismatch (Slave asked for '8012e67be62c67b72523e7655f484029c8337f5e', my replication IDs are '68d3b4ee9e80105f310cdfad845c1ab3a842551d' and '0000000000000000000000000000000000000000')
+755:M 30 Sep 18:56:22.742 * Starting BGSAVE for SYNC with target: disk
+755:M 30 Sep 18:56:22.743 * Background saving started by pid 1558
+1558:C 30 Sep 18:56:22.754 * DB saved on disk
+1558:C 30 Sep 18:56:22.756 * RDB: 0 MB of memory used by copy-on-write
+755:M 30 Sep 18:56:22.838 * Background saving terminated with success
+755:M 30 Sep 18:56:22.839 * Synchronization with slave 127.0.0.1:6380 succeeded
+755:M 30 Sep 18:56:24.101 # Connection with slave 127.0.0.1:6380 lost.
+755:M 30 Sep 18:56:26.146 * DB saved on disk
+755:M 30 Sep 18:56:26.229 * DB saved on disk
+755:M 30 Sep 18:56:34.812 * DB saved on disk
+755:M 30 Sep 18:56:35.125 * DB saved on disk
+755:M 30 Sep 18:56:38.565 * DB saved on disk
+755:M 30 Sep 18:56:39.507 * DB saved on disk
+755:M 30 Sep 18:56:43.285 * DB saved on disk
+755:M 30 Sep 19:01:44.094 * 100 changes in 300 seconds. Saving...
+755:M 30 Sep 19:01:44.095 * Background saving started by pid 2216
+2216:C 30 Sep 19:01:44.104 * DB saved on disk
+2216:C 30 Sep 19:01:44.104 * RDB: 0 MB of memory used by copy-on-write
+755:M 30 Sep 19:01:44.195 * Background saving terminated with success
+755:M 30 Sep 19:02:16.449 * Background append only file rewriting started by pid 3042
+755:M 30 Sep 19:02:16.481 * AOF rewrite child asks to stop sending diffs.
+3042:C 30 Sep 19:02:16.481 * Parent agreed to stop sending diffs. Finalizing AOF...
+3042:C 30 Sep 19:02:16.481 * Concatenating 0.00 MB of AOF diff received from parent.
+3042:C 30 Sep 19:02:16.481 * SYNC append only file rewrite performed
+3042:C 30 Sep 19:02:16.481 * AOF rewrite: 0 MB of memory used by copy-on-write
+755:M 30 Sep 19:02:16.557 * Background AOF rewrite terminated with success
+755:M 30 Sep 19:02:16.557 * Residual parent diff successfully flushed to the rewritten AOF (0.00 MB)
+755:M 30 Sep 19:02:16.557 * Background AOF rewrite finished successfully
+755:M 30 Sep 19:02:17.468 * Background saving started by pid 3043
+3043:C 30 Sep 19:02:17.479 * DB saved on disk
+3043:C 30 Sep 19:02:17.480 * RDB: 0 MB of memory used by copy-on-write
+755:M 30 Sep 19:02:17.560 * Background saving terminated with success
+755:M 30 Sep 19:02:18.327 * DB saved on disk
+755:M 30 Sep 19:02:19.495 * Slave 127.0.0.1:6380 asks for synchronization
+755:M 30 Sep 19:02:19.495 * Partial resynchronization not accepted: Replication ID mismatch (Slave asked for '1a70b77d1a172103c8df6e077d010ff3f10307e6', my replication IDs are '0513a3b71ac0fc33c1af59235e2707c97a3d9dd8' and '0000000000000000000000000000000000000000')
+755:M 30 Sep 19:02:19.495 * Starting BGSAVE for SYNC with target: disk
+755:M 30 Sep 19:02:19.496 * Background saving started by pid 3110
+3110:C 30 Sep 19:02:19.507 * DB saved on disk
+3110:C 30 Sep 19:02:19.507 * RDB: 0 MB of memory used by copy-on-write
+755:M 30 Sep 19:02:19.565 * Background saving terminated with success
+755:M 30 Sep 19:02:19.565 * Synchronization with slave 127.0.0.1:6380 succeeded
+755:M 30 Sep 19:02:20.574 # Connection with slave 127.0.0.1:6380 lost.
+755:M 30 Sep 19:02:22.618 * DB saved on disk
+755:M 30 Sep 19:02:22.705 * DB saved on disk
+755:M 30 Sep 19:02:31.254 * DB saved on disk
+755:M 30 Sep 19:02:31.569 * DB saved on disk

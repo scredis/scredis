@@ -1,0 +1,48 @@
+756:C 30 Sep 18:55:42.654 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+756:C 30 Sep 18:55:42.655 # Redis version=4.0.11, bits=64, commit=00000000, modified=0, pid=756, just started
+756:C 30 Sep 18:55:42.655 # Configuration loaded
+756:M 30 Sep 18:55:42.657 * Running mode=standalone, port=6380.
+756:M 30 Sep 18:55:42.657 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+756:M 30 Sep 18:55:42.657 # Server initialized
+756:M 30 Sep 18:55:42.657 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+756:M 30 Sep 18:55:42.657 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+756:M 30 Sep 18:55:42.657 * Ready to accept connections
+756:S 30 Sep 18:56:22.047 * Before turning into a slave, using my master parameters to synthesize a cached master: I may be able to synchronize with the new master with just a partial transfer.
+756:S 30 Sep 18:56:22.047 * SLAVE OF 127.0.0.1:6379 enabled (user request from 'id=14 addr=127.0.0.1:39768 fd=10 name=client1 age=1 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=32768 obl=0 oll=0 omem=0 events=r cmd=slaveof')
+756:S 30 Sep 18:56:22.741 * Connecting to MASTER 127.0.0.1:6379
+756:S 30 Sep 18:56:22.741 * MASTER <-> SLAVE sync started
+756:S 30 Sep 18:56:22.741 * Non blocking connect for SYNC fired the event.
+756:S 30 Sep 18:56:22.741 * Master replied to PING, replication can continue...
+756:S 30 Sep 18:56:22.742 * Trying a partial resynchronization (request 8012e67be62c67b72523e7655f484029c8337f5e:1).
+756:S 30 Sep 18:56:22.743 * Full resync from master: 0513a3b71ac0fc33c1af59235e2707c97a3d9dd8:0
+756:S 30 Sep 18:56:22.743 * Discarding previously cached master state.
+756:S 30 Sep 18:56:22.839 * MASTER <-> SLAVE sync: receiving 200 bytes from master
+756:S 30 Sep 18:56:22.839 * MASTER <-> SLAVE sync: Flushing old data
+756:S 30 Sep 18:56:22.839 * MASTER <-> SLAVE sync: Loading DB in memory
+756:S 30 Sep 18:56:22.839 * MASTER <-> SLAVE sync: Finished with success
+756:M 30 Sep 18:56:24.101 # Setting secondary replication ID to 0513a3b71ac0fc33c1af59235e2707c97a3d9dd8, valid up to offset: 1. New replication ID is 1a70b77d1a172103c8df6e077d010ff3f10307e6
+756:M 30 Sep 18:56:24.101 # Connection with master lost.
+756:M 30 Sep 18:56:24.101 * Caching the disconnected master state.
+756:M 30 Sep 18:56:24.101 * Discarding previously cached master state.
+756:M 30 Sep 18:56:24.101 * MASTER MODE enabled (user request from 'id=14 addr=127.0.0.1:39768 fd=10 name=client1 age=3 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=32768 obl=0 oll=0 omem=0 events=r cmd=slaveof')
+756:M 30 Sep 18:56:26.231 * DB saved on disk
+756:M 30 Sep 18:56:43.286 * DB saved on disk
+756:S 30 Sep 19:02:18.525 * Before turning into a slave, using my master parameters to synthesize a cached master: I may be able to synchronize with the new master with just a partial transfer.
+756:S 30 Sep 19:02:18.525 * SLAVE OF 127.0.0.1:6379 enabled (user request from 'id=42 addr=127.0.0.1:39936 fd=8 name=client1 age=1 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=32768 obl=0 oll=0 omem=0 events=r cmd=slaveof')
+756:S 30 Sep 19:02:19.494 * Connecting to MASTER 127.0.0.1:6379
+756:S 30 Sep 19:02:19.494 * MASTER <-> SLAVE sync started
+756:S 30 Sep 19:02:19.494 * Non blocking connect for SYNC fired the event.
+756:S 30 Sep 19:02:19.495 * Master replied to PING, replication can continue...
+756:S 30 Sep 19:02:19.495 * Trying a partial resynchronization (request 1a70b77d1a172103c8df6e077d010ff3f10307e6:1726).
+756:S 30 Sep 19:02:19.496 * Full resync from master: 0513a3b71ac0fc33c1af59235e2707c97a3d9dd8:38317
+756:S 30 Sep 19:02:19.496 * Discarding previously cached master state.
+756:S 30 Sep 19:02:19.565 * MASTER <-> SLAVE sync: receiving 203 bytes from master
+756:S 30 Sep 19:02:19.565 * MASTER <-> SLAVE sync: Flushing old data
+756:S 30 Sep 19:02:19.565 * MASTER <-> SLAVE sync: Loading DB in memory
+756:S 30 Sep 19:02:19.566 * MASTER <-> SLAVE sync: Finished with success
+756:M 30 Sep 19:02:20.574 # Setting secondary replication ID to 0513a3b71ac0fc33c1af59235e2707c97a3d9dd8, valid up to offset: 38318. New replication ID is 7fc39e1c74485c0c80680d374385c73e9f778841
+756:M 30 Sep 19:02:20.574 # Connection with master lost.
+756:M 30 Sep 19:02:20.574 * Caching the disconnected master state.
+756:M 30 Sep 19:02:20.574 * Discarding previously cached master state.
+756:M 30 Sep 19:02:20.574 * MASTER MODE enabled (user request from 'id=42 addr=127.0.0.1:39936 fd=8 name=client1 age=3 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=32768 obl=0 oll=0 omem=0 events=r cmd=slaveof')
+756:M 30 Sep 19:02:22.707 * DB saved on disk
