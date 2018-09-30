@@ -32,6 +32,8 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-simple" % "1.7.25" % Test
 )
 
+Test / testOptions += Tests.Argument("-F", sys.props.getOrElse("F", "1.0"))
+
 // required so that test actor systems don't get messed up
 fork in Test := true
 

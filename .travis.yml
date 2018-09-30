@@ -14,7 +14,7 @@ before_script:
 
 script:
   - sbt +compile
-  - sbt test
+  - sbt -DF=3.0 test
 
 
 after_success:
