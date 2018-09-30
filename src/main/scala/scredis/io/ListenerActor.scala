@@ -17,7 +17,7 @@ import scredis.util.UniqueNameGenerator
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 import scala.concurrent.duration._
-
+import scredis.Transaction._
 
 class ListenerActor(
   host: String,
@@ -131,8 +131,10 @@ class ListenerActor(
     }
   }
   
-  protected def sendAllQueuedRequests(): Unit = while (!queuedRequests.isEmpty) {
-    send(queuedRequests.pop())
+  protected def sendAllQueuedRequests(): Unit ={
+    while (!queuedRequests.isEmpty) {
+      send(queuedRequests.pop())
+    }
   }
   
   protected def failAllQueuedRequests(throwable: Throwable): Unit = {
@@ -219,18 +221,18 @@ class ListenerActor(
   protected def queue: Receive = {
     case request: Request[_] => queuedRequests.addLast(request)
     case t @ Transaction(requests) =>
-      queuedRequests.addLast(t.multiRequest)
+      queuedRequests.addLast(MultiRequest)
       requests.foreach { request =>
         queuedRequests.addLast(request)
       }
       queuedRequests.addLast(t.execRequest)
   }
   
-  protected def send: Receive = {
+  protected def sendReceive: Receive = {
     case request: Request[_] =>
       send(request)
     case t @ Transaction(requests) =>
-      send(t.multiRequest)
+      send(MultiRequest)
       send(requests: _*)
       send(t.execRequest)
   }
@@ -287,7 +289,7 @@ class ListenerActor(
         reconnect()
       }
     case t @ Transaction(requests) =>
-      queuedRequests.addLast(t.multiRequest)
+      queuedRequests.addLast(MultiRequest)
       requests.foreach { request =>
         queuedRequests.addLast(request)
       }
@@ -383,7 +385,7 @@ class ListenerActor(
       reconnect()
   }
   
-  def initialized: Receive = send orElse {
+  def initialized: Receive = sendReceive orElse {
     case Tcp.Received(data) => receiveData(data)
     case ReceiveTimeout => handleReceiveTimeout()
     case Terminated(_) =>
