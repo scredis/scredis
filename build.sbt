@@ -12,10 +12,14 @@ scalacOptions in (Compile,doc) := Seq("-no-link-warnings")
 autoAPIMappings := true
 
 enablePlugins(BuildInfoPlugin)
+enablePlugins(GhpagesPlugin)
+enablePlugins(SiteScaladocPlugin)
 
 buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion)
 buildInfoPackage := "scredis"
 buildInfoOptions += BuildInfoOption.BuildTime
+
+git.remoteRepo := "git@github.com:scredis/scredis.git"
 
 libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
