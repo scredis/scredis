@@ -57,6 +57,15 @@ class TransactionCommandsSpec extends WordSpec
         client.inTransaction(_ => ()).futureValue should be (empty)
       }
     }
+    "commands list exceed semaphore limit" should {
+      "throw exception" in {
+        a [IllegalArgumentException] should be thrownBy {
+          client.inTransaction { tx =>
+            (1 to 400).map(_ => tx.set("OVERFLOW", 1))
+          }
+        }
+      }
+    }
     "all commands are valid" should {
       "succeed" taggedAs (V120) in {
         client.set("STR", SomeValue)
