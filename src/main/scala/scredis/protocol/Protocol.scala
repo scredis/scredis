@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 import java.util.concurrent.Semaphore
 
 import akka.actor.ActorRef
+import com.typesafe.scalalogging.LazyLogging
 import scredis._
 import scredis.exceptions._
 import scredis.serialization.UTF8StringReader
@@ -17,7 +18,9 @@ import scala.util.Try
 /**
  * This object implements various aspects of the `Redis` protocol.
  */
-object Protocol {
+object Protocol extends LazyLogging {
+
+  private case class SemaphoreAccess(semaphore: Semaphore, permitsLimit: Int)
   
   private case class ArrayState(size: Int, var count: Int) {
     def increment(): Unit = count += 1
@@ -44,35 +47,35 @@ object Protocol {
     maxCapacity = RedisConfigDefaults.Global.EncodeBufferPool.PoolMaxCapacity,
     maxBufferSize = RedisConfigDefaults.Global.EncodeBufferPool.BufferMaxSize
   )
-  private val concurrentOpt: Option[(Semaphore, Boolean)] = {
-    RedisConfigDefaults.Global.MaxConcurrentRequestsOpt.map { concurrent =>
-      (new Semaphore(concurrent), true)
-    }
+  private val semaphoreAccessOption: Option[SemaphoreAccess] = {
+    RedisConfigDefaults.Global.MaxConcurrentRequestsOpt.map(concurrent => SemaphoreAccess(new Semaphore(concurrent), concurrent))
   }
-  
-  private def acquire(count: Int = 1): Unit = concurrentOpt.foreach {
-    case (semaphore, true) => semaphore.acquire(count)
-    case (semaphore, false) => if (!semaphore.tryAcquire(count)) {
-      throw new Exception("Busy")
+
+  private def acquire(count: Int = 1): Unit = {
+    if (semaphoreAccessOption.exists(_.permitsLimit < count)) {
+      val error = s"Transaction operations $count exceed limit $semaphoreAccessOption"
+      logger.error(error)
+      throw new IllegalArgumentException(error)
     }
+    semaphoreAccessOption.foreach(_.semaphore.acquire(count))
   }
-  
+
   private def parseInt(buffer: ByteBuffer): Int = {
     var length: Int = 0
     var isPositive = true
-    
+
     var char = buffer.get()
-    
+
     if (char == '-') {
       isPositive = false
       char = buffer.get()
     }
-    
+
     while (char != '\r') {
       length = (length * 10) + (char - '0')
       char = buffer.get()
     }
-    
+
     // skip \n
     buffer.get()
     if (isPositive) {
@@ -81,23 +84,23 @@ object Protocol {
       -length
     }
   }
-  
+
   private def parseLong(buffer: ByteBuffer): Long = {
     var length: Long = 0
     var isPositive = true
-    
+
     var char = buffer.get()
-    
+
     if (char == '-') {
       isPositive = false
       char = buffer.get()
     }
-    
+
     while (char != '\r') {
       length = (length * 10) + (char - '0')
       char = buffer.get()
     }
-    
+
     // skip \n
     buffer.get()
     if (isPositive) {
@@ -106,7 +109,7 @@ object Protocol {
       -length
     }
   }
-  
+
   private def parseString(buffer: ByteBuffer): String = {
     val bytes = new mutable.ArrayBuilder.ofByte()
     var char = buffer.get()
@@ -117,7 +120,7 @@ object Protocol {
     buffer.get()
     new String(bytes.result(), "UTF-8")
   }
-  
+
   private def decodeBulkStringResponse(buffer: ByteBuffer): BulkStringResponse = {
     val length = parseInt(buffer)
     val valueOpt = if (length >= 0) {
@@ -131,11 +134,11 @@ object Protocol {
     }
     BulkStringResponse(valueOpt)
   }
-  
-  private[scredis] def release(): Unit = concurrentOpt.foreach {
-    case (semaphore, _) => semaphore.release()
+
+  private[scredis] def release(): Unit = {
+    semaphoreAccessOption.foreach(_.semaphore.release())
   }
-  
+
   private[scredis] def releaseBuffer(buffer: ByteBuffer): Unit = bufferPool.release(buffer)
   
   private[scredis] def encodeZeroArgCommand(names: Seq[String]): Array[Byte] = {
