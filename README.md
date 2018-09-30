@@ -7,7 +7,7 @@ Scredis is a reactive, non-blocking and ultra-fast Scala [Redis](http://redis.io
 It has been (and still is) extensively used in production at Livestream.
 
 * [Documentation](https://github.com/scredis/scredis/wiki)
-* [Scaladoc](http://scredis.github.io/scredis/api/snapshot/)
+* [Scaladoc](http://scredis.github.io/scredis/latest/api/scredis/)
 
 ## Features
 * Supports all Redis commands up to v3.0.0
