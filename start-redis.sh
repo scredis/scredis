@@ -1,6 +1,6 @@
 #!/bin/bash
 
 # Execute:
-mkdir /tmp/redis-6380
-(redis-server > rds.log) &
-(redis-server ./src/test/resources/redis-6380.conf > rds2.log) &
+mkdir -p /tmp/redis-6380
+(redis-server > logs/rds.log) &
+(redis-server ./src/test/resources/redis-6380.conf > logs/rds2.log) &
