@@ -40,7 +40,7 @@ trait TransactionCommands {
    * 
    * @param build the transaction block
    * @return vector containing the results of all queued commands
-   * @throws IllegalArgumentException when operations count exceeds semaphore limit defined in configuration
+    *         or failed future with IllegalArgumentException when operations count exceeds semaphore limit defined in configuration
    *
    * @since 1.2.0
    */
@@ -50,7 +50,6 @@ trait TransactionCommands {
       build(builder)
       send(builder.result())
     } catch {
-      case e: IllegalArgumentException => throw e
       case e: Throwable => Future.failed(RedisTransactionBuilderException(cause = e))
     }
   }
@@ -74,5 +73,4 @@ trait TransactionCommands {
       case e: Throwable => throw RedisTransactionBuilderException(cause = e)
     }
   }
-  
 }

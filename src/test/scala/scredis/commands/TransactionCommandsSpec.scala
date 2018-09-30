@@ -58,12 +58,22 @@ class TransactionCommandsSpec extends WordSpec
       }
     }
     "commands list exceed semaphore limit" should {
-      "throw exception" in {
-        a [IllegalArgumentException] should be thrownBy {
-          client.inTransaction { tx =>
+      "throw exception inTransaction" in {
+        val result = client.inTransaction { tx =>
+          (1 to 400).map(_ => tx.set("OVERFLOW", 1))
+        }
+        whenReady(result.failed) { ex =>
+          ex shouldBe an[RedisTransactionBuilderException]
+          ex.asInstanceOf[RedisTransactionBuilderException].cause shouldBe an[IllegalArgumentException]
+        }
+      }
+      "throw exception withTransaction" in {
+        val exception = the [RedisTransactionBuilderException] thrownBy {
+          client.withTransaction { tx =>
             (1 to 400).map(_ => tx.set("OVERFLOW", 1))
           }
         }
+        exception.cause shouldBe a[IllegalArgumentException]
       }
     }
     "all commands are valid" should {
