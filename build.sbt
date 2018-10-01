@@ -2,7 +2,7 @@
 name := "scredis"
 organization := "com.github.scredis"
 
-scalaVersion := "2.12.6"
+scalaVersion := "2.12.7"
 crossScalaVersions := Seq("2.11.12", scalaVersion.value)
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-Xfatal-warnings",
@@ -24,7 +24,7 @@ git.remoteRepo := "git@github.com:scredis/scredis.git"
 libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
   "com.typesafe" % "config" % "1.3.3",
-  "com.typesafe.akka" %% "akka-actor" % "2.5.16",
+  "com.typesafe.akka" %% "akka-actor" % "2.5.17",
 
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
