@@ -38,7 +38,7 @@ Scredis 2.1.7+ is compatible with Scala 2.11 and 2.12.
 Binary releases are hosted on the Sonatype Central Repository.
 
 ```scala
-libraryDependencies += "com.github.scredis" %% "scredis" % "2.1.7"
+libraryDependencies += "com.github.scredis" %% "scredis" % "2.1.9"
 ```
 
 Snapshots / development versions are hosted on a separate bintray repository.
@@ -168,6 +168,31 @@ They can be started with the start-redis-test-instances.sh script.
 * 1,000,000 requests -> 2969.00 ms = 336,814 req/s
 * 2,000,000 requests -> 5912.59 ms = 338,261 req/s
 * 3,000,000 requests -> 8752.69 ms = 342,752 req/s
+
+## Releasing
+Scredis uses [sbt-dynver](https://github.com/dwijnand/sbt-dynver) plugin to automatically manage versioning.
+
+Releases are only performed from a master branch.
+
+If current commit on master branch is not tagged then a previous tag is used as base version with added current date (snapshot version).
+
+If current commit on master is tagged then a version is the same as tag and this version is stable.
+
+Build on travis checks what is current branch and if it is master it executes publish step.
+
+Publish step uses sbt plugin [sbt-bintray](https://github.com/sbt/sbt-bintray) to publish artifacts to bintray repository.
+
+Bintray repository [https://bintray.com/scredis/maven/scredis](https://bintray.com/scredis/maven/scredis).
+
+Released version is automatically populated to jcenter bintray [https://search.maven.org/search?q=g:com.github.scredis](https://search.maven.org/search?q=g:com.github.scredis)
+
+Manual step is needed to populate to [mvnrepository](https://mvnrepository.com/artifact/com.github.scredis/scredis)
+
+Maintainer performing stable release should:
+* switch to master branch and update README with tag `X.Y.Z` and commit changes.
+* `git tag -a "vX.Y.Z" -m "Release version vX.Y.Z"` # tag current commit with given tag
+* `git push origin vX.Y.Z` # tags are not automatically pushed by `git push`
+* go to [bintray](https://bintray.com/scredis/maven/scredis#central) and click 'Sync' to push released version to mvnrepository.
 
 
 ## License
