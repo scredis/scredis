@@ -45,6 +45,16 @@ trait StringCommands { self: NonBlockingConnection =>
   def bitCount(key: String, start: Long = 0, stop: Long = -1): Future[Long] = send(
     BitCount(key, start, stop)
   )
+
+  /**
+    * TODO: ADD STUFF HERE
+    * @param key
+    * @param commands
+    * @return
+    */
+  def bitField(key: String, commands: BitFieldCommand*): Future[List[Long]] = send(
+    BitField(key, commands: _*)
+  )
   
   /**
    * Performs a bitwise operation between multiple strings.

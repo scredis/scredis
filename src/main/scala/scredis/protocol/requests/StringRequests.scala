@@ -14,6 +14,7 @@ object StringRequests {
   
   object Append extends Command("APPEND") with WriteCommand
   object BitCount extends Command("BITCOUNT")
+  object BitField extends Command("BITFIELD") with WriteCommand
   object BitOp extends Command("BITOP") with WriteCommand
   object BitPos extends Command("BITPOS")
   object Decr extends Command("DECR") with WriteCommand
@@ -39,16 +40,29 @@ object StringRequests {
   case class Append[W: Writer](key: String, value: W) extends Request[Long](
     Append, key, implicitly[Writer[W]].write(value)
   ) with Key {
-    override def decode = {
-      case IntegerResponse(value) => value
+    override def decode: Decoder[Long] = {
+      case IntegerResponse(resp) => resp
     }
   }
   
   case class BitCount(
     key: String, start: Long, end: Long
   ) extends Request[Long](BitCount, key, start, end) with Key {
-    override def decode = {
+    override def decode: Decoder[Long] = {
       case IntegerResponse(value) => value
+    }
+  }
+
+  case class BitFieldCommand()
+
+  case class BitField(
+    key: String, fields: BitFieldCommand*
+  ) extends Request[List[Long]](BitField, ???) with Key {
+    override def decode: Decoder[List[Long]] = {
+      case a: ArrayResponse => a.parsed[Long, List] {
+        case IntegerResponse(resp) => resp
+      }
+
     }
   }
   
