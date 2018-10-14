@@ -24,6 +24,7 @@ object HashRequests {
   object HScan extends Command("HSCAN")
   object HSet extends Command("HSET") with WriteCommand
   object HSetNX extends Command("HSETNX") with WriteCommand
+  object HStrlen extends Command("HSTRLEN") with WriteCommand
   object HVals extends Command("HVALS")
   
   case class HDel(key: String, fields: String*) extends Request[Long](
@@ -101,10 +102,9 @@ object HashRequests {
   }
   
   case class HMGetAsMap[R: Reader](key: String, fields: String*) extends Request[Map[String, R]](
-    HMGet, key +: fields: _*
-  ) with Key {
+    HMGet, key +: fields: _*) with Key {
     override def decode = {
-      case a: ArrayResponse => {
+      case a: ArrayResponse =>
         val values = a.parsed[Option[R], List] {
           case b: BulkStringResponse => b.parsed[R]
         }
@@ -112,7 +112,6 @@ object HashRequests {
           case (key, Some(value)) => Some((key, value))
           case _ => None
         }.toMap
-      }
     }
   }
   
@@ -171,6 +170,14 @@ object HashRequests {
   ) with Key {
     override def decode = {
       case i: IntegerResponse => i.toBoolean
+    }
+  }
+
+  case class HStrlen(key: String, field: String) extends Request[Long](
+    HStrlen, key, field
+  ) with Key {
+    override def decode = {
+      case IntegerResponse(value) => value
     }
   }
   

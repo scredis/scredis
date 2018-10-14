@@ -47,33 +47,33 @@ class StringWriter(charsetName: String) extends Writer[String] {
 object UTF8StringWriter extends StringWriter("UTF-8")
 
 object BooleanWriter extends Writer[Boolean] {
-  protected def writeImpl(value: Boolean): Array[Byte] = UTF8StringWriter.write(value.toString())
+  protected def writeImpl(value: Boolean): Array[Byte] = UTF8StringWriter.write(value.toString)
 }
 
 object ShortWriter extends Writer[Short] {
-  protected def writeImpl(value: Short): Array[Byte] = UTF8StringWriter.write(value.toString())
+  protected def writeImpl(value: Short): Array[Byte] = UTF8StringWriter.write(value.toString)
 }
 
 object IntWriter extends Writer[Int] {
-  protected def writeImpl(value: Int): Array[Byte] = UTF8StringWriter.write(value.toString())
+  protected def writeImpl(value: Int): Array[Byte] = UTF8StringWriter.write(value.toString)
 }
 
 object LongWriter extends Writer[Long] {
-  protected def writeImpl(value: Long): Array[Byte] = UTF8StringWriter.write(value.toString())
+  protected def writeImpl(value: Long): Array[Byte] = UTF8StringWriter.write(value.toString)
 }
 
 object FloatWriter extends Writer[Float] {
-  protected def writeImpl(value: Float): Array[Byte] = UTF8StringWriter.write(value.toString())
+  protected def writeImpl(value: Float): Array[Byte] = UTF8StringWriter.write(value.toString)
 }
 
 object DoubleWriter extends Writer[Double] {
-  protected def writeImpl(value: Double): Array[Byte] = UTF8StringWriter.write(value.toString())
+  protected def writeImpl(value: Double): Array[Byte] = UTF8StringWriter.write(value.toString)
 }
 
 object AnyWriter extends Writer[Any] {
   protected def writeImpl(value: Any): Array[Byte] = value match {
     case bytes: Array[Byte] => bytes
-    case x                  => UTF8StringWriter.write(x.toString())
+    case x                  => UTF8StringWriter.write(x.toString)
   }
 }
 
