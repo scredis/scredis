@@ -227,7 +227,7 @@ trait HashCommands { self: Connection with NonBlockingConnection =>
   def hSet[W: Writer](key: String, field: String, value: W): Future[Boolean] = send(
     HSet(key, field, value)
   )
-  
+
   /**
    * Sets the value of a hash field, only if the field does not exist.
    *
@@ -242,6 +242,22 @@ trait HashCommands { self: Connection with NonBlockingConnection =>
    */
   def hSetNX[W: Writer](key: String, field: String, value: W): Future[Boolean] = send(
     HSetNX(key, field, value)
+  )
+
+  /**
+   * Returns the length of the value associated with field in the hash stored at key.
+   * For numbers it is a count of their digits (+1 if number is negative)
+   * For booleans it is true=4 and false=5
+   * For strings it is number of bytes they occupy. ONLY if you don't use utf characters it will be their length.
+   * If the key or the field do not exist, 0 is returned.
+   *
+   * @param key hash key
+   * @param field field name to set
+   * @return the string length of the value associated with field,
+   *        or zero when field is not present in the hash or key does not exist at all.
+   */
+  def hStrlen(key: String, field: String): Future[Long] = send(
+    HStrlen(key, field)
   )
 
   /**

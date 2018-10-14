@@ -19,7 +19,7 @@ class HashCommandsSpec extends WordSpec
   private val client = Client()
   private val SomeValue = "HelloWorld!虫àéç蟲"
 
-  override def beforeAll() = {
+  override def beforeAll(): Unit = {
     client.lPush("LIST", "A").futureValue
   }
   
@@ -491,6 +491,41 @@ class HashCommandsSpec extends WordSpec
     }
   }
 
+  HStrlen.toString when {
+    "the key does not exist" should {
+      "return zero" in {
+        client.hSet("HK1", "FIELD1", "V1").futureValue should be(true)
+        client.hSet("HK1", "FIELD2", "ABCDEF").futureValue should be(true)
+        client.hStrlen("UNKNOWN_KEY", "FIELD1").futureValue should be(0)
+      }
+    }
+
+    "the field is not present in hash" should {
+      "return zero"  in {
+        client.hSet("HK2", "FIELD1", "V1").futureValue should be(true)
+        client.hSet("HK2", "FIELD2", "ABCDEF").futureValue should be(true)
+        client.hStrlen("HK2", "FIELD_UNKNOWN").futureValue should be(0)
+      }
+    }
+
+    "field contains string" should {
+      "return length of a string" in {
+        client.hSet("HK3", "FIELD1", "V1").futureValue should be(true)
+        client.hSet("HK3", "FIELD2", "ABCDEF").futureValue should be(true)
+        client.hSet("HK3", "FIELD3", -3).futureValue should be(true)
+        client.hSet("HK3", "FIELD4", false).futureValue should be(true)
+        client.hSet("HK3", "FIELD5", "HelloWorld!虫àéç蟲").futureValue should be(true)
+
+        client.hStrlen("HK3", "FIELD1").futureValue should be(2)
+        client.hStrlen("HK3", "FIELD2").futureValue should be(6)
+        client.hStrlen("HK3", "FIELD3").futureValue should be(2)
+        client.hStrlen("HK3", "FIELD4").futureValue should be(5)
+        SomeValue.getBytes.size should be(23)
+        client.hStrlen("HK3", "FIELD5").futureValue should be(23)
+      }
+    }
+  }
+
   HVals.toString when {
     "the key does not exist" should {
       "return None" taggedAs (V200) in {
@@ -517,7 +552,7 @@ class HashCommandsSpec extends WordSpec
     }
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     client.flushDB().!
     client.quit().!
   }
