@@ -105,6 +105,14 @@ class StringCommandsSpec extends WordSpec
     }
   }
 
+  BitField.toString when {
+    "command with no subcomands" should {
+      "fail" in {
+        val result = client.bitField("bfKey1")
+      }
+    }
+  }
+
   scredis.protocol.requests.StringRequests.BitOp.toString when {
     "performing bitwise operations on keys that do not contain string values" should {
       "return an error" taggedAs (V260) in {
