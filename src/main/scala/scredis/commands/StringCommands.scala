@@ -1,8 +1,9 @@
 package scredis.commands
 
 import scredis.io.NonBlockingConnection
+import scredis.protocol.requests.BitFieldCommand.BitFieldCommand
 import scredis.protocol.requests.StringRequests._
-import scredis.serialization.{ Reader, Writer }
+import scredis.serialization.{Reader, Writer}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._

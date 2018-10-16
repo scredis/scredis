@@ -5,6 +5,7 @@ import org.scalatest.concurrent._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import scredis._
 import scredis.exceptions._
+import scredis.protocol.requests.BitFieldCommand.{BitFieldGet, BitFieldSet}
 import scredis.protocol.requests.StringRequests._
 import scredis.tags._
 import scredis.util.TestUtils._
@@ -106,9 +107,17 @@ class StringCommandsSpec extends WordSpec
   }
 
   BitField.toString when {
-    "command with no subcomands" should {
-      "fail" in {
-        val result = client.bitField("bfKey1")
+    "command with no sub-commands" should {
+      "return empty list of results" in {
+        client.bitField("bfKey1").futureValue should be (List())
+      }
+    }
+
+    "command with invalid key" should {
+      "return an error" in {
+        client.set("bit-key", "qwerty")
+        println("RESULT " + client.bitField("bit-key", BitFieldSet("u4", "0", 2), BitFieldGet("u16", "0")).futureValue)
+        client.bitField("bit-key", BitFieldSet("u4", "0", 2), BitFieldGet("u16", "0")).futureValue should be (List(2))
       }
     }
   }

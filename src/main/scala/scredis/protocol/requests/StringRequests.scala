@@ -17,19 +17,19 @@ object BitFieldCommand {
   val typRegex = "(i|u)\\d{1,2}".r
   case class BitFieldSet(typ: String, offset: String, value: Long) extends BitFieldCommand {
     require(typRegex.findFirstIn(typ).isDefined, s"typ($typ) doesn't match required regex $typRegex")
-    override def toArgs: List[Any] = List(typ, offset, value)
+    override def toArgs: List[Any] = List("SET", typ, offset, value)
   }
   case class BitFieldGet(typ: String, offset: String) extends BitFieldCommand {
     require(typRegex.findFirstIn(typ).isDefined, s"typ($typ) doesn't match required regex $typRegex")
-    override def toArgs: List[Any] = List(typ, offset)
+    override def toArgs: List[Any] = List("GET", typ, offset)
   }
   case class BitFieldIncrBy(typ: String, offset: String, increment: Long) extends BitFieldCommand {
     require(typRegex.findFirstIn(typ).isDefined, s"typ($typ) doesn't match required regex $typRegex")
-    override def toArgs: List[Any] = List(typ, offset, increment)
+    override def toArgs: List[Any] = List("INCRBY", typ, offset, increment)
   }
   case class BitFieldOverflow(value: String) extends BitFieldCommand {
     require(collection.Set("WRAP", "SAT", "FAIL").contains(value))
-    override def toArgs: List[Any] = List(value)
+    override def toArgs: List[Any] = List("OVERFLOW", value)
   }
 }
 
@@ -81,9 +81,10 @@ object StringRequests {
 
   case class BitField(
     key: String, fields: BitFieldCommand*
-  ) extends Request[List[Long]](BitField, fields.toList.flatMap(_.toArgs)) with Key {
+  ) extends Request[List[Long]](BitField, key :: fields.toList.flatMap(_.toArgs)) with Key {
     override def decode: Decoder[List[Long]] = {
-      case a: ArrayResponse => a.parsed[Long, List] {
+      case a: ArrayResponse =>
+        a.parsed[Long, List] {
         case IntegerResponse(resp) => resp
       }
     }
