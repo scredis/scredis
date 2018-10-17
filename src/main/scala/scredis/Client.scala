@@ -63,6 +63,7 @@ class Client(
 ) with ConnectionCommands
   with ServerCommands
   with KeyCommands
+  with GeoCommands
   with StringCommands
   with HashCommands
   with ListCommands
