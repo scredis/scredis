@@ -3,13 +3,13 @@ package scredis.protocol
 import java.nio.ByteBuffer
 
 import akka.util.ByteString
-import scredis.{Server, ClusterSlotRange, ClusterSlotRangeNodeInfo}
 import scredis.exceptions._
 import scredis.serialization.Reader
+import scredis.{ClusterSlotRange, ClusterSlotRangeNodeInfo, Server}
 
 import scala.collection.generic.CanBuildFrom
-import scala.util.{Failure, Success, Try}
 import scala.language.higherKinds
+import scala.util.{Failure, Success, Try}
 
 sealed trait Response
 
@@ -34,9 +34,11 @@ case class ClusterErrorResponse(error: ClusterError, message: String) extends Re
 case class BulkStringResponse(valueOpt: Option[Array[Byte]]) extends Response {
   def parsed[R](implicit reader: Reader[R]): Option[R] = valueOpt.map(reader.read)
 
-  def flattened[R](implicit reader: Reader[R]): R = parsed[R].get
+  def flattened[R](implicit reader: Reader[R]): R = flattenedOpt.get
 
-  override def toString = s"BulkStringResponse(" +
+  def flattenedOpt[R](implicit reader: Reader[R]): Option[R] = parsed[R]
+
+  override def toString: String = s"BulkStringResponse(" +
     s"${valueOpt.map(ByteString(_).decodeString("UTF-8"))})"
 }
 
@@ -241,7 +243,7 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
     builder.result()
   }
 
-  override def toString = s"ArrayResponse(length=$length, buffer=" +
+  override def toString: String = s"ArrayResponse(length=$length, buffer=" +
     s"${ByteString(buffer).decodeString("UTF-8")})"
 
 }
