@@ -2,14 +2,15 @@ package scredis.protocol.requests
 
 import scredis.protocol._
 import scredis.protocol.requests.GeoAddEntries.GeoAddEntry
+import scredis.protocol.requests.GeoDistUnit.GeoDistUnit
 
 object GeoRequests {
-  import scredis.serialization.Implicits.stringReader
-  import scredis.serialization.Implicits.doubleReader
+  import scredis.serialization.Implicits.{doubleReader, stringReader}
 
   object GeoAdd extends Command("GEOADD") with WriteCommand
   object GeoHash extends Command("GEOHASH")
   object GeoPos extends Command("GEOPOS")
+  object GeoDist extends Command("GEODIST")
 
 
   case class GeoAdd(key: String, fields: List[GeoAddEntry]) extends Request[Long](
@@ -20,25 +21,38 @@ object GeoRequests {
     }
   }
 
-  case class GeoHash(key: String, locations: List[String]) extends Request[List[String]](
+  case class GeoHash(key: String, locations: List[String]) extends Request[List[Option[String]]](
     GeoHash, key :: locations :_*
   ) with Key {
-    override def decode: Decoder[List[String]] = {
-      case a: ArrayResponse => a.parsed[String, List] {
-        case b: BulkStringResponse => b.flattened[String]
+    override def decode: Decoder[List[Option[String]]] = {
+      case a: ArrayResponse => a.parsed[Option[String], List] {
+        case b: BulkStringResponse => b.flattenedOpt[String]
       }
     }
   }
 
-  case class GeoPos(key: String, members: List[String]) extends Request[List[(Double, Double)]](
+  case class GeoPos(key: String, members: List[String]) extends Request[List[Option[(Double, Double)]]](
     GeoPos, key :: members :_*
   ) with Key {
-    override def decode: Decoder[List[(Double, Double)]] = {
-      case a: ArrayResponse => a.parsedAsPairs[Double, Double, List] {
-        case b: BulkStringResponse => b.flattened[Double]
-      } {
-        case b: BulkStringResponse => b.flattened[Double]
-      }
+    override def decode: Decoder[List[Option[(Double, Double)]]] = {
+      case a: ArrayResponse =>
+        a.parsed[Option[(Double, Double)], List] {
+          case b: ArrayResponse =>
+            b.parsed[String, List] {
+              case c: BulkStringResponse => c.flattened[String]
+            } match {
+              case fst :: snd :: _ => Some((fst.toDouble, snd.toDouble))
+              case _ => None
+            }
+        }
+    }
+  }
+
+  case class GeoDist(key: String, member1: String, member2: String, unitMaybe: Option[GeoDistUnit]) extends Request[Option[Double]](
+    GeoDist, unitMaybe.map(unit => List(key, member1, member2, unit.toString)).getOrElse(List(key, member1, member2)) :_*
+  ) with Key {
+    override def decode: Decoder[Option[Double]] = {
+      case b: BulkStringResponse => b.flattenedOpt[Double]
     }
   }
 }
@@ -49,3 +63,10 @@ object GeoAddEntries {
   }
 }
 
+object GeoDistUnit {
+  sealed trait GeoDistUnit
+  case object m extends GeoDistUnit
+  case object km extends GeoDistUnit
+  case object mi extends GeoDistUnit
+  case object ft extends GeoDistUnit
+}
