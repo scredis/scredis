@@ -18,13 +18,10 @@ script:
 
 
 after_success:
-  - '[[ $TRAVIS_BRANCH == "master" ]] || [[ $TRAVIS_BRANCH =~ ^v[0-9.]+$ ]] && sbt "+ publish"'
-  # - '[[ $TRAVIS_BRANCH == "master" ]] || [[ $TRAVIS_BRANCH =~ ^v[0-9.]+$ ]] && (sbt "+ publish" && ./sync-with-central.sh)'
+  # - '[[ $TRAVIS_BRANCH == "master" ]] || [[ $TRAVIS_BRANCH =~ ^v[0-9.]+$ ]] && sbt "+ publish"'
+  - '[[ $TRAVIS_BRANCH == "master" ]] || [[ $TRAVIS_BRANCH =~ ^v[0-9.]+$ ]] && (sbt "+ publish" && ./sync-with-central.sh)'
 
 sudo: false
-
-# https://docs.travis-ci.com/user/languages/java/
-# Already latest oracle-jdk installed for trusty image
 
 cache:
   directories:
