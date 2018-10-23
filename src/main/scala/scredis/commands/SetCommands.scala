@@ -155,6 +155,23 @@ trait SetCommands { self: NonBlockingConnection =>
    * @since 1.0.0
    */
   def sPop[R: Reader](key: String): Future[Option[R]] = send(SPop(key))
+
+  /**
+    * Removes and returns a random 'count' members from a set.
+    *
+    * @note This operation is similar to SRANDMEMBER, that returns a random element from a set but
+    * does not remove it.
+    *
+    * @param key set key
+    * @param count maximum number of returned elements
+    * @return list of random members which size is less or equal to 'count'
+    * @throws $e if key contains a value that is not a set
+    *
+    * @since 3.2.0
+    * @see [[https://redis.io/commands/spop]]
+    */
+
+  def sPopCount[R: Reader](key: String, count: Int): Future[List[R]] = send(SPopCount(key, count))
   
   /**
    * Returns a random member from a set (without removing it).
