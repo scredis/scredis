@@ -73,7 +73,9 @@ class Client(
   with HyperLogLogCommands
   with PubSubCommands
   with TransactionCommands {
-  
+  def geoRadiusByMember(str: String): Any = ???
+
+
   /**
    * Constructs a $client instance from a [[scredis.RedisConfig]]
    * 
