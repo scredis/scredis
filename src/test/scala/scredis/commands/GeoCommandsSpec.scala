@@ -5,8 +5,8 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 import scredis.Client
 import scredis.exceptions.RedisErrorResponseException
 import scredis.protocol.requests.GeoAddEntries.GeoAddEntry
-import scredis.protocol.requests.GeoDistUnit
-import scredis.protocol.requests.GeoRequests.{GeoAdd, GeoDist, GeoHash, GeoPos}
+import scredis.protocol.requests.GeoRequests._
+import scredis.protocol.requests.{GeoDistUnit, GeoSortOrder}
 import scredis.util.TestUtils._
 
 class GeoCommandsSpec extends WordSpec
@@ -111,6 +111,97 @@ class GeoCommandsSpec extends WordSpec
           yield client.geoDist("DistKey4", "P1", "P2", Some(unit)).!
       }
 
+    }
+  }
+
+  GeoRadius.toString when {
+    "command" should {
+      "return empty list for unknown key" in {
+        client.geoRadius("GRadius1", 10, 10, 10, GeoDistUnit.km).futureValue should be(List())
+      }
+
+      "return matching values" in {
+        client.del("GRadius2").!
+        client.geoAdd("GRadius2", GeoAddEntry(10, 10, "K1"), GeoAddEntry(11, 11, "K3"), GeoAddEntry(-10, -10, "K2")).!
+
+        client.geoRadius("GRadius2", 0, 0, 3, GeoDistUnit.km).futureValue should be(List())
+        client.geoRadius("GRadius2", 0, 0, 3500, GeoDistUnit.km).futureValue.toSet should be(Set("K1", "K2", "K3"))
+        client.geoRadius("GRadius2", 9, 9, 350, GeoDistUnit.km).futureValue.toSet should be(Set("K1", "K3"))
+      }
+    }
+  }
+
+  GeoRadiusComplex.toString when {
+    "command" should {
+      "properly handle additional parameters" in {
+        client.del("GRadius3").!
+        client.geoAdd("GRadius3", GeoAddEntry(10, 10, "K1"), GeoAddEntry(11, 11, "K3"), GeoAddEntry(-10, -10, "K2")).!
+
+        client.geoRadiusComplex("GRadius3", 9, 9, 40000, GeoDistUnit.km, Some(GeoSortOrder.ASC))
+          .futureValue.map(_.name) should be(List("K1", "K3", "K2"))
+        client.geoRadiusComplex("GRadius3", 9, 9, 40000, GeoDistUnit.km, Some(GeoSortOrder.DESC))
+          .futureValue.map(_.name) should be(List("K2", "K3", "K1"))
+
+        client.geoRadiusComplex("GRadius3", 9, 9, 40000, GeoDistUnit.km, count=Some(2))
+          .futureValue.map(_.name) should be(List("K1", "K3"))
+        client.geoRadiusComplex("GRadius3", 9, 9, 40000, GeoDistUnit.km, count=Some(1))
+          .futureValue.map(_.name) should be(List("K1"))
+
+        client.geoRadiusComplex("GRadius3", 9, 9, 40000, GeoDistUnit.km, Some(GeoSortOrder.ASC), Some(2))
+          .futureValue.map(_.name) should be(List("K1", "K3"))
+        client.geoRadiusComplex("GRadius3", 9, 9, 40000, GeoDistUnit.km, Some(GeoSortOrder.DESC), Some(2))
+          .futureValue.map(_.name) should be(List("K2", "K3"))
+      }
+    }
+
+    GeoRadiusByMember.toString when {
+      "command" should {
+        "return empty list for unknown key" in {
+          client.geoRadiusByMember("unknown", "K1", 1, GeoDistUnit.m)
+            .futureValue should be(List())
+        }
+
+        "raise exception for unknown member" in {
+          client.del("GRadius4").!
+          client.geoAdd("GRadius4", GeoAddEntry(10, 10, "K1"), GeoAddEntry(11, 11, "K3"), GeoAddEntry(-10, -10, "K2")).!
+          a [RedisErrorResponseException] should be thrownBy {
+            client.geoRadiusByMember("GRadius4", "unknown", 60000, GeoDistUnit.km).!
+          }
+        }
+
+        "return matching points" in {
+          client.del("GRadius4").!
+          client.geoAdd("GRadius4", GeoAddEntry(10, 10, "K1"), GeoAddEntry(11, 11, "K3"), GeoAddEntry(-10, -10, "K2")).!
+
+          client.geoRadiusByMember("GRadius4", "K1", 1, GeoDistUnit.m)
+            .futureValue should be(List("K1"))
+
+          client.geoRadiusByMember("GRadius4", "K1", 1000, GeoDistUnit.km)
+            .futureValue should be(List("K1", "K3"))
+
+          client.geoRadiusByMember("GRadius4", "K2", 40000, GeoDistUnit.km)
+            .futureValue.toSet should be(Set("K1", "K3", "K2"))
+        }
+      }
+    }
+
+    GeoRadiusByMemberComplex.toString when {
+      "command" should {
+        "properly parse response" in {
+          client.del("GRadius5").!
+          client.geoAdd("GRadius5", GeoAddEntry(10, 10, "K1"), GeoAddEntry(11, 11, "K3"), GeoAddEntry(-10, -10, "K2")).!
+
+          val r1 = client.geoRadiusByMemberComplex("GRadius5", "K1", 50000, GeoDistUnit.km, sort=Some(GeoSortOrder.ASC)).futureValue
+          val r2 = client.geoRadiusByMemberComplex("GRadius5", "K1", 50000, GeoDistUnit.km, sort=Some(GeoSortOrder.DESC)).futureValue
+          assert(r1.map(_.name) == List("K1", "K3", "K2"))
+          assert(r1 == r2.reverse)
+        }
+
+        "properly interpret count argument" in {
+          client.geoRadiusByMemberComplex("GRadius5", "K1", 50000, GeoDistUnit.km, count=Some(2))
+            .futureValue.map(_.name) should be(List("K1", "K3"))
+        }
+      }
     }
   }
 }
