@@ -432,9 +432,7 @@ class SetCommandsSpec extends WordSpec
     }
     "the set contains some elements" should {
       "return a random member and remove it" taggedAs (V100) in {
-        client.sAdd("SET", "A")
-        client.sAdd("SET", "B")
-        client.sAdd("SET", "C")
+        client.sAdd("SET", "A", "B", "C")
 
         val member1 = client.sPop("SET").futureValue
         member1 should contain oneOf ("A", "B", "C")
@@ -452,6 +450,30 @@ class SetCommandsSpec extends WordSpec
         client.sIsMember("SET", member3.get).futureValue should be (false)
 
         client.sPop("SET").futureValue should be (empty)
+      }
+    }
+  }
+
+  SPopCount.toString when {
+    "command" should {
+      "work as normal spop with count equal to one" in {
+        client.sAdd("SET_C1", "A", "B", "C")
+        val mbr = client.sPopCount("SET_C1", 1).futureValue
+        client.sCard("SET_C1").futureValue should be(2)
+        mbr should have size(1)
+        mbr should contain oneOf ("A", "B", "C")
+      }
+
+      "return number of elements requested by count" in {
+        client.sAdd("SET_C2", "A", "B", "C")
+        client.sPopCount("SET_C2", 3).futureValue.toSet should be(Set("A", "B", "C"))
+        client.sCard("SET_C2").futureValue should be(0)
+      }
+
+      "return whole set if count is bigger than a size of a set" in {
+        client.sAdd("SET_C3", "A", "B", "C")
+        client.sPopCount("SET_C3", 10).futureValue.toSet should be(Set("A", "B", "C"))
+        client.sCard("SET_C3").futureValue should be(0)
       }
     }
   }

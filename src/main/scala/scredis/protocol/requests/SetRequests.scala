@@ -107,11 +107,19 @@ object SetRequests {
   }
   
   case class SPop[R: Reader](key: String) extends Request[Option[R]](SPop, key) with Key {
-    override def decode = {
+    override def decode: Decoder[Option[R]] = {
       case b: BulkStringResponse => b.parsed[R]
     }
   }
-  
+
+  case class SPopCount[R: Reader](key: String, count: Int) extends Request[List[R]](SPop, key, count) with Key {
+    override def decode: Decoder[List[R]] = {
+      case a: ArrayResponse => a.parsed[Option[R], List] {
+        case b: BulkStringResponse => b.parsed[R]
+      }.flatten
+    }
+  }
+
   case class SRandMember[R: Reader](key: String) extends Request[Option[R]](SRandMember, key) with Key {
     override def decode = {
       case b: BulkStringResponse => b.parsed[R]
