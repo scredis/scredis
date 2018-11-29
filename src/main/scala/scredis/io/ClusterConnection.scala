@@ -114,7 +114,7 @@ abstract class ClusterConnection(
     val system = systemOpt.getOrElse(ActorSystem(UniqueNameGenerator.getUniqueName(systemName)))
 
     new AkkaNonBlockingConnection(
-      system = system, host = server.host, port = server.port, passwordOpt = None,
+      system = system, host = server.host, port = server.port, passwordOpt = passwordOpt = passwordOpt,,
       database = 0, nameOpt = None, decodersCount = 2,
       receiveTimeoutOpt, connectTimeout, maxWriteBatchSize, tcpSendBufferSizeHint,
       tcpReceiveBufferSizeHint, akkaListenerDispatcherPath, akkaIODispatcherPath,
