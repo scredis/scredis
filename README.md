@@ -117,8 +117,11 @@ Redis 2.8.13 running locally (on the same machine)
 
 ### Running the tests
 
-The tests require two Redis instances to be running with some specific configuration options set. 
-They can be started with the start-redis-test-instances.sh script.
+The tests require two Redis instances to be running with some specific configuration options set.
+They can be started with the `start-redis-test-instances.sh` script. Stopping is done with script `stop-redis.sh`
+
+Some tests require redis-cluster, redis-cluster can be started with `run-redis-cluster.sh`.
+6 redis instances will be started on ports 7000-7005 without authorization.
 
 ### Results
 
