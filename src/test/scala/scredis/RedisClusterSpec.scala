@@ -2,11 +2,10 @@ package scredis
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{Ignore, Matchers, WordSpec}
+import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-@Ignore
 class RedisClusterSpec extends WordSpec
   with Matchers
   with ScalaFutures

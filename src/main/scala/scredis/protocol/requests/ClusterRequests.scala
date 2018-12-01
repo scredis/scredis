@@ -216,6 +216,7 @@ object ClusterRequests {
     val fields = line.split(' ')
     val id = fields(0)
     val Array(host,port) = fields(1).split(':')
+    val pport = port.split("@")(0)
     val flags = fields(2).split(',').toVector
     val master = if (fields(3) == "-") None else Some(fields(3))
     val pingSent = fields(4).toLong
@@ -229,12 +230,19 @@ object ClusterRequests {
       }
     }.toVector
 
-    ClusterNode(id,Server(host,port.toInt),flags,master,pingSent,pongRecv,configEpoch,linkStateConnected,slots)
+    ClusterNode(id,Server(host,pport.toInt),flags,master,pingSent,pongRecv,configEpoch,linkStateConnected,slots)
   }
 
   def parseClusterNodes(raw: String): Seq[ClusterNode] = {
     // parse according to http://redis.io/commands/cluster-nodes#serialization-format
+    try {
+
     val lines = raw.split('\n')
     lines.map { line => parseClusterNode(line) }.toVector
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        throw e
+    }
   }
 }

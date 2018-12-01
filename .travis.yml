@@ -11,11 +11,14 @@ before_script:
   - redis-server --version
   - mkdir -p /tmp/redis-6380
   - redis-server ./src/test/resources/redis-6380.conf &
+  - docker run --rm --name redis -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003 -p 7004:7004 -p 7005:7005 grokzen/redis-cluster:4.0.11
 
 script:
   - sbt +compile
   - sbt -DF=3.0 test
 
+after_script:
+  - docker stop redis
 
 after_success:
   # - '[[ $TRAVIS_BRANCH == "master" ]] || [[ $TRAVIS_BRANCH =~ ^v[0-9.]+$ ]] && sbt "+ publish"'
