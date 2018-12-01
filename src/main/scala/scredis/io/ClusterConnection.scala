@@ -87,7 +87,7 @@ abstract class ClusterConnection(
       val newSlots =
         slotRanges.foldLeft(hashSlots) {
           case (slots, ClusterSlotRange((begin, end), master, replicas)) =>
-            val masterOpt = Option(master) map (_.server)
+            val masterOpt = Option(master).map(_.server)
             (begin.toInt to end.toInt).foldLeft(slots) { (s, i) => s.updated(i, masterOpt) }
         }
       this.synchronized {

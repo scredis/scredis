@@ -18,7 +18,7 @@ class ClusterCommandsSpec extends WordSpec
   with TableDrivenPropertyChecks {
 
 
-  private val cluster = RedisCluster(Server("localhost",7000))
+  private val cluster = RedisCluster((7000 to 7005).map(port => Server("localhost",port)))
 
   private val slots = Gen.choose(0l, Protocol.CLUSTER_HASHSLOTS.toLong - 1)
 
