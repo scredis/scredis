@@ -2,15 +2,22 @@ package scredis.io
 
 import java.net.InetSocketAddress
 
+import akka.Done
 import akka.actor._
-import akka.io.{IO, Tcp}
+import akka.io.Tcp.SO
+import akka.stream.QueueOfferResult.Enqueued
+import akka.stream.TLSProtocol.NegotiateNewSession
+import akka.stream.scaladsl.{Sink, Source, Tcp}
+import akka.stream.{ActorMaterializer, OverflowStrategy, QueueOfferResult}
 import akka.util.ByteString
+import javax.net.ssl.{KeyManagerFactory, SSLContext}
 import scredis.exceptions.RedisIOException
 import scredis.protocol.{Protocol, Request}
 
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.language.postfixOps
+import scala.util.{Failure, Success}
 
 class IOActor(
   listenerActor: ActorRef,
@@ -18,43 +25,77 @@ class IOActor(
   connectTimeout: FiniteDuration,
   maxWriteBatchSize: Int,
   tcpSendBufferSizeHint: Int,
-  tcpReceiveBufferSizeHint: Int
+  tcpReceiveBufferSizeHint: Int,
+  sslSettings: Option[(String, String)]
 ) extends Actor with ActorLogging {
-  
+
+  implicit val mat: ActorMaterializer = ActorMaterializer()
+
   import IOActor._
-  import Tcp._
-  import context.{dispatcher, system}
-  
-  private val scheduler = context.system.scheduler
-  
+  import context.system
+
+  val maxBuffSize: Int = maxWriteBatchSize + (0.25 * maxWriteBatchSize).toInt
+
   private val bufferPool = new scredis.util.BufferPool(
     maxCapacity = 1,
-    maxBufferSize = maxWriteBatchSize + (0.25 * maxWriteBatchSize).toInt
+    maxBufferSize = maxBuffSize
   )
-  
+
   private var batch: Seq[Request[_]] = Nil
   private var canWrite = false
-  private var timeoutCancellableOpt: Option[Cancellable] = None
-  
+
   protected val requests = new java.util.LinkedList[Request[_]]()
-  protected var connection: ActorRef = _
-  
+
+  protected val sink = Sink.foreach[ByteString](data => listenerActor ! akka.io.Tcp.Received(data))
+  protected val (queue, source) = Source.queue[ByteString](maxBuffSize, OverflowStrategy.fail).preMaterialize()
+
+  protected def createSSLContext(keystore: String, password: String): SSLContext = {
+    import java.io.{FileInputStream, IOException}
+    import java.security.KeyStore
+    try {
+      val passphrase = password.toCharArray
+      val ctx = SSLContext.getInstance("TLS")
+      val kmf = KeyManagerFactory.getInstance("SunX509")
+      val ks = KeyStore.getInstance("JKS")
+      ks.load(new FileInputStream(keystore), passphrase)
+      kmf.init(ks, passphrase)
+      ctx.init(kmf.getKeyManagers, null, null)
+      ctx
+    } catch {
+      case e: Exception =>
+        throw new IOException(e.getMessage)
+    }
+  }
+
   protected def connect(): Unit = {
     log.info(s"Connecting to $remote")
-    IO(Tcp) ! Connect(
-      remoteAddress = remote,
-      options = List[akka.io.Inet.SocketOption](
-        SO.KeepAlive(true),
-        SO.TcpNoDelay(true),
-        SO.ReuseAddress(true),
-        SO.SendBufferSize(tcpSendBufferSizeHint),
-        SO.ReceiveBufferSize(tcpReceiveBufferSizeHint)
-      ),
-      timeout = Some(connectTimeout)
+
+    val soptions = List[akka.io.Inet.SocketOption](
+      SO.KeepAlive(true),
+      SO.TcpNoDelay(true),
+      SO.ReuseAddress(true),
+      SO.SendBufferSize(tcpSendBufferSizeHint),
+      SO.ReceiveBufferSize(tcpReceiveBufferSizeHint)
     )
-    timeoutCancellableOpt = Some {
-      scheduler.scheduleOnce(2 seconds, self, ConnectTimeout)
+
+    val connection = sslSettings match {
+      case Some((keystore, password)) =>
+        val sslContext = createSSLContext(keystore, password)
+        Tcp().outgoingTlsConnection(remote, sslContext, NegotiateNewSession, options = soptions, connectTimeout = 2.seconds)
+      case None =>
+        Tcp().outgoingConnection(remote, options = soptions, connectTimeout = 2.seconds)
     }
+
+    val t = connection.runWith(source, sink)
+    t._2.onComplete {
+      case Success(Done) => self ! ConnectCompleted
+      case Failure(exception) => self ! ConnectFailure(exception)
+    }(context.dispatcher)
+
+    listenerActor ! ListenerActor.Connected
+    canWrite = true
+    write()
+    become(connected)
   }
   
   protected def requeueBatch(): Unit = {
@@ -91,7 +132,10 @@ class IOActor(
     buffer.flip()
     val data = ByteString(buffer)
     log.debug(s"Writing data: ${data.decodeString("UTF-8")}")
-    connection ! Write(data, WriteAck)
+    val qresult: Future[QueueOfferResult] = queue.offer(data)
+    import akka.pattern.pipe
+    implicit val ec = context.dispatcher
+    qresult.pipeTo(self)
     bufferPool.release(buffer)
     canWrite = false
     this.batch = requests
@@ -131,52 +175,33 @@ class IOActor(
   
   override def preStart(): Unit = {
     connect()
-    become(connecting)
   }
   
   def receive: Receive = fail
-  
-  def connecting: Receive = {
-    case Connected(remoteConnected, localAddress) =>
-      log.info(s"Connected to $remoteConnected from $localAddress")
-      connection = sender
-      connection ! Register(listenerActor)
-      context.watch(connection)
-      listenerActor ! ListenerActor.Connected
-      timeoutCancellableOpt.foreach(_.cancel())
-      canWrite = true
-      requeueBatch()
-      write()
-      become(connected)
-    case CommandFailed(_: Connect) =>
-      log.error(s"Could not connect to $remote: Command failed")
-      timeoutCancellableOpt.foreach(_.cancel())
-      context.stop(self)
-    case ConnectTimeout =>
-      log.error(s"Could not connect to $remote: Connect timeout")
-      context.stop(self)
-  }
-  
+
   def connected: Receive = {
     case request: Request[_] =>
       requests.addLast(request)
       if (canWrite) {
         write()
       }
-    case WriteAck =>
+    case Enqueued =>
       batch = Nil
       write()
-    case CommandFailed(_: Write) =>
-      log.error(s"Write failed")
-      write()
+
+    case ConnectCompleted =>
+      log.info(s"Connection stream closed.")
+
+    case ConnectFailure(ex) =>
+      log.error(ex, s"Connection stream encountered error, aborting")
+      abort()
   }
   
   def awaitingShutdown: Receive = {
     case request: Request[_] =>
       request.failure(RedisIOException("Connection is being shutdown"))
       listenerActor ! ListenerActor.Remove(1)
-    case WriteAck =>
-    case CommandFailed(_: Write) =>
+    case Enqueued =>
     case ShutdownAck => context.stop(self)
   }
   
@@ -184,34 +209,24 @@ class IOActor(
     case request: Request[_] =>
       request.failure(RedisIOException("Connection is being reset"))
       listenerActor ! ListenerActor.Remove(1)
-    case WriteAck =>
-    case CommandFailed(_: Write) =>
+    case Enqueued =>
     case AbortAck =>
-      connection ! Abort
-      timeoutCancellableOpt = Some {
-        scheduler.scheduleOnce(3 seconds, self, AbortTimeout)
-      }
+      queue.complete()
       become(aborting)
   }
   
   def aborting: Receive = {
-    case WriteAck =>
-    case CommandFailed(_: Write) =>
-    case Aborted =>
+    case Enqueued =>
     case Terminated(_) =>
-      timeoutCancellableOpt.foreach(_.cancel())
       context.stop(self)
-    case AbortTimeout =>
-      log.error(s"A timeout occurred while resetting the connection")
-      context.stop(connection)
   }
-  
 }
 
 object IOActor {
-  object WriteAck extends Tcp.Event
-  case object ConnectTimeout
-  case object AbortTimeout
+  case object ConnectCompleted
+  case class ConnectFailure(ex: Throwable)
+
+
   case object AbortAck
   case object ShutdownAck
   case object Shutdown

@@ -31,6 +31,7 @@ import scala.concurrent.duration._
 class Client(
   host: String = RedisConfigDefaults.Redis.Host,
   port: Int = RedisConfigDefaults.Redis.Port,
+  sslSettings: Option[(String, String)] = RedisConfigDefaults.Redis.SSLConfigSettings,
   passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
   database: Int = RedisConfigDefaults.Redis.Database,
   nameOpt: Option[String] = RedisConfigDefaults.Redis.NameOpt,
@@ -47,6 +48,7 @@ class Client(
   system = system,
   host = host,
   port = port,
+  sslSettings = sslSettings,
   passwordOpt = passwordOpt,
   database = database,
   nameOpt = nameOpt,

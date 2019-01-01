@@ -31,6 +31,7 @@ import scala.concurrent.duration._
 class SubscriberClient(
   host: String = RedisConfigDefaults.Redis.Host,
   port: Int = RedisConfigDefaults.Redis.Port,
+  sslSettings: Option[(String, String)] = RedisConfigDefaults.Redis.SSLConfigSettings,
   passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
   nameOpt: Option[String] = RedisConfigDefaults.Redis.NameOpt,
   connectTimeout: FiniteDuration = RedisConfigDefaults.IO.ConnectTimeout,
@@ -45,6 +46,7 @@ class SubscriberClient(
   system = system,
   host = host,
   port = port,
+  sslSettings = sslSettings,
   passwordOpt = passwordOpt,
   nameOpt = nameOpt,
   connectTimeout = connectTimeout,

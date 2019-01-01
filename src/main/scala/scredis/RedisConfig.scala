@@ -56,6 +56,13 @@ class RedisConfig(config: Config = ConfigFactory.load().getConfig("scredis")) {
       config.getString("name")
     }
 
+    val sslConfig = config.getConfig("ssl")
+    val sslEnabled = sslConfig.getBoolean("enabled")
+
+    val SSLConfigSettings: Option[(String, String)] =
+      if (sslEnabled) Some(sslConfig.getString("keystore"), sslConfig.getString("password"))
+      else None
+
     val ClusterNodes: List[Server] = config.getStringList("cluster-nodes").asScala.map { node =>
       val hostPort = node.split(':')
       if (hostPort.size == 1)

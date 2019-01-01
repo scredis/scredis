@@ -15,6 +15,7 @@ import scala.language.existentials
 class SubscriberListenerActor(
   host: String,
   port: Int,
+  sslSettings: Option[(String, String)],
   passwordOpt: Option[String],
   nameOpt: Option[String],
   decodersCount: Int,
@@ -28,6 +29,7 @@ class SubscriberListenerActor(
 ) extends ListenerActor(
   host = host,
   port = port,
+  sslSettings = sslSettings,
   passwordOpt = passwordOpt,
   database = 0,
   nameOpt = nameOpt,

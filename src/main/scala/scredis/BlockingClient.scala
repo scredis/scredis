@@ -33,6 +33,7 @@ import scala.util.Try
 class BlockingClient(
   host: String = RedisConfigDefaults.Redis.Host,
   port: Int = RedisConfigDefaults.Redis.Port,
+  sslSettings: Option[(String, String)] = RedisConfigDefaults.Redis.SSLConfigSettings,
   passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
   database: Int = RedisConfigDefaults.Redis.Database,
   nameOpt: Option[String] = RedisConfigDefaults.Redis.NameOpt,
@@ -48,6 +49,7 @@ class BlockingClient(
   system = system,
   host = host,
   port = port,
+  sslSettings = sslSettings,
   passwordOpt = passwordOpt,
   database = database,
   nameOpt = nameOpt,

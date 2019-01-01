@@ -14,6 +14,7 @@ abstract class AbstractAkkaConnection(
   protected val system: ActorSystem,
   val host: String,
   val port: Int,
+  val sslSettings: Option[(String, String)],
   @volatile protected var passwordOpt: Option[String],
   @volatile protected var database: Int,
   @volatile protected var nameOpt: Option[String],

@@ -22,6 +22,7 @@ import scredis.Transaction._
 class ListenerActor(
   host: String,
   port: Int,
+  sslSettings: Option[(String, String)],
   var passwordOpt: Option[String],
   var database: Int,
   var nameOpt: Option[String],
@@ -66,7 +67,8 @@ class ListenerActor(
       connectTimeout,
       maxWriteBatchSize,
       tcpSendBufferSizeHint,
-      tcpReceiveBufferSizeHint
+      tcpReceiveBufferSizeHint,
+      sslSettings
     ).withDispatcher(akkaIODispatcherPath),
     UniqueNameGenerator.getUniqueName(s"${nameOpt.getOrElse(s"$host-$port")}-io-actor")
   )
@@ -157,7 +159,7 @@ class ListenerActor(
       (responsesCount, 0)
     }
     val requests = ListBuffer[Request[_]]()
-    for (i <- 1 to count) {
+    for (_ <- 1 to count) {
       requests += this.requests.pop()
     }
     decoders.route(DecoderActor.Partition(data, requests.toList.iterator, skip), self)

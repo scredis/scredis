@@ -2,11 +2,17 @@
 name := "scredis"
 organization := "com.github.scredis"
 
-scalaVersion := "2.12.7"
+scalaVersion := "2.12.8"
 crossScalaVersions := Seq("2.11.12", scalaVersion.value)
 
-scalacOptions ++= Seq("-deprecation", "-feature", "-Xfatal-warnings",
-  "-Ywarn-dead-code", "-Ywarn-infer-any", "-Ywarn-unused-import")
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-feature",
+  "-Xfatal-warnings",
+  "-Ywarn-dead-code",
+  "-Ywarn-infer-any",
+  "-Ywarn-unused-import"
+)
 
 scalacOptions in (Compile,doc) := Seq("-no-link-warnings")
 autoAPIMappings := true
@@ -21,10 +27,15 @@ buildInfoOptions += BuildInfoOption.BuildTime
 
 git.remoteRepo := "git@github.com:scredis/scredis.git"
 
+val akkaV = "2.5.19"
+val scalaLoggingV = "3.9.0"
+val configV = "1.3.3"
+
 libraryDependencies ++= Seq(
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
-  "com.typesafe" % "config" % "1.3.3",
-  "com.typesafe.akka" %% "akka-actor" % "2.5.17",
+  "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingV,
+  "com.typesafe" % "config" % configV,
+  "com.typesafe.akka" %% "akka-actor" % akkaV,
+  "com.typesafe.akka" %% "akka-stream" % akkaV,
 
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,

@@ -111,15 +111,25 @@ abstract class ClusterConnection(
   /** Creates a new connection to a server. */
   private def makeConnection(server: Server, systemOpt:Option[ActorSystem]): NonBlockingConnection = {
     val systemName = RedisConfigDefaults.IO.Akka.ActorSystemName
-    val system = systemOpt.getOrElse(ActorSystem(UniqueNameGenerator.getUniqueName(systemName)))
-    val passwordOpt = RedisConfigDefaults.Config.Redis.PasswordOpt
 
     new AkkaNonBlockingConnection(
-      system = system, host = server.host, port = server.port, passwordOpt = passwordOpt,
-      database = 0, nameOpt = None, decodersCount = 2,
-      receiveTimeoutOpt, connectTimeout, maxWriteBatchSize, tcpSendBufferSizeHint,
-      tcpReceiveBufferSizeHint, akkaListenerDispatcherPath, akkaIODispatcherPath,
-      akkaDecoderDispatcherPath, failCommandOnConnecting
+      system = systemOpt.getOrElse(ActorSystem(UniqueNameGenerator.getUniqueName(systemName))),
+      host = server.host,
+      port = server.port,
+      sslSettings = RedisConfigDefaults.Redis.SSLConfigSettings,
+      passwordOpt = RedisConfigDefaults.Config.Redis.PasswordOpt,
+      database = 0,
+      nameOpt = None,
+      decodersCount = 2,
+      receiveTimeoutOpt,
+      connectTimeout,
+      maxWriteBatchSize,
+      tcpSendBufferSizeHint,
+      tcpReceiveBufferSizeHint,
+      akkaListenerDispatcherPath,
+      akkaIODispatcherPath,
+      akkaDecoderDispatcherPath,
+      failCommandOnConnecting
     ) {}
   }
 
