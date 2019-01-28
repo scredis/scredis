@@ -10,3 +10,5 @@ dump.rdb
 tmp/
 logs/
 version.tmp
+
+store.jks

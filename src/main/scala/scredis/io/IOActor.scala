@@ -10,7 +10,7 @@ import akka.stream.TLSProtocol.NegotiateNewSession
 import akka.stream.scaladsl.{Sink, Source, Tcp}
 import akka.stream.{ActorMaterializer, OverflowStrategy, QueueOfferResult}
 import akka.util.ByteString
-import javax.net.ssl.{KeyManagerFactory, SSLContext}
+import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 import scredis.exceptions.RedisIOException
 import scredis.protocol.{Protocol, Request}
 
@@ -55,14 +55,21 @@ class IOActor(
     try {
       val passphrase = password.toCharArray
       val ctx = SSLContext.getInstance("TLS")
-      val kmf = KeyManagerFactory.getInstance("SunX509")
+      val kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
       val ks = KeyStore.getInstance("JKS")
       ks.load(new FileInputStream(keystore), passphrase)
       kmf.init(ks, passphrase)
-      ctx.init(kmf.getKeyManagers, null, null)
+
+      val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
+      tmf.init(ks)
+
+      ctx.init(kmf.getKeyManagers, tmf.getTrustManagers, null)
+
+
       ctx
     } catch {
       case e: Exception =>
+        log.error(e, "Unable to create proper SSL Context")
         throw new IOException(e.getMessage)
     }
   }

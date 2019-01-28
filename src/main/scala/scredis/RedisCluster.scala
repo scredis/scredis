@@ -30,6 +30,8 @@ class RedisCluster private[scredis](
     tryAgainWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.TryAgainWait,
     clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
     systemOpt:Option[ActorSystem] = None,
+    sslSettings: Option[(String, String)] = RedisConfigDefaults.Redis.SSLConfigSettings,
+    password: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
     failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
   )
   extends ClusterConnection(
@@ -44,6 +46,8 @@ class RedisCluster private[scredis](
     tryAgainWait = tryAgainWait,
     clusterDownWait = clusterDownWait,
     systemOpt = systemOpt,
+    sslSettings = sslSettings,
+    password = password,
     failCommandOnConnecting = failCommandOnConnecting
   ) with Connection
   with ClusterCommands
@@ -139,6 +143,8 @@ object RedisCluster {
     tryAgainWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.TryAgainWait,
     clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
     systemOpt: Option[ActorSystem] = None,
+    sslSettings: Option[(String, String)] = RedisConfigDefaults.Redis.SSLConfigSettings,
+    password: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
     failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
   ) = new RedisCluster(
     nodes = nodes,
@@ -152,6 +158,8 @@ object RedisCluster {
     tryAgainWait = tryAgainWait,
     clusterDownWait = clusterDownWait,
     systemOpt = systemOpt,
+    sslSettings = sslSettings,
+    password = password,
     failCommandOnConnecting = failCommandOnConnecting
   )
 
