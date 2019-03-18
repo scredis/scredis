@@ -30,7 +30,8 @@ class RedisCluster private[scredis](
     tryAgainWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.TryAgainWait,
     clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
     systemOpt:Option[ActorSystem] = None,
-    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
+    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting,
+    passwordOpt: Option[String] = RedisConfigDefaults.Config.Redis.PasswordOpt
   )
   extends ClusterConnection(
     nodes = nodes,
