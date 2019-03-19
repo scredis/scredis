@@ -45,7 +45,8 @@ class RedisCluster private[scredis](
     tryAgainWait = tryAgainWait,
     clusterDownWait = clusterDownWait,
     systemOpt = systemOpt,
-    failCommandOnConnecting = failCommandOnConnecting
+    failCommandOnConnecting = failCommandOnConnecting,
+    passwordOpt = passwordOpt
   ) with Connection
   with ClusterCommands
   with HashCommands
@@ -81,7 +82,8 @@ class RedisCluster private[scredis](
     tryAgainWait = config.IO.Cluster.TryAgainWait,
     clusterDownWait = config.IO.Cluster.ClusterDownWait,
     systemOpt = systemOpt,
-    failCommandOnConnecting = config.Global.FailCommandOnConnecting
+    failCommandOnConnecting = config.Global.FailCommandOnConnecting,
+    passwordOpt = config.Redis.PasswordOpt
   )
 
   /**
@@ -124,6 +126,8 @@ object RedisCluster {
     * @param tryAgainWait time to wait after a TRYAGAIN response by a cluster node
     * @param clusterDownWait time to wait for a retry after CLUSTERDOWN response
     * @param systemOpt Actor System (optionally)
+    * @param failCommandOnConnecting indicates whether to fail fast on all requests until there is a working connection.
+    * @param passwordOpt Auth password (optionally)
     * @return the constructed $redisCluster
     */
   def apply(
@@ -140,7 +144,8 @@ object RedisCluster {
     tryAgainWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.TryAgainWait,
     clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
     systemOpt: Option[ActorSystem] = None,
-    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
+    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting,
+    passwordOpt: Option[String] = RedisConfigDefaults.Config.Redis.PasswordOpt
   ) = new RedisCluster(
     nodes = nodes,
     maxRetries = maxRetries,
@@ -153,7 +158,8 @@ object RedisCluster {
     tryAgainWait = tryAgainWait,
     clusterDownWait = clusterDownWait,
     systemOpt = systemOpt,
-    failCommandOnConnecting = failCommandOnConnecting
+    failCommandOnConnecting = failCommandOnConnecting,
+    passwordOpt = passwordOpt
   )
 
 
