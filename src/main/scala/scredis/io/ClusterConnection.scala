@@ -34,7 +34,8 @@ abstract class ClusterConnection(
     tryAgainWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.TryAgainWait,
     clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
     systemOpt:Option[ActorSystem] = None,
-    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
+    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting,
+    passwordOpt: Option[String] = RedisConfigDefaults.Config.Redis.PasswordOpt
   ) extends NonBlockingConnection with LazyLogging {
 
   private val maxHashMisses = 100
@@ -112,7 +113,6 @@ abstract class ClusterConnection(
   private def makeConnection(server: Server, systemOpt:Option[ActorSystem]): NonBlockingConnection = {
     val systemName = RedisConfigDefaults.IO.Akka.ActorSystemName
     val system = systemOpt.getOrElse(ActorSystem(UniqueNameGenerator.getUniqueName(systemName)))
-    val passwordOpt = RedisConfigDefaults.Config.Redis.PasswordOpt
 
     new AkkaNonBlockingConnection(
       system = system, host = server.host, port = server.port, passwordOpt = passwordOpt,
