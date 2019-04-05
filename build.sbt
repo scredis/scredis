@@ -24,12 +24,12 @@ git.remoteRepo := "git@github.com:scredis/scredis.git"
 libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
   "com.typesafe" % "config" % "1.3.3",
-  "com.typesafe.akka" %% "akka-actor" % "2.5.17",
+  "com.typesafe.akka" %% "akka-actor" % "2.5.22",
 
-  "org.scalatest" %% "scalatest" % "3.0.5" % Test,
+  "org.scalatest" %% "scalatest" % "3.0.7" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
   "com.storm-enroute" %% "scalameter" % "0.8.2" % Test,
-  "org.slf4j" % "slf4j-simple" % "1.7.25" % Test
+  "org.slf4j" % "slf4j-simple" % "1.7.26" % Test
 )
 
 Test / testOptions += Tests.Argument("-F", sys.props.getOrElse("F", "1.0"))
