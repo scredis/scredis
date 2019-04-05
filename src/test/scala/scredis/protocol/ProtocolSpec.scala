@@ -4,9 +4,9 @@ package scredis.protocol
 import akka.util.ByteString
 import org.scalacheck.Gen
 import org.scalatest._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class ProtocolSpec extends WordSpec with GeneratorDrivenPropertyChecks with Inside
+class ProtocolSpec extends WordSpec with ScalaCheckDrivenPropertyChecks with Inside
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers {
