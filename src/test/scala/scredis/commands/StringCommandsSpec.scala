@@ -2,7 +2,7 @@ package scredis.commands
 
 import org.scalatest._
 import org.scalatest.concurrent._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scredis._
 import scredis.exceptions._
 import scredis.protocol.requests.StringRequests._
@@ -17,7 +17,7 @@ class StringCommandsSpec extends WordSpec
   with BeforeAndAfterAll
   with Matchers
   with ScalaFutures
-  with GeneratorDrivenPropertyChecks {
+  with ScalaCheckDrivenPropertyChecks {
   
   private val client = Client()
   private val SomeValue = "HelloWorld!虫àéç蟲"

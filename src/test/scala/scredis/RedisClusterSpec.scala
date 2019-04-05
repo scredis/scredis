@@ -1,15 +1,15 @@
 package scredis
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{Matchers, WordSpec}
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class RedisClusterSpec extends WordSpec
   with Matchers
   with ScalaFutures
-  with GeneratorDrivenPropertyChecks {
+  with ScalaCheckDrivenPropertyChecks {
 
   val keys = org.scalacheck.Arbitrary.arbString.arbitrary
 

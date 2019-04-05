@@ -2,8 +2,9 @@ package scredis.commands
 
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.prop.{GeneratorDrivenPropertyChecks, TableDrivenPropertyChecks}
+import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{Matchers, WordSpec}
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scredis.exceptions.RedisErrorResponseException
 import scredis.protocol.Protocol
 import scredis.protocol.requests.ClusterRequests._
@@ -14,7 +15,7 @@ import scala.concurrent.duration._
 class ClusterCommandsSpec extends WordSpec
   with Matchers
   with ScalaFutures
-  with GeneratorDrivenPropertyChecks
+  with ScalaCheckDrivenPropertyChecks
   with TableDrivenPropertyChecks {
 
 

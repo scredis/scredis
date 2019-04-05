@@ -3,10 +3,10 @@ package scredis.protocol
 import java.nio.ByteBuffer
 
 import org.scalatest._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scredis.{ClusterSlotRange, ClusterSlotRangeNodeInfo, Server}
 
-class ResponseSpec extends WordSpec with GeneratorDrivenPropertyChecks with Inside
+class ResponseSpec extends WordSpec with ScalaCheckDrivenPropertyChecks with Inside
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers {
