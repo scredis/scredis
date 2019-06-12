@@ -1,10 +1,10 @@
 package scredis.protocol.requests
 
 import org.scalatest._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scredis.{ClusterNode, Server}
 
-class RequestSpec extends WordSpec with GeneratorDrivenPropertyChecks with Inside
+class RequestSpec extends WordSpec with ScalaCheckDrivenPropertyChecks with Inside
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers {
