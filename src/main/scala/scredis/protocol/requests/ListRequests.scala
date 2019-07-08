@@ -114,11 +114,10 @@ object ListRequests {
     }
   }
   
-  case class LRange[R: Reader, CC[X] <: Traversable[X]](key: String, start: Long, end: Long)(
-    implicit cbf: CanBuildFrom[Nothing, R, CC[R]]
-  ) extends Request[CC[R]](LRange, key, start, end) with Key {
+  case class LRange[R: Reader](key: String, start: Long, end: Long)
+    extends Request[List[R]](LRange, key, start, end) with Key {
     override def decode = {
-      case a: ArrayResponse => a.parsed[R, CC] {
+      case a: ArrayResponse => a.parsed[R, List] {
         case b: BulkStringResponse => b.flattened[R]
       }
     }

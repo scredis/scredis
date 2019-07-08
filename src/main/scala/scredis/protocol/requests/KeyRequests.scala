@@ -4,7 +4,7 @@ import scala.language.higherKinds
 import scredis.protocol._
 import scredis.serialization.{ Reader, Writer }
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.Factory
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration
 
@@ -41,7 +41,7 @@ object KeyRequests {
     key: String,
     byOpt: Option[String],
     limitOpt: Option[(Long, Long)],
-    get: Traversable[String],
+    get: Iterable[String],
     desc: Boolean,
     alpha: Boolean,
     storeKeyOpt: Option[String]
@@ -105,8 +105,8 @@ object KeyRequests {
     }
   }
   
-  case class Keys[CC[X] <: Traversable[X]](pattern: String)(
-    implicit cbf: CanBuildFrom[Nothing, String, CC[String]]
+  case class Keys[CC[X] <: Iterable[X]](pattern: String)(
+    implicit factory: Factory[String, CC[String]]
   ) extends Request[CC[String]](Keys, pattern) {
     override def decode = {
       case a: ArrayResponse => a.parsed[String, CC] {
@@ -227,9 +227,9 @@ object KeyRequests {
     }
   }
   
-  case class Scan[CC[X] <: Traversable[X]](
+  case class Scan(
     cursor: Long, matchOpt: Option[String], countOpt: Option[Int]
-  )(implicit cbf: CanBuildFrom[Nothing, String, CC[String]]) extends Request[(Long, CC[String])](
+  ) extends Request[(Long, Set[String])](
     Scan,
     generateScanLikeArgs(
       keyOpt = None,
@@ -239,29 +239,27 @@ object KeyRequests {
     ): _*
   ) {
     override def decode = {
-      case a: ArrayResponse => a.parsedAsScanResponse[String, CC] {
-        case a: ArrayResponse => a.parsed[String, CC] {
+      case a: ArrayResponse => a.parsedAsScanResponse[String, Set] {
+        case a: ArrayResponse => a.parsed[String, Set] {
           case b: BulkStringResponse => b.flattened[String]
         }
       }
     }
   }
   
-  case class Sort[R: Reader, CC[X] <: Traversable[X]](
+  case class Sort[R: Reader](
     key: String,
     byOpt: Option[String],
     limitOpt: Option[(Long, Long)],
-    get: Traversable[String],
+    get: Iterable[String],
     desc: Boolean,
     alpha: Boolean
-  )(
-    implicit cbf: CanBuildFrom[Nothing, Option[R], CC[Option[R]]]
-  ) extends Request[CC[Option[R]]](
+  ) extends Request[List[Option[R]]](
     Sort,
     generateSortArgs(key, byOpt, limitOpt, get, desc, alpha, None): _*
   ) with Key {
     override def decode = {
-      case a: ArrayResponse => a.parsed[Option[R], CC] {
+      case a: ArrayResponse => a.parsed[Option[R], List] {
         case b: BulkStringResponse => b.parsed[R]
       }
     }
@@ -272,7 +270,7 @@ object KeyRequests {
     targetKey: String,
     byOpt: Option[String],
     limitOpt: Option[(Long, Long)],
-    get: Traversable[String],
+    get: Iterable[String],
     desc: Boolean,
     alpha: Boolean
   ) extends Request[Long](

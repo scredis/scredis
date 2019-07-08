@@ -1,22 +1,21 @@
 package scredis.util
 
-import scala.collection.SortedSetLike
 import scala.collection.generic._
 import scala.collection.immutable.SortedSet
-import scala.collection.mutable.{ Builder, LinkedHashSet => MLinkedHashSet }
+import scala.collection.mutable.{Builder, LinkedHashSet => MLinkedHashSet}
 
 /**
  * Represents an '''immutable''' linked hash set.
  */
 class LinkedHashSet[A](elems: A*) extends SortedSet[A]
-  with SortedSetLike[A, LinkedHashSet[A]]
+//  with SortedSetLike[A, LinkedHashSet[A]]
   with Serializable {
 
   override def stringPrefix = "LinkedHashSet"
 
   private val set = MLinkedHashSet[A](elems: _*)
 
-  override def companion: GenericCompanion[LinkedHashSet] = LinkedHashSet
+//  override def companion: GenericCompanion[LinkedHashSet] = LinkedHashSet
   override def empty = LinkedHashSet.empty
 
   def +(elem: A): LinkedHashSet[A] = {
@@ -103,19 +102,21 @@ class LinkedHashSet[A](elems: A*) extends SortedSet[A]
 
 }
 
-object LinkedHashSet extends ImmutableSetFactory[LinkedHashSet] {
+object LinkedHashSet extends scala.collection.IterableFactory[LinkedHashSet] {
   
-  class LinkedHashSetBuilder[A](empty: MLinkedHashSet[A]) extends Builder[A, LinkedHashSet[A]] {
-    protected var elems: MLinkedHashSet[A] = empty
-    def +=(x: A): this.type = { elems += x; this }
-    def clear(): Unit = { elems = empty }
-    def result: LinkedHashSet[A] = new LinkedHashSet[A](elems.toList: _*)
-  }
-  
-  implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, LinkedHashSet[A]] = setCanBuildFrom
-  override def newBuilder[A]: Builder[A, LinkedHashSet[A]] =
-    new LinkedHashSetBuilder[A](MLinkedHashSet.empty)
+//  class LinkedHashSetBuilder[A](empty: MLinkedHashSet[A]) extends Builder[A, LinkedHashSet[A]] {
+//    protected var elems: MLinkedHashSet[A] = empty
+//    def +=(x: A): this.type = { elems += x; this }
+//    def clear(): Unit = { elems = empty }
+//    def result: LinkedHashSet[A] = new LinkedHashSet[A](elems.toList: _*)
+//  }
+//
+//  implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, LinkedHashSet[A]] = setCanBuildFrom
+//  override def newBuilder[A]: Builder[A, LinkedHashSet[A]] =
+//    new LinkedHashSetBuilder[A](MLinkedHashSet.empty)
+
   override def empty[A]: LinkedHashSet[A] = new LinkedHashSet[A]
-  def emptyInstance = new LinkedHashSet[Any]
+
+//  def emptyInstance = new LinkedHashSet[Any]
 }
 

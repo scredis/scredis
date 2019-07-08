@@ -181,11 +181,10 @@ object ServerRequests {
     }
   }
   
-  case class CommandGetKeys[CC[X] <: Traversable[X]](command: String)(
-    implicit cbf: CanBuildFrom[Nothing, String, CC[String]]
-  ) extends Request[CC[String]](CommandGetKeys, command.split("\\s+"): _*) {
+  case class CommandGetKeys(command: String)
+    extends Request[List[String]](CommandGetKeys, command.split("\\s+"): _*) {
     override def decode = {
-      case a: ArrayResponse => a.parsed[String, CC] {
+      case a: ArrayResponse => a.parsed[String, List] {
         case b: BulkStringResponse => b.flattened[String]
       }
     }
@@ -352,14 +351,13 @@ object ServerRequests {
     }
   }
   
-  case class SlowLogGet[CC[X] <: Traversable[X]](countOpt: Option[Int])(
-    implicit cbf: CanBuildFrom[Nothing, scredis.SlowLogEntry, CC[scredis.SlowLogEntry]]
-  ) extends Request[CC[scredis.SlowLogEntry]](
+  case class SlowLogGet(countOpt: Option[Int])
+    extends Request[List[scredis.SlowLogEntry]](
     SlowLogGet, countOpt.toSeq: _*
   ) {
-    override def decode: PartialFunction[Response, CC[scredis.SlowLogEntry]] = {
+    override def decode: PartialFunction[Response, List[scredis.SlowLogEntry]] = {
       case a: ArrayResponse =>
-        a.parsed[scredis.SlowLogEntry, CC] {
+        a.parsed[scredis.SlowLogEntry, List] {
         case a: ArrayResponse => {
           val data = a.parsed[Any, IndexedSeq] {
             case IntegerResponse(value) => value

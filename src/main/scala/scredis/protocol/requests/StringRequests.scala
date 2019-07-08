@@ -136,11 +136,10 @@ object StringRequests {
     }
   }
   
-  case class MGet[R: Reader, CC[X] <: Traversable[X]](keys: String*)(
-    implicit cbf: CanBuildFrom[Nothing, Option[R], CC[Option[R]]]
-  ) extends Request[CC[Option[R]]](MGet, keys: _*) with Key {
+  case class MGet[R: Reader](keys: String*)
+    extends Request[List[Option[R]]](MGet, keys: _*) with Key {
     override def decode = {
-      case a: ArrayResponse => a.parsed[Option[R], CC] {
+      case a: ArrayResponse => a.parsed[Option[R], List] {
         case b: BulkStringResponse => b.parsed[R]
       }
     }

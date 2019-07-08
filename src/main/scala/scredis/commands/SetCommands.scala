@@ -52,7 +52,7 @@ trait SetCommands { self: NonBlockingConnection =>
    * @since 1.0.0
    */
   def sDiff[R: Reader](key: String, keys: String*): Future[Set[R]] = send(
-    SDiff[R, Set](key +: keys: _*)
+    SDiff[R](key +: keys: _*)
   )
   
   /**
@@ -82,7 +82,7 @@ trait SetCommands { self: NonBlockingConnection =>
    *
    * @since 1.0.0
    */
-  def sInter[R: Reader](keys: String*): Future[Set[R]] = send(SInter[R, Set](keys: _*))
+  def sInter[R: Reader](keys: String*): Future[Set[R]] = send(SInter[R](keys: _*))
   
   /**
    * Intersects multiple sets and stores the resulting set in a key.
@@ -124,7 +124,7 @@ trait SetCommands { self: NonBlockingConnection =>
    *
    * @since 1.0.0
    */
-  def sMembers[R: Reader](key: String): Future[Set[R]] = send(SMembers[R, Set](key))
+  def sMembers[R: Reader](key: String): Future[Set[R]] = send(SMembers[R](key))
   
   /**
    * Moves a member from one set to another.
@@ -195,7 +195,7 @@ trait SetCommands { self: NonBlockingConnection =>
    * @since 2.6.0
    */
   def sRandMembers[R: Reader](key: String, count: Int = 1): Future[Set[R]] = send(
-    SRandMembers[R, Set](key, count)
+    SRandMembers[R](key, count)
   )
   
   /**
@@ -230,7 +230,7 @@ trait SetCommands { self: NonBlockingConnection =>
     matchOpt: Option[String] = None,
     countOpt: Option[Int] = None
   ): Future[(Long, Set[R])] = send(
-    SScan[R, Set](
+    SScan[R](
       key = key,
       cursor = cursor,
       matchOpt = matchOpt,
@@ -248,7 +248,7 @@ trait SetCommands { self: NonBlockingConnection =>
    * @since 1.0.0
    */
   def sUnion[R: Reader](keys: String*): Future[Set[R]] = send(
-    SUnion[R, Set](keys: _*)
+    SUnion[R](keys: _*)
   )
   
   /**
