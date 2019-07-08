@@ -108,7 +108,7 @@ object LinkedHashSet extends ImmutableSetFactory[LinkedHashSet] {
   class LinkedHashSetBuilder[A](empty: MLinkedHashSet[A]) extends Builder[A, LinkedHashSet[A]] {
     protected var elems: MLinkedHashSet[A] = empty
     def +=(x: A): this.type = { elems += x; this }
-    def clear() { elems = empty }
+    def clear(): Unit = { elems = empty }
     def result: LinkedHashSet[A] = new LinkedHashSet[A](elems.toList: _*)
   }
   
