@@ -5,7 +5,7 @@ import scala.language.higherKinds
 import scredis.protocol._
 import scredis.serialization.{ Reader, Writer }
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.Factory
 
 object SortedSetRequests {
   
@@ -107,8 +107,8 @@ object SortedSetRequests {
     }
   }
   
-  case class ZRange[R: Reader, CC[X] <: Traversable[X]](key: String, start: Long, stop: Long)(
-    implicit cbf: CanBuildFrom[Nothing, R, CC[R]]
+  case class ZRange[R: Reader, CC[X] <: Iterable[X]](key: String, start: Long, stop: Long)(
+    implicit factory: Factory[R, CC[R]]
   ) extends Request[CC[R]](ZRange, key, start, stop) with Key {
     override def decode = {
       case a: ArrayResponse => a.parsed[R, CC] {
@@ -117,10 +117,10 @@ object SortedSetRequests {
     }
   }
   
-  case class ZRangeWithScores[R: Reader, CC[X] <: Traversable[X]](
+  case class ZRangeWithScores[R: Reader, CC[X] <: Iterable[X]](
     key: String, start: Long, stop: Long
   )(
-    implicit cbf: CanBuildFrom[Nothing, (R, scredis.Score), CC[(R, scredis.Score)]]
+    implicit factory: Factory[(R, scredis.Score), CC[(R, scredis.Score)]]
   ) extends Request[CC[(R, scredis.Score)]](ZRange, key, start, stop, WithScores) with Key {
     override def decode = {
       case a: ArrayResponse => a.parsedAsPairs[R, scredis.Score, CC] {
@@ -131,12 +131,12 @@ object SortedSetRequests {
     }
   }
   
-  case class ZRangeByLex[R: Reader, CC[X] <: Traversable[X]](
+  case class ZRangeByLex[R: Reader, CC[X] <: Iterable[X]](
     key: String,
     min: scredis.LexicalScoreLimit,
     max: scredis.LexicalScoreLimit,
     limitOpt: Option[(Long, Int)]
-  )(implicit cbf: CanBuildFrom[Nothing, R, CC[R]]) extends Request[CC[R]](
+  )(implicit factory: Factory[R, CC[R]]) extends Request[CC[R]](
     ZRangeByLex, key +: min.stringValue +: max.stringValue +: {
       limitOpt match {
         case Some((offset, count)) => Seq(Limit, offset, count)
@@ -151,12 +151,12 @@ object SortedSetRequests {
     }
   }
   
-  case class ZRangeByScore[R: Reader, CC[X] <: Traversable[X]](
+  case class ZRangeByScore[R: Reader, CC[X] <: Iterable[X]](
     key: String,
     min: scredis.ScoreLimit,
     max: scredis.ScoreLimit,
     limitOpt: Option[(Long, Int)]
-  )(implicit cbf: CanBuildFrom[Nothing, R, CC[R]]) extends Request[CC[R]](
+  )(implicit factory: Factory[R, CC[R]]) extends Request[CC[R]](
     ZRangeByScore, key +: min.stringValue +: max.stringValue +: {
       limitOpt match {
         case Some((offset, count)) => Seq(Limit, offset, count)
@@ -171,13 +171,13 @@ object SortedSetRequests {
     }
   }
   
-  case class ZRangeByScoreWithScores[R: Reader, CC[X] <: Traversable[X]](
+  case class ZRangeByScoreWithScores[R: Reader, CC[X] <: Iterable[X]](
     key: String,
     min: scredis.ScoreLimit,
     max: scredis.ScoreLimit,
     limitOpt: Option[(Long, Int)]
   )(
-    implicit cbf: CanBuildFrom[Nothing, (R, scredis.Score), CC[(R, scredis.Score)]]
+    implicit factory: Factory[(R, scredis.Score), CC[(R, scredis.Score)]]
   ) extends Request[CC[(R, scredis.Score)]](
     ZRangeByScore, key +: min.stringValue +: max.stringValue +: WithScores +: {
       limitOpt match {
@@ -240,8 +240,8 @@ object SortedSetRequests {
     }
   }
   
-  case class ZRevRange[R: Reader, CC[X] <: Traversable[X]](key: String, start: Long, stop: Long)(
-    implicit cbf: CanBuildFrom[Nothing, R, CC[R]]
+  case class ZRevRange[R: Reader, CC[X] <: Iterable[X]](key: String, start: Long, stop: Long)(
+    implicit factory: Factory[R, CC[R]]
   ) extends Request[CC[R]](ZRevRange, key, start, stop) with Key {
     override def decode = {
       case a: ArrayResponse => a.parsed[R, CC] {
@@ -250,10 +250,10 @@ object SortedSetRequests {
     }
   }
   
-  case class ZRevRangeWithScores[R: Reader, CC[X] <: Traversable[X]](
+  case class ZRevRangeWithScores[R: Reader, CC[X] <: Iterable[X]](
     key: String, start: Long, stop: Long
   )(
-    implicit cbf: CanBuildFrom[Nothing, (R, scredis.Score), CC[(R, scredis.Score)]]
+    implicit factory: Factory[(R, scredis.Score), CC[(R, scredis.Score)]]
   ) extends Request[CC[(R, scredis.Score)]](ZRevRange, key, start, stop, WithScores) with Key {
     override def decode = {
       case a: ArrayResponse => a.parsedAsPairs[R, scredis.Score, CC] {
@@ -264,12 +264,12 @@ object SortedSetRequests {
     }
   }
   
-  case class ZRevRangeByScore[R: Reader, CC[X] <: Traversable[X]](
+  case class ZRevRangeByScore[R: Reader, CC[X] <: Iterable[X]](
     key: String,
     max: scredis.ScoreLimit,
     min: scredis.ScoreLimit,
     limitOpt: Option[(Long, Int)]
-  )(implicit cbf: CanBuildFrom[Nothing, R, CC[R]]) extends Request[CC[R]](
+  )(implicit factory: Factory[R, CC[R]]) extends Request[CC[R]](
     ZRevRangeByScore, key +: max.stringValue +: min.stringValue +: {
       limitOpt match {
         case Some((offset, count)) => Seq(Limit, offset, count)
@@ -284,13 +284,13 @@ object SortedSetRequests {
     }
   }
   
-  case class ZRevRangeByScoreWithScores[R: Reader, CC[X] <: Traversable[X]](
+  case class ZRevRangeByScoreWithScores[R: Reader, CC[X] <: Iterable[X]](
     key: String,
     max: scredis.ScoreLimit,
     min: scredis.ScoreLimit,
     limitOpt: Option[(Long, Int)]
   )(
-    implicit cbf: CanBuildFrom[Nothing, (R, scredis.Score), CC[(R, scredis.Score)]]
+    implicit factory: Factory[(R, scredis.Score), CC[(R, scredis.Score)]]
   ) extends Request[CC[(R, scredis.Score)]](
     ZRevRangeByScore, key +: max.stringValue +: min.stringValue +: WithScores +: {
       limitOpt match {
@@ -317,13 +317,13 @@ object SortedSetRequests {
     }
   }
   
-  case class ZScan[R: Reader, CC[X] <: Traversable[X]](
+  case class ZScan[R: Reader, CC[X] <: Iterable[X]](
     key: String,
     cursor: Long,
     matchOpt: Option[String],
     countOpt: Option[Int]
   )(
-    implicit cbf: CanBuildFrom[Nothing, (R, scredis.Score), CC[(R, scredis.Score)]]
+    implicit factory: Factory[(R, scredis.Score), CC[(R, scredis.Score)]]
   ) extends Request[(Long, CC[(R, scredis.Score)])](
     ZScan,
     generateScanLikeArgs(

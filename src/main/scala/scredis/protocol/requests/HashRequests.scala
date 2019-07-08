@@ -4,7 +4,7 @@ import scala.language.higherKinds
 import scredis.protocol._
 import scredis.serialization.{ Reader, Writer }
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.Factory
 
 object HashRequests {
   
@@ -75,8 +75,8 @@ object HashRequests {
     }
   }
   
-  case class HKeys[CC[X] <: Traversable[X]](key: String)(
-    implicit cbf: CanBuildFrom[Nothing, String, CC[String]]
+  case class HKeys[CC[X] <: Iterable[X]](key: String)(
+    implicit factory: Factory[String, CC[String]]
   ) extends Request[CC[String]](HKeys, key) with Key {
     override def decode = {
       case a: ArrayResponse => a.parsed[String, CC] {
@@ -91,8 +91,8 @@ object HashRequests {
     }
   }
   
-  case class HMGet[R: Reader, CC[X] <: Traversable[X]](key: String, fields: String*)(
-    implicit cbf: CanBuildFrom[Nothing, Option[R], CC[Option[R]]]
+  case class HMGet[R: Reader, CC[X] <: Iterable[X]](key: String, fields: String*)(
+    implicit factory: Factory[Option[R], CC[Option[R]]]
   ) extends Request[CC[Option[R]]](HMGet, key +: fields: _*) with Key {
     override def decode = {
       case a: ArrayResponse => a.parsed[Option[R], CC] {
@@ -130,13 +130,13 @@ object HashRequests {
     }
   }
   
-  case class HScan[R: Reader, CC[X] <: Traversable[X]](
+  case class HScan[R: Reader, CC[X] <: Iterable[X]](
     key: String,
     cursor: Long,
     matchOpt: Option[String],
     countOpt: Option[Int]
   )(
-    implicit cbf: CanBuildFrom[Nothing, (String, R), CC[(String, R)]]
+    implicit factory: Factory[(String, R), CC[(String, R)]]
   ) extends Request[(Long, CC[(String, R)])](
     HScan,
     generateScanLikeArgs(
@@ -181,8 +181,8 @@ object HashRequests {
     }
   }
   
-  case class HVals[R: Reader, CC[X] <: Traversable[X]](key: String)(
-    implicit cbf: CanBuildFrom[Nothing, R, CC[R]]
+  case class HVals[R: Reader, CC[X] <: Iterable[X]](key: String)(
+    implicit factory: Factory[R, CC[R]]
   ) extends Request[CC[R]](HVals, key) with Key {
     override def decode = {
       case a: ArrayResponse => a.parsed[R, CC] {

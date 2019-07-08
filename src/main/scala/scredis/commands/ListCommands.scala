@@ -119,7 +119,7 @@ trait ListCommands { self: NonBlockingConnection =>
    * @since 1.0.0
    */
   def lRange[R: Reader](key: String, start: Long = 0, stop: Long = -1): Future[List[R]] = send(
-    LRange[R, List](key, start, stop)
+    LRange[R](key, start, stop)
   )
   
   /**

@@ -247,7 +247,7 @@ trait StringCommands { self: NonBlockingConnection =>
    *
    * @since 1.0.0
    */
-  def mGet[R: Reader](keys: String*): Future[List[Option[R]]] = send(MGet[R, List](keys: _*))
+  def mGet[R: Reader](keys: String*): Future[List[Option[R]]] = send(MGet[R](keys: _*))
   
   /**
    * Returns a `Map` containing the specified key(s) paired to their respective value(s).

@@ -33,21 +33,19 @@ object PubSubRequests {
     }
   }
   
-  case class PubSubChannels[CC[X] <: Traversable[X]](patternOpt: Option[String])(
-    implicit cbf: CanBuildFrom[Nothing, String, CC[String]]
-  ) extends Request[CC[String]](PubSubChannels, patternOpt.toSeq: _*) {
+  case class PubSubChannels(patternOpt: Option[String])
+    extends Request[List[String]](PubSubChannels, patternOpt.toSeq: _*) {
     override def decode = {
-      case a: ArrayResponse => a.parsed[String, CC] {
+      case a: ArrayResponse => a.parsed[String, List] {
         case b: BulkStringResponse => b.flattened[String]
       }
     }
   }
   
-  case class PubSubNumSub[CC[X, Y] <: collection.Map[X, Y]](channels: String*)(
-    implicit cbf: CanBuildFrom[Nothing, (String, Int), CC[String, Int]]
-  ) extends Request[CC[String, Int]](PubSubNumSub, channels: _*) {
+  case class PubSubNumSub(channels: String*)
+    extends Request[Map[String, Int]](PubSubNumSub, channels: _*) {
     override def decode = {
-      case a: ArrayResponse => a.parsedAsPairsMap[String, Int, CC] {
+      case a: ArrayResponse => a.parsedAsPairsMap[String, Int, Map] {
         case b: BulkStringResponse => b.flattened[String]
       } {
         case b: BulkStringResponse => b.flattened[Int]

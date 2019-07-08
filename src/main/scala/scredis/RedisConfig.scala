@@ -2,7 +2,7 @@ package scredis
 
 import com.typesafe.config.{Config, ConfigFactory}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 
 /**

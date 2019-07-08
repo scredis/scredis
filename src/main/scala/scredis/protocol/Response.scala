@@ -7,7 +7,7 @@ import scredis.exceptions._
 import scredis.serialization.Reader
 import scredis.{ClusterSlotRange, ClusterSlotRangeNodeInfo, Server}
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.Factory
 import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
 
@@ -58,10 +58,10 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
     None
   }
 
-  def parsed[R, CC[X] <: Traversable[X]](decoder: Decoder[R])(
-    implicit cbf: CanBuildFrom[Nothing, R, CC[R]]
+  def parsed[R, CC[X] <: Iterable[X]](decoder: Decoder[R])(
+    implicit factory: Factory[R, CC[R]]
     ): CC[R] = {
-    val builder = cbf()
+    val builder = factory.newBuilder
     var i = 0
     while (i < length) {
       val response = Protocol.decode(buffer)
@@ -75,12 +75,12 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
     builder.result()
   }
 
-  def parsedAsPairs[R1, R2, CC[X] <: Traversable[X]](
+  def parsedAsPairs[R1, R2, CC[X] <: Iterable[X]](
     firstDecoder: Decoder[R1]
   )(
     secondDecoder: Decoder[R2]
-  )(implicit cbf: CanBuildFrom[Nothing, (R1, R2), CC[(R1, R2)]]): CC[(R1, R2)] = {
-    val builder = cbf()
+  )(implicit bf: scala.collection.Factory[(R1, R2), CC[(R1, R2)]]): CC[(R1, R2)] = {
+    val builder = bf.newBuilder
     var i = 0
     while (i < length) {
       val firstResponse = Protocol.decode(buffer)
@@ -109,8 +109,8 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
     firstDecoder: Decoder[R1]
   )(
     secondDecoder: Decoder[R2]
-  )(implicit cbf: CanBuildFrom[Nothing, (R1, R2), CC[R1, R2]]): CC[R1, R2] = {
-    val builder = cbf()
+  )(implicit factory: Factory[(R1, R2), CC[R1, R2]]): CC[R1, R2] = {
+    val builder = factory.newBuilder
     var i = 0
     while (i < length) {
       val firstResponse = Protocol.decode(buffer)
@@ -135,7 +135,7 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
     builder.result()
   }
 
-  def parsedAsScanResponse[R, CC[X] <: Traversable[X]](
+  def parsedAsScanResponse[R, CC[X] <: Iterable[X]](
     decoder: Decoder[CC[R]]
   ): (Long, CC[R]) = {
     if (length != 2) {
@@ -157,9 +157,9 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
   }
 
 
-  def parsedAsClusterSlotsResponse[CC[X] <: Traversable[X]](
-    implicit cbf: CanBuildFrom[Nothing, ClusterSlotRange, CC[ClusterSlotRange]]) : CC[ClusterSlotRange] = {
-    val builder = cbf()
+  def parsedAsClusterSlotsResponse[CC[X] <: Iterable[X]](
+    implicit factory: Factory[ClusterSlotRange, CC[ClusterSlotRange]]) : CC[ClusterSlotRange] = {
+    val builder = factory.newBuilder
     var i = 0
     try {
       while (i < length) {
@@ -215,12 +215,12 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
     builder.result()
   }
 
-  def parsed[CC[X] <: Traversable[X]](decoders: Traversable[Decoder[Any]])(
-    implicit cbf: CanBuildFrom[Nothing, Try[Any], CC[Try[Any]]]
+  def parsed[CC[X] <: Iterable[X]](decoders: Iterable[Decoder[Any]])(
+    implicit factory: Factory[Try[Any], CC[Try[Any]]]
     ): CC[Try[Any]] = {
-    val builder = cbf()
+    val builder = factory.newBuilder
     var i = 0
-    val decodersIterator = decoders.toIterator
+    val decodersIterator = decoders.iterator
     while (i < length) {
       val response = Protocol.decode(buffer)
       val decoder = decodersIterator.next()

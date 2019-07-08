@@ -3,7 +3,7 @@ package scredis.protocol.requests
 import scredis.protocol._
 import scredis.{ClusterNode, ClusterSlotRange, Server}
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.Factory
 import scala.language.higherKinds
 
 object ClusterRequests {
@@ -78,8 +78,8 @@ object ClusterRequests {
     }
   }
 
-  case class ClusterGetKeysInSlot[CC[X] <: Traversable[X]](slot: Long, count: Long)(
-    implicit cbf: CanBuildFrom[Nothing, String, CC[String]]
+  case class ClusterGetKeysInSlot[CC[X] <: Iterable[X]](slot: Long, count: Long)(
+    implicit factory: Factory[String, CC[String]]
     ) extends Request[CC[String]](ClusterGetKeysInSlot, slot, count) {
 
     override def decode = {
