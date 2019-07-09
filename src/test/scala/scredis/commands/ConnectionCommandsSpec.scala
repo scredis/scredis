@@ -103,7 +103,7 @@ class ConnectionCommandsSpec extends WordSpec
     }
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     client.quit().!
     clientWithPassword.quit().!
   }

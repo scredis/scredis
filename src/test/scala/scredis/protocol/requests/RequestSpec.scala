@@ -30,7 +30,7 @@ class RequestSpec extends WordSpec with ScalaCheckDrivenPropertyChecks with Insi
         None, 0, 0, 1, true,
         slots) =>
           flags should contain theSameElementsAs Seq("myself","master")
-          slots should contain theSameElementsAs Seq((0l,5460l),(22l,22l),(1024l,3333l))
+          slots should contain theSameElementsAs Seq((0L,5460L),(22L,22L),(1024L,3333L))
         case _ => fail()
       }
 

@@ -66,19 +66,19 @@ class HyperLogLogCommandsSpec extends WordSpec
     }
     "the key exists" should {
       "return the count" taggedAs (V289) in {
-        client.pfCount("HLL").futureValue should be >= (0l)
+        client.pfCount("HLL").futureValue should be >= (0L)
       }
     }
     "one of the key does not exist" should {
       "return the count of the ones that exist" taggedAs (V289) in {
-        client.pfCount("HLL", "HHH").futureValue should be >= (0l)
+        client.pfCount("HLL", "HHH").futureValue should be >= (0L)
       }
     }
     "multiple existent keys are provided" should {
       "return the merged count" taggedAs (V289) in {
         client.pfAdd("HLL2", "X")
         client.pfAdd("HLL2", "Z")
-        client.pfCount("HLL", "HLL2").futureValue should be >= (0l)
+        client.pfCount("HLL", "HLL2").futureValue should be >= (0L)
       }
     }
   }
@@ -103,18 +103,18 @@ class HyperLogLogCommandsSpec extends WordSpec
     "the key exists" should {
       "merge and store the count" taggedAs (V289) in {
         client.pfMerge("DEST", "HLL").futureValue should be (())
-        client.pfCount("DEST").futureValue should be >= (0l)
+        client.pfCount("DEST").futureValue should be >= (0L)
       }
     }
     "multiple existent keys are provided" should {
       "return the merged count" taggedAs (V289) in {
         client.pfMerge("DEST", "HLL", "HLL2").futureValue should be (())
-        client.pfCount("DEST").futureValue should be >= (0l)
+        client.pfCount("DEST").futureValue should be >= (0L)
       }
     }
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     client.flushDB().!
     client.quit().!
   }

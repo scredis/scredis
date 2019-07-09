@@ -182,7 +182,7 @@ object ServerRequests {
   }
   
   case class CommandGetKeys(command: String)
-    extends Request[List[String]](CommandGetKeys, command.split("\\s+"): _*) {
+    extends Request[List[String]](CommandGetKeys, command.split("\\s+").toIndexedSeq: _*) {
     override def decode = {
       case a: ArrayResponse => a.parsed[String, List] {
         case b: BulkStringResponse => b.flattened[String]

@@ -7,7 +7,7 @@ import scredis.exceptions._
 import scredis.serialization.Reader
 import scredis.{ClusterSlotRange, ClusterSlotRangeNodeInfo, Server}
 
-import scala.collection.Factory
+import scala.collection.compat._
 import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
 

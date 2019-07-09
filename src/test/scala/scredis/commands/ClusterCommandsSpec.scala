@@ -21,7 +21,7 @@ class ClusterCommandsSpec extends WordSpec
 
   private val cluster = RedisCluster((7000 to 7005).map(port => Server("localhost",port)))
 
-  private val slots = Gen.choose(0l, Protocol.CLUSTER_HASHSLOTS.toLong - 1)
+  private val slots = Gen.choose(0L, Protocol.CLUSTER_HASHSLOTS.toLong - 1)
 
   // informational commands
 
@@ -41,7 +41,7 @@ class ClusterCommandsSpec extends WordSpec
 
         forAll(nodeIds) { id =>
           val failures = cluster.clusterCountFailureReports(id).futureValue
-          failures should be >= 0l
+          failures should be >= 0L
         }
       }
     }
@@ -109,7 +109,7 @@ class ClusterCommandsSpec extends WordSpec
       val slots = cluster.clusterSlots().futureValue
       val fullRange = slots
         .map { case ClusterSlotRange(range,_,_) => range }
-        .sorted.foldLeft((0l,0l)) { case((low,high),(begin,end)) => if (begin<=high+1) (low,end) else (low,high)  }
+        .sorted.foldLeft((0L,0L)) { case((low,high),(begin,end)) => if (begin<=high+1) (low,end) else (low,high)  }
       //         ^ does a kind of merge on the value ranges
 
       fullRange should be ((0, Protocol.CLUSTER_HASHSLOTS-1))

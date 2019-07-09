@@ -5,6 +5,7 @@ import scredis.protocol._
 import scredis.protocol.requests.GeoAddEntries.GeoAddEntry
 import scredis.protocol.requests.GeoDistUnit.GeoDistUnit
 import scredis.protocol.requests.GeoSortOrder.GeoSortOrder
+import scala.collection.compat._
 
 object GeoRequests {
   import scredis.serialization.Implicits.{doubleReader, stringReader}

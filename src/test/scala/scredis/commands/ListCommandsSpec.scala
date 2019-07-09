@@ -732,7 +732,7 @@ class ListCommandsSpec extends WordSpec
     }
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     client.flushDB().!
     client.quit().!
     blockingClient.quit()(1 second)

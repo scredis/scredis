@@ -537,7 +537,7 @@ trait SortedSetCommands { self: Connection with NonBlockingConnection =>
    * Computes the union of multiple sorted sets and stores the resulting sorted set in a new key.
    *
    * @param destKey sorted set key
-   * @param keyWeightPairs key to weight pairs
+   * @param keysWeightPairs key to weight pairs
    * @param aggregate aggregation function (default is Sum)
    * @return the number of elements in the resulting sorted set stored at destKey
    * @throws $e if key contains a value that is not a sorted set

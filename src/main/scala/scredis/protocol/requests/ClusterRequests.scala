@@ -3,7 +3,7 @@ package scredis.protocol.requests
 import scredis.protocol._
 import scredis.{ClusterNode, ClusterSlotRange, Server}
 
-import scala.collection.Factory
+import scala.collection.compat._
 import scala.language.higherKinds
 
 object ClusterRequests {

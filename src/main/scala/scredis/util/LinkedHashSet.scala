@@ -1,122 +1,56 @@
 package scredis.util
 
-import scala.collection.generic._
-import scala.collection.immutable.SortedSet
-import scala.collection.mutable.{Builder, LinkedHashSet => MLinkedHashSet}
+import scala.collection.mutable
+import scala.collection.mutable.{LinkedHashSet => MLinkedHashSet}
 
 /**
  * Represents an '''immutable''' linked hash set.
  */
-class LinkedHashSet[A](elems: A*) extends SortedSet[A]
-//  with SortedSetLike[A, LinkedHashSet[A]]
-  with Serializable {
+class LinkedHashSet[A](elems: A*) extends Set[A] with Serializable {
 
-  override def stringPrefix = "LinkedHashSet"
+  override def className = "LinkedHashSet"
 
   private val set = MLinkedHashSet[A](elems: _*)
 
-//  override def companion: GenericCompanion[LinkedHashSet] = LinkedHashSet
-  override def empty = LinkedHashSet.empty
-
-  def +(elem: A): LinkedHashSet[A] = {
-    if (set.contains(elem)) this
-    else {
-      set += elem
-      new LinkedHashSet(set.toSeq: _*)
-    }
-  }
-
-  def -(elem: A): LinkedHashSet[A] = {
+  override def incl(elem: A): LinkedHashSet[A] = {
     if (set.contains(elem)) {
-      set.remove(elem)
-      new LinkedHashSet(set.toSeq: _*)
-    } else this
-  }
-
-  def contains(elem: A): Boolean = set.contains(elem)
-
-  def rangeImpl(from: Option[A], until: Option[A]): LinkedHashSet[A] = {
-    (from, until) match {
-      case (None, None) => this
-      case (Some(from), None) => {
-        val builder = LinkedHashSet.newBuilder[A]
-        var fromFound = false
-        this.foreach { elem =>
-          if (fromFound) {
-            builder += elem
-          } else if (elem == from) {
-            fromFound = true
-            builder += elem
-          }
-        }
-        builder.result()
-      }
-      case (None, Some(until)) => {
-        val builder = LinkedHashSet.newBuilder[A]
-        var untilFound = false
-        this.foreach { elem =>
-          if (elem == until) {
-            return builder.result()
-          } else {
-            builder += elem
-          }
-        }
-        builder.result()
-      }
-      case (Some(from), Some(until)) => {
-        val builder = LinkedHashSet.newBuilder[A]
-        var fromFound = false
-        this.foreach { elem =>
-          if (elem == until) {
-            return builder.result()
-          }
-          
-          if (fromFound) {
-            builder += elem
-          } else if (elem == from) {
-            fromFound = true
-            builder += elem
-          }
-        }
-        builder.result()
-      }
+      this
+    } else {
+      LinkedHashSet.newBuilder.addAll(set).addOne(elem).result()
     }
   }
-  
-  def iterator = set.iterator
-  
-  def keysIteratorFrom(start: A): Iterator[A] = from(start).iterator
-  
-  def ordering = new Ordering[A] {
-    def compare(a1: A, a2: A): Int = 0
-  }
-  
-  def reverse = {
-    val reversed = this.toList.reverse
-    val builder = LinkedHashSet.newBuilder[A]
-    reversed.foreach {
-      builder += _
-    }
-    builder.result()
+
+  def reverse: LinkedHashSet[A] = {
+    LinkedHashSet.newBuilder.addAll(set.toSeq.reverseIterator).result()
   }
 
+  override def excl(elem: A): LinkedHashSet[A] = {
+    if (set.contains(elem)) {
+      LinkedHashSet.newBuilder.addAll(set.filter(_ != elem)).result()
+    } else {
+      this
+    }
+  }
+
+  override def contains(elem: A): Boolean = set.contains(elem)
+
+  override def iterator: Iterator[A] = set.iterator
 }
 
 object LinkedHashSet extends scala.collection.IterableFactory[LinkedHashSet] {
   
-//  class LinkedHashSetBuilder[A](empty: MLinkedHashSet[A]) extends Builder[A, LinkedHashSet[A]] {
-//    protected var elems: MLinkedHashSet[A] = empty
-//    def +=(x: A): this.type = { elems += x; this }
-//    def clear(): Unit = { elems = empty }
-//    def result: LinkedHashSet[A] = new LinkedHashSet[A](elems.toList: _*)
-//  }
-//
-//  implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, LinkedHashSet[A]] = setCanBuildFrom
-//  override def newBuilder[A]: Builder[A, LinkedHashSet[A]] =
-//    new LinkedHashSetBuilder[A](MLinkedHashSet.empty)
+  class LinkedHashSetBuilder[A]() extends mutable.Builder[A, LinkedHashSet[A]] {
+    protected var elems: MLinkedHashSet[A] = MLinkedHashSet.empty
+    def addOne(x: A): this.type = { elems += x; this }
+    def clear(): Unit = { elems = MLinkedHashSet.empty }
+    def result: LinkedHashSet[A] = new LinkedHashSet[A](elems.toList: _*)
+  }
+
+  override def newBuilder[A]: mutable.Builder[A, LinkedHashSet[A]] =
+    new LinkedHashSetBuilder[A]()
 
   override def empty[A]: LinkedHashSet[A] = new LinkedHashSet[A]
 
-//  def emptyInstance = new LinkedHashSet[Any]
+  override def from[A](source: IterableOnce[A]): LinkedHashSet[A] = new LinkedHashSet[A](source.iterator.to(List): _*)
 }
 

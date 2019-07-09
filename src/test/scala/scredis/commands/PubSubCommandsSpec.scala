@@ -11,7 +11,7 @@ import scredis.serialization.UTF8StringWriter
 import scredis.tags._
 import scredis.util.TestUtils._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Promise
 import scala.language.implicitConversions
@@ -511,7 +511,7 @@ class PubSubCommandsSpec extends WordSpec
     }
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     publisher.quit().!
     client.quit().!
     client2.quit().!
