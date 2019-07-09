@@ -5,7 +5,7 @@ import scala.language.higherKinds
 import scredis.protocol._
 import scredis.serialization.{ Reader, Writer }
 
-import scala.collection.Factory
+import scala.collection.compat._
 
 object SortedSetRequests {
   

@@ -350,7 +350,7 @@ class ScriptingCommandsSpec extends WordSpec
     }
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     client.flushDB().!
     client.quit().!
   }

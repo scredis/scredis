@@ -69,7 +69,7 @@ class SerializationSpec extends WordSpec
     }
   }
   
-  override def afterAll() {
+  override def afterAll(): Unit = {
     client.flushAll().!
     client.quit().!
   }

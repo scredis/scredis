@@ -384,7 +384,7 @@ class KeyCommandsSpec extends WordSpec
     "key exists and has a ttl" should {
       "return None" taggedAs (V260) in {
         client.pExpire("TO-TTL", 500)
-        client.pTtl("TO-TTL").futureValue.right.value should be <= 500L
+        client.pTtl("TO-TTL").futureValue.getOrElse(Long.MaxValue) should be <= 500L
         client.del("TO-TTL")
       }
     }
@@ -925,7 +925,7 @@ class KeyCommandsSpec extends WordSpec
     "key exists and has a ttl" should {
       "return Right(ttl)" taggedAs (V100) in {
         client.expire("TO-TTL", 1)
-        client.ttl("TO-TTL").futureValue.right.value should be <= (1)
+        client.ttl("TO-TTL").futureValue.getOrElse(Int.MaxValue) should be <= 1
         client.del("TO-TTL")
       }
     }
@@ -974,7 +974,7 @@ class KeyCommandsSpec extends WordSpec
     }
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     client.flushAll().!
     client2.flushAll().!
     client.quit().!

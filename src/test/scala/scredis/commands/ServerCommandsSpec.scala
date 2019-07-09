@@ -375,7 +375,7 @@ class ServerCommandsSpec extends WordSpec
 
   LastSave.toString should {
     "return the UNIX timestamp of the last database save" taggedAs (V100) in {
-      client.lastSave().futureValue should be > (0l)
+      client.lastSave().futureValue should be > (0L)
     }
   }
   
@@ -439,7 +439,7 @@ class ServerCommandsSpec extends WordSpec
   
   SlowLogLen.toString should {
     "return the size of the slowlog" taggedAs (V2212) in {
-      client.slowLogLen().futureValue should be >= (0l)
+      client.slowLogLen().futureValue should be >= (0L)
     }
   }
   
@@ -452,8 +452,8 @@ class ServerCommandsSpec extends WordSpec
   Time.toString should {
     "return the current server UNIX timestamp with microseconds" taggedAs (V260) in {
       val (seconds, microseconds) = client.time().futureValue
-      seconds should be > (0l)
-      microseconds should be >= (0l)
+      seconds should be > (0L)
+      microseconds should be >= (0L)
     }
   }
   

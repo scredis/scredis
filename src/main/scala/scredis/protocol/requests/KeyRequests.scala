@@ -4,7 +4,7 @@ import scala.language.higherKinds
 import scredis.protocol._
 import scredis.serialization.{ Reader, Writer }
 
-import scala.collection.Factory
+import scala.collection.compat._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration
 

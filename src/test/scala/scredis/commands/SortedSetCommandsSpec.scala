@@ -1,13 +1,17 @@
 package scredis.commands
 
+import org.scalactic.Equality
 import org.scalatest._
 import org.scalatest.concurrent._
+import org.scalatest.enablers.Sequencing
 import scredis._
 import scredis.exceptions._
 import scredis.protocol.requests.SortedSetRequests._
 import scredis.tags._
+import scredis.util.LinkedHashSet
 import scredis.util.TestUtils._
 
+import scala.collection.GenTraversable
 import scala.collection.mutable.ListBuffer
 
 class SortedSetCommandsSpec extends WordSpec
@@ -18,6 +22,25 @@ class SortedSetCommandsSpec extends WordSpec
   
   private val client = Client()
   private val SomeValue = "HelloWorld!虫àéç蟲"
+
+  implicit def linkedHashSetSequencing[A](implicit equality: Equality[A]): Sequencing[LinkedHashSet[A]] = new Sequencing[LinkedHashSet[A]] {
+    override def containsInOrder(sequence: LinkedHashSet[A], eles: collection.Seq[Any]): Boolean = {
+      val it = eles.iterator
+      for (e <- sequence) {
+        it.takeWhile(_ != e)
+        if (it.hasNext) it.next()
+        else return false
+      }
+      true
+    }
+
+    override def containsInOrderOnly(sequence: LinkedHashSet[A], eles: collection.Seq[Any]): Boolean = {
+      sequence.toList == eles.toList
+    }
+
+    override def containsTheSameElementsInOrderAs(leftSequence: LinkedHashSet[A], rightSequence: Iterable[Any]): Boolean =
+      leftSequence.toList == rightSequence.toList
+  }
 
   override def beforeAll(): Unit = {
     client.hSet("HASH", "FIELD", SomeValue).!
@@ -1743,7 +1766,7 @@ class SortedSetCommandsSpec extends WordSpec
     }
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     client.flushDB().!
     client.quit().!
   }
