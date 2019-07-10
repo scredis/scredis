@@ -79,8 +79,8 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
     firstDecoder: Decoder[R1]
   )(
     secondDecoder: Decoder[R2]
-  )(implicit bf: scala.collection.Factory[(R1, R2), CC[(R1, R2)]]): CC[(R1, R2)] = {
-    val builder = bf.newBuilder
+  )(implicit factory: Factory[(R1, R2), CC[(R1, R2)]]): CC[(R1, R2)] = {
+    val builder = factory.newBuilder
     var i = 0
     while (i < length) {
       val firstResponse = Protocol.decode(buffer)
