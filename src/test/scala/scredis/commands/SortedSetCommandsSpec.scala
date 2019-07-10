@@ -38,7 +38,10 @@ class SortedSetCommandsSpec extends WordSpec
       sequence.toList == eles.toList
     }
 
-    override def containsTheSameElementsInOrderAs(leftSequence: LinkedHashSet[A], rightSequence: Iterable[Any]): Boolean =
+//    def containsTheSameElementsInOrderAs(leftSequence: LinkedHashSet[A], rightSequence: Iterable[Any]): Boolean =
+//      leftSequence.toList == rightSequence.toList
+
+    override def containsTheSameElementsInOrderAs(leftSequence: LinkedHashSet[A], rightSequence: GenTraversable[Any]): Boolean =
       leftSequence.toList == rightSequence.toList
   }
 
