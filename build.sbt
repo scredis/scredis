@@ -5,7 +5,7 @@ organization := "com.github.scredis"
 scalaVersion := "2.12.8"
 crossScalaVersions := Seq("2.11.12", "2.12.8", scalaVersion.value)
 
-scalacOptions ++= Seq("-deprecation", "-feature", "-Xfatal-warnings", "-Ywarn-dead-code")
+scalacOptions in Compile ++= Seq("-deprecation", "-feature", "-Xfatal-warnings"/*, "-Ywarn-dead-code"*/)
 
 scalacOptions in (Compile,doc) := Seq("-no-link-warnings")
 autoAPIMappings := true
@@ -30,7 +30,10 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.8" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
 //  "com.storm-enroute" %% "scalameter" % "0.8.2" % Test,  /* only used for ClientBenchmark testing */
-  "org.slf4j" % "slf4j-simple" % "1.7.26" % Test
+  "org.slf4j" % "slf4j-simple" % "1.7.26" % Test,
+
+  "com.github.ghik" %% "silencer-plugin" % "1.4.1" % Compile,
+  "com.github.ghik" %% "silencer-lib" % "1.4.1" % Provided
 )
 
 Test / testOptions += Tests.Argument("-F", sys.props.getOrElse("F", "1.0"))
