@@ -2,7 +2,6 @@ package scredis.util
 
 import org.scalactic.Equality
 import org.scalatest.enablers.Sequencing
-import scredis.util.LinkedHashSet
 
 import scala.collection.GenTraversable
 
