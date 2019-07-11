@@ -11,16 +11,15 @@ import scala.collection.mutable.{LinkedHashSet => MLinkedHashSet}
  */
 class LinkedHashSet[A](elems: A*) extends Set[A] with Serializable {
 
-//  def className = "LinkedHashSet"      (FOR 2.12)
+  def className = "LinkedHashSet"
 
   private val set = MLinkedHashSet[A](elems: _*)
 
-//  override def iterableFactory: IterableFactory[LinkedHashSet] = LinkedHashSet
   override def empty: LinkedHashSet[A] = new LinkedHashSet[A]()
 
-  def +(elem: A): LinkedHashSet[A] = incl(elem)      //(FOR 2.12)
+  def +(elem: A): LinkedHashSet[A] = incl(elem)
 
-  def -(elem: A): LinkedHashSet[A] = excl(elem)    //(FOR 2.12)
+  def -(elem: A): LinkedHashSet[A] = excl(elem)
 
   def incl(elem: A): LinkedHashSet[A] = {
     if (set.contains(elem)) this
@@ -114,7 +113,7 @@ object LinkedHashSet {
 
     def apply(): mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]
 
-//    def fromSpecific(it: IterableOnce[A]): LinkedHashSet[A] = new LinkedHashSetBuilder[A].addAll(it).result  //(FOR 2.13)
+    def fromSpecific(it: IterableOnce[A]): LinkedHashSet[A] = new LinkedHashSetBuilder[A].++=(it).result
 
     def newBuilder: mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]
   }

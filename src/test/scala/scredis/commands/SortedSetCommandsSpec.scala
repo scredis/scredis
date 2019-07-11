@@ -14,7 +14,6 @@ import scredis.util.TestUtils._
 import scala.collection.GenTraversable
 import scala.collection.mutable.ListBuffer
 
-import com.github.ghik.silencer.silent
 
 class SortedSetCommandsSpec extends WordSpec
   with GivenWhenThen
@@ -40,7 +39,6 @@ class SortedSetCommandsSpec extends WordSpec
       sequence.toList == eles.toList
     }
 
-    @silent("deprecated")
     def containsTheSameElementsInOrderAs(leftSequence: LinkedHashSet[A], rightSequence: GenTraversable[Any]): Boolean =
       leftSequence.toList == rightSequence.toList
   }
