@@ -127,7 +127,7 @@ abstract class ClusterConnection(
   private def delayed[A](delay: Duration)(f: => Future[A]): Future[A] = {
     val delayedF = Promise[A]()
     scheduler.scheduleOnce(clusterDownWait) {
-      delayedF.tryCompleteWith(f)
+      delayedF.completeWith(f)
     }
     delayedF.future
   }

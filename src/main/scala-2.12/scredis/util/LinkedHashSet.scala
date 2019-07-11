@@ -1,25 +1,27 @@
 package scredis.util
 
-import scala.collection.SortedSetLike
-import scala.collection.generic._
-import scala.collection.immutable.SortedSet
-import scala.collection.mutable.{ Builder, LinkedHashSet => MLinkedHashSet }
+import scredis.util.LinkedHashSet.LinkedHashSetBuilder
+
+import scala.collection.compat._
+import scala.collection.mutable
+import scala.collection.mutable.{LinkedHashSet => MLinkedHashSet}
 
 /**
  * Represents an '''immutable''' linked hash set.
  */
-class LinkedHashSet[A](elems: A*) extends SortedSet[A]
-  with SortedSetLike[A, LinkedHashSet[A]]
-  with Serializable {
+class LinkedHashSet[A](elems: A*) extends Set[A] with Serializable {
 
-  override def stringPrefix = "LinkedHashSet"
+  def className = "LinkedHashSet"
 
   private val set = MLinkedHashSet[A](elems: _*)
 
-  override def companion: GenericCompanion[LinkedHashSet] = LinkedHashSet
-  override def empty = LinkedHashSet.empty
+  override def empty: LinkedHashSet[A] = new LinkedHashSet[A]()
 
-  def +(elem: A): LinkedHashSet[A] = {
+  def +(elem: A): LinkedHashSet[A] = incl(elem)
+
+  def -(elem: A): LinkedHashSet[A] = excl(elem)
+
+  def incl(elem: A): LinkedHashSet[A] = {
     if (set.contains(elem)) this
     else {
       set += elem
@@ -27,7 +29,7 @@ class LinkedHashSet[A](elems: A*) extends SortedSet[A]
     }
   }
 
-  def -(elem: A): LinkedHashSet[A] = {
+  def excl(elem: A): LinkedHashSet[A] = {
     if (set.contains(elem)) {
       set.remove(elem)
       new LinkedHashSet(set.toSeq: _*)
@@ -71,7 +73,7 @@ class LinkedHashSet[A](elems: A*) extends SortedSet[A]
           if (elem == until) {
             return builder.result()
           }
-          
+
           if (fromFound) {
             builder += elem
           } else if (elem == from) {
@@ -83,39 +85,35 @@ class LinkedHashSet[A](elems: A*) extends SortedSet[A]
       }
     }
   }
-  
-  def iterator = set.iterator
-  
-  def keysIteratorFrom(start: A): Iterator[A] = from(start).iterator
-  
-  def ordering = new Ordering[A] {
-    def compare(a1: A, a2: A): Int = 0
-  }
-  
-  def reverse = {
+
+  def iterator: Iterator[A] = set.iterator
+
+  def reverse: LinkedHashSet[A] = {
     val reversed = this.toList.reverse
     val builder = LinkedHashSet.newBuilder[A]
-    reversed.foreach {
-      builder += _
-    }
+    reversed.foreach(e => builder += e)
     builder.result()
   }
 
 }
 
-object LinkedHashSet extends ImmutableSetFactory[LinkedHashSet] {
-  
-  class LinkedHashSetBuilder[A](empty: MLinkedHashSet[A]) extends Builder[A, LinkedHashSet[A]] {
-    protected var elems: MLinkedHashSet[A] = empty
-    def +=(x: A): this.type = { elems += x; this }
-    def clear() { elems = empty }
+object LinkedHashSet {
+
+  class LinkedHashSetBuilder[A]() extends mutable.Builder[A, LinkedHashSet[A]] {
+    protected var elems: MLinkedHashSet[A] = MLinkedHashSet.empty
+    def addOne(x: A): this.type = { elems += x; this }
+    def clear(): Unit = { elems = MLinkedHashSet.empty }
     def result: LinkedHashSet[A] = new LinkedHashSet[A](elems.toList: _*)
+
+    def +=(elem: A): this.type = addOne(elem)      //(FOR 2.12)
   }
-  
-  implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, LinkedHashSet[A]] = setCanBuildFrom
-  override def newBuilder[A]: Builder[A, LinkedHashSet[A]] =
-    new LinkedHashSetBuilder[A](MLinkedHashSet.empty)
-  override def empty[A]: LinkedHashSet[A] = new LinkedHashSet[A]
-  def emptyInstance = new LinkedHashSet[Any]
+
+  implicit def linkedHashSetFactory[A]: Factory[A, LinkedHashSet[A]] = new scala.collection.generic.CanBuildFrom[Any, A, LinkedHashSet[A]] {
+    def apply(from: Any): mutable.Builder[A, LinkedHashSet[A]] = throw new UnsupportedOperationException()
+
+    def apply(): mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]
+  }
+
+  def newBuilder[A]: mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]
 }
 

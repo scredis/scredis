@@ -42,7 +42,7 @@ trait PubSubCommands { self: NonBlockingConnection =>
    * @since 2.8.0
    */
   def pubSubChannels(patternOpt: Option[String] = None): Future[List[String]] = send(
-    PubSubChannels[List](patternOpt)
+    PubSubChannels(patternOpt)
   )
   
   /**
@@ -54,8 +54,9 @@ trait PubSubCommands { self: NonBlockingConnection =>
    *
    * @since 2.8.0
    */
+
   def pubSubNumSub(channels: String*): Future[Map[String, Int]] = send(
-    PubSubNumSub[Map](channels: _*)
+    PubSubNumSub(channels: _*)
   )
   
   /**

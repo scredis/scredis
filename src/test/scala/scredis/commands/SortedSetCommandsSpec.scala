@@ -10,6 +10,9 @@ import scredis.util.TestUtils._
 
 import scala.collection.mutable.ListBuffer
 
+import scredis.util.LinkedHashSetSequencing._
+
+
 class SortedSetCommandsSpec extends WordSpec
   with GivenWhenThen
   with BeforeAndAfterAll
@@ -1743,7 +1746,7 @@ class SortedSetCommandsSpec extends WordSpec
     }
   }
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     client.flushDB().!
     client.quit().!
   }

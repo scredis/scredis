@@ -312,7 +312,7 @@ trait KeyCommands { self: NonBlockingConnection =>
     matchOpt: Option[String] = None,
     countOpt: Option[Int] = None
   ): Future[(Long, Set[String])] = send(
-    Scan[Set](
+    Scan(
       cursor = cursor,
       matchOpt = matchOpt,
       countOpt = countOpt
@@ -341,11 +341,11 @@ trait KeyCommands { self: NonBlockingConnection =>
     key: String,
     byOpt: Option[String] = None,
     limitOpt: Option[(Long, Long)] = None,
-    get: Traversable[String] = Nil,
+    get: Iterable[String] = Nil,
     desc: Boolean = false,
     alpha: Boolean = false
   ): Future[List[Option[R]]] = send(
-    Sort[R, List](
+    Sort[R](
       key = key,
       byOpt = byOpt,
       limitOpt = limitOpt,
@@ -380,7 +380,7 @@ trait KeyCommands { self: NonBlockingConnection =>
     targetKey: String,
     byOpt: Option[String] = None,
     limitOpt: Option[(Long, Long)] = None,
-    get: Traversable[String] = Nil,
+    get: Iterable[String] = Nil,
     desc: Boolean = false,
     alpha: Boolean = false
   ): Future[Long] = send(

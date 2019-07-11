@@ -38,11 +38,10 @@ object SetRequests {
     }
   }
   
-  case class SDiff[R: Reader, CC[X] <: Traversable[X]](keys: String*)(
-    implicit cbf: CanBuildFrom[Nothing, R, CC[R]]
-  ) extends Request[CC[R]](SDiff, keys: _*) with Key {
+  case class SDiff[R: Reader](keys: String*)
+    extends Request[Set[R]](SDiff, keys: _*) with Key {
     override def decode = {
-      case a: ArrayResponse => a.parsed[R, CC] {
+      case a: ArrayResponse => a.parsed[R, Set] {
         case b: BulkStringResponse => b.flattened[R]
       }
     }
@@ -58,11 +57,10 @@ object SetRequests {
     override val key = keys.head
   }
   
-  case class SInter[R: Reader, CC[X] <: Traversable[X]](keys: String*)(
-    implicit cbf: CanBuildFrom[Nothing, R, CC[R]]
-  ) extends Request[CC[R]](SInter, keys: _*) with Key {
+  case class SInter[R: Reader](keys: String*)
+    extends Request[Set[R]](SInter, keys: _*) with Key {
     override def decode = {
-      case a: ArrayResponse => a.parsed[R, CC] {
+      case a: ArrayResponse => a.parsed[R, Set] {
         case b: BulkStringResponse => b.flattened[R]
       }
     }
@@ -86,11 +84,10 @@ object SetRequests {
     }
   }
   
-  case class SMembers[R: Reader, CC[X] <: Traversable[X]](key: String)(
-    implicit cbf: CanBuildFrom[Nothing, R, CC[R]]
-  ) extends Request[CC[R]](SMembers, key) with Key {
+  case class SMembers[R: Reader](key: String)(
+  ) extends Request[Set[R]](SMembers, key) with Key {
     override def decode = {
-      case a: ArrayResponse => a.parsed[R, CC] {
+      case a: ArrayResponse => a.parsed[R, Set] {
         case b: BulkStringResponse => b.flattened[R]
       }
     }
@@ -126,11 +123,10 @@ object SetRequests {
     }
   }
   
-  case class SRandMembers[R: Reader, CC[X] <: Traversable[X]](key: String, count: Int)(
-    implicit cbf: CanBuildFrom[Nothing, R, CC[R]]
-  ) extends Request[CC[R]](SRandMember, key, count) with Key {
+  case class SRandMembers[R: Reader](key: String, count: Int)(
+  ) extends Request[Set[R]](SRandMember, key, count) with Key {
     override def decode = {
-      case a: ArrayResponse => a.parsed[R, CC] {
+      case a: ArrayResponse => a.parsed[R, Set] {
         case b: BulkStringResponse => b.flattened[R]
       }
     }
@@ -144,12 +140,12 @@ object SetRequests {
     }
   }
   
-  case class SScan[R: Reader, CC[X] <: Traversable[X]](
+  case class SScan[R: Reader](
     key: String,
     cursor: Long,
     matchOpt: Option[String],
     countOpt: Option[Int]
-  )(implicit cbf: CanBuildFrom[Nothing, R, CC[R]]) extends Request[(Long, CC[R])](
+  ) extends Request[(Long, Set[R])](
     SScan,
     generateScanLikeArgs(
       keyOpt = Some(key),
@@ -159,19 +155,18 @@ object SetRequests {
     ): _*
   ) with Key {
     override def decode = {
-      case a: ArrayResponse => a.parsedAsScanResponse[R, CC] {
-        case a: ArrayResponse => a.parsed[R, CC] {
+      case a: ArrayResponse => a.parsedAsScanResponse[R, Set] {
+        case a: ArrayResponse => a.parsed[R, Set] {
           case b: BulkStringResponse => b.flattened[R]
         }
       }
     }
   }
   
-  case class SUnion[R: Reader, CC[X] <: Traversable[X]](keys: String*)(
-    implicit cbf: CanBuildFrom[Nothing, R, CC[R]]
-  ) extends Request[CC[R]](SUnion, keys: _*) with Key {
+  case class SUnion[R: Reader](keys: String*)
+    extends Request[Set[R]](SUnion, keys: _*) with Key {
     override def decode = {
-      case a: ArrayResponse => a.parsed[R, CC] {
+      case a: ArrayResponse => a.parsed[R, Set] {
         case b: BulkStringResponse => b.flattened[R]
       }
     }

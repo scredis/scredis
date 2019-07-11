@@ -2,11 +2,10 @@
 name := "scredis"
 organization := "com.github.scredis"
 
-scalaVersion := "2.12.8"
-crossScalaVersions := Seq("2.11.12", scalaVersion.value)
+scalaVersion := "2.13.0"
+crossScalaVersions := Seq("2.11.12", "2.12.8", scalaVersion.value)
 
-scalacOptions ++= Seq("-deprecation", "-feature", "-Xfatal-warnings",
-  "-Ywarn-dead-code", "-Ywarn-infer-any", "-Ywarn-unused-import")
+scalacOptions ++= Seq("-deprecation", "-feature", "-Xfatal-warnings", "-Ywarn-dead-code")
 
 scalacOptions in (Compile,doc) := Seq("-no-link-warnings")
 autoAPIMappings := true
@@ -22,13 +21,15 @@ buildInfoOptions += BuildInfoOption.BuildTime
 git.remoteRepo := "git@github.com:scredis/scredis.git"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
   "com.typesafe" % "config" % "1.3.3",
-  "com.typesafe.akka" %% "akka-actor" % "2.5.22",
+  "com.typesafe.akka" %% "akka-actor" % "2.5.23",
 
-  "org.scalatest" %% "scalatest" % "3.0.7" % Test,
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
+
+  "org.scalatest" %% "scalatest" % "3.0.8" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
-  "com.storm-enroute" %% "scalameter" % "0.8.2" % Test,
+//  "com.storm-enroute" %% "scalameter" % "0.8.2" % Test,  /* only used for ClientBenchmark testing */
   "org.slf4j" % "slf4j-simple" % "1.7.26" % Test
 )
 

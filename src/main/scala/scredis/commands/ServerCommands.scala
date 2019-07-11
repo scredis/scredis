@@ -127,7 +127,7 @@ trait ServerCommands { self: NonBlockingConnection =>
    *
    * @since 2.8.13
    */
-  def commandGetKeys(command: String): Future[List[String]] = send(CommandGetKeys[List](command))
+  def commandGetKeys(command: String): Future[List[String]] = send(CommandGetKeys(command))
   
   /**
    * Returns details about the specified `Redis` commands.
@@ -302,7 +302,7 @@ trait ServerCommands { self: NonBlockingConnection =>
    * @since 2.2.12
    */
   def slowLogGet(countOpt: Option[Int] = None): Future[List[scredis.SlowLogEntry]] = send(
-    SlowLogGet[List](countOpt)
+    SlowLogGet(countOpt)
   )
   
   /**
