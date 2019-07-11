@@ -108,14 +108,10 @@ object LinkedHashSet {
     def +=(elem: A): this.type = addOne(elem)      //(FOR 2.12)
   }
 
-  implicit def linkedHashSetFactory[A]: Factory[A, LinkedHashSet[A]] = new Factory[A, LinkedHashSet[A]] {
-    def apply(from: Nothing): mutable.Builder[A, LinkedHashSet[A]] = throw new UnsupportedOperationException()
+  implicit def linkedHashSetFactory[A]: Factory[A, LinkedHashSet[A]] = new scala.collection.generic.CanBuildFrom[Any, A, LinkedHashSet[A]] {
+    def apply(from: Any): mutable.Builder[A, LinkedHashSet[A]] = throw new UnsupportedOperationException()
 
     def apply(): mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]
-
-    def fromSpecific(it: IterableOnce[A]): LinkedHashSet[A] = new LinkedHashSetBuilder[A].++=(it).result
-
-    def newBuilder: mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]
   }
 
   def newBuilder[A]: mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]
