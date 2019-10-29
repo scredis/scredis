@@ -5,7 +5,12 @@ organization := "com.github.scredis"
 scalaVersion := "2.13.1"
 crossScalaVersions := Seq("2.11.12", "2.12.10", scalaVersion.value)
 
-scalacOptions ++= Seq("-deprecation", "-feature", "-Xfatal-warnings", "-Ywarn-dead-code")
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-feature",
+  "-Xfatal-warnings",
+  "-Ywarn-dead-code"
+)
 
 scalacOptions in (Compile,doc) := Seq("-no-link-warnings")
 autoAPIMappings := true
