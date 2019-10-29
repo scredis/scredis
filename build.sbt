@@ -25,7 +25,7 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.3",
   "com.typesafe.akka" %% "akka-actor" % "2.5.23",
 
-  "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.2",
 
   "org.scalatest" %% "scalatest" % "3.0.8" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
