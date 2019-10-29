@@ -23,7 +23,7 @@ git.remoteRepo := "git@github.com:scredis/scredis.git"
 libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
   "com.typesafe" % "config" % "1.3.3",
-  "com.typesafe.akka" %% "akka-actor" % "2.5.23",
+  "com.typesafe.akka" %% "akka-actor" % "2.5.26",
 
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
 
