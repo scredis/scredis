@@ -55,7 +55,7 @@ trait PubSubCommands { self: NonBlockingConnection =>
    * @since 2.8.0
    */
 
-  def pubSubNumSub(channels: String*): Future[Map[String, Int]] = send(
+  def pubSubNumSub(channels: String*): Future[Map[String, Long]] = send(
     PubSubNumSub(channels: _*)
   )
   
