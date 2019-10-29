@@ -165,11 +165,9 @@ class SubscriberListenerActor(
       // Unsubscribe() or PUnsubscribe()
       if (argsCount == 0) {
         val (count, otherCount) = message match {
-          case PubSubMessage.Unsubscribe(_, count) => (count, subscribedPatternsCount)
-          case PubSubMessage.PUnsubscribe(_, count) => (count, subscribedChannelsCount)
-          case x => throw RedisProtocolException(
-            s"Unexpected pub sub message received: '$x' in response to '$request'"
-          )
+          case PubSubMessage.Unsubscribe(_, count) => (count, subscribedChannelsCount)
+          case PubSubMessage.PUnsubscribe(_, count) => (count, subscribedPatternsCount)
+          case x => throw RedisProtocolException(s"Unexpected pub sub message received: '$x' in response to '$request'")
         }
         if (count == otherCount) {
           request.success(count)
