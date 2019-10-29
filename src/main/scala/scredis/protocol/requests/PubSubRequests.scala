@@ -43,12 +43,12 @@ object PubSubRequests {
   }
   
   case class PubSubNumSub(channels: String*)
-    extends Request[Map[String, Int]](PubSubNumSub, channels: _*) {
+    extends Request[Map[String, Long]](PubSubNumSub, channels: _*) {
     override def decode = {
-      case a: ArrayResponse => a.parsedAsPairsMap[String, Int, Map] {
+      case a: ArrayResponse => a.parsedAsPairsMap[String, Long, Map] {
         case b: BulkStringResponse => b.flattened[String]
       } {
-        case b: BulkStringResponse => b.flattened[Int]
+        case IntegerResponse(value) => value
       }
     }
   }
