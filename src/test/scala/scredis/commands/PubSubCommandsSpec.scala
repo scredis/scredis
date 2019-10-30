@@ -313,7 +313,7 @@ class PubSubCommandsSpec extends WordSpec
 
       publisher.configSet("requirepass", "").futureValue should be (())
 
-      client.auth("").futureValue should be ("OK")
+      client.auth("").futureValue should be (())
 
       subscribes.poll(2) should have size (2)
       pSubscribes.poll(3) should have size (3)
