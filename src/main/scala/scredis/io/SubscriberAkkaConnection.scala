@@ -18,6 +18,7 @@ import scala.concurrent.duration._
  * This trait represents a subscriber connection to a `Redis` server.
  */
 abstract class SubscriberAkkaConnection(
+  subscription: Subscription,
   system: ActorSystem,
   host: String,
   port: Int,
@@ -52,9 +53,10 @@ abstract class SubscriberAkkaConnection(
   
   private val lock = new Semaphore(1)
   
-  protected val listenerActor = system.actorOf(
+  protected val listenerActor: ActorRef = system.actorOf(
     Props(
       classOf[SubscriberListenerActor],
+      subscription,
       host,
       port,
       passwordOpt,
@@ -97,10 +99,6 @@ abstract class SubscriberAkkaConnection(
       request.future.onComplete(_ => lock.release())
       request.future.asInstanceOf[Future[Int]]
     }
-  }
-  
-  override protected[scredis] def setSubscription(subscription: Subscription): Unit = {
-    listenerActor ! SubscriberListenerActor.Subscribe(subscription)
   }
   
   protected def authenticate(password: String): Future[Unit] = {

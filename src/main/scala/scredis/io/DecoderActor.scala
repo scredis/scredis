@@ -2,17 +2,16 @@ package scredis.io
 
 import akka.actor.{Actor, ActorLogging}
 import akka.util.ByteString
+import scredis.PubSubMessage.Message
 import scredis.exceptions.RedisProtocolException
 import scredis.protocol.{ErrorResponse, Protocol, Request}
 import scredis.{PubSubMessage, Subscription}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DecoderActor extends Actor with ActorLogging {
+class DecoderActor(subscriptionOption: Option[Subscription]) extends Actor with ActorLogging {
   
   import DecoderActor._
-  
-  private var subscriptionOpt: Option[Subscription] = None
   
   def receive: Receive = {
     case Partition(data, requests, skip) =>
@@ -41,43 +40,49 @@ class DecoderActor extends Actor with ActorLogging {
       val buffer = data.asByteBuffer
       while (buffer.remaining > 0) {
         try {
-          val result = Protocol.decodePubSubResponse(Protocol.decode(buffer))
+          val msg = Protocol.decode(buffer)
+          val result = Protocol.decodePubSubResponse(msg)
           result match {
-            case Left(ErrorResponse(message)) => {
+            case Left(ErrorResponse(message)) =>
               sender ! SubscriberListenerActor.Fail(message)
+
+            case Right(msgEither) => msgEither match {
+              case Right(m: PubSubMessage.Subscribe) =>
+                sender ! SubscriberListenerActor.Complete(m)
+
+              case Right(m: PubSubMessage.PSubscribe) =>
+                sender ! SubscriberListenerActor.Complete(m)
+
+              case Right(m: PubSubMessage.Unsubscribe) =>
+                sender ! SubscriberListenerActor.Complete(m)
+
+              case Right(m: PubSubMessage.PUnsubscribe) =>
+                sender ! SubscriberListenerActor.Complete(m)
+
+              case Right(m: PubSubMessage.Error) =>
+                sender ! SubscriberListenerActor.Complete(m)
+
+              case Right(m: PubSubMessage.Message) =>
+              case Right(m: PubSubMessage.PMessage) =>
+
+              case Left(value) =>
+                sender ! SubscriberListenerActor.Confirm(value)
             }
-            case Right(m: PubSubMessage.Subscribe) => {
-              sender ! SubscriberListenerActor.Complete(m)
-            }
-            case Right(m: PubSubMessage.PSubscribe) => {
-              sender ! SubscriberListenerActor.Complete(m)
-            }
-            case Right(m: PubSubMessage.Unsubscribe) => {
-              sender ! SubscriberListenerActor.Complete(m)
-            }
-            case Right(m: PubSubMessage.PUnsubscribe) => {
-              sender ! SubscriberListenerActor.Complete(m)
-            }
-            case _ =>
           }
-          result match {
-            case Left(_) =>
-            case Right(message) => subscriptionOpt match {
-              case Some(subscription) => if (subscription.isDefinedAt(message)) {
-                Future {subscription.apply(message)}(ExecutionContext.global)
-              } else {
-                log.debug(s"Received unregistered PubSubMessage: $message")
+          result.foreach(_.foreach { message =>
+              subscriptionOption match {
+                case Some(subscription) =>
+                  Future {subscription.apply(message)}(ExecutionContext.global)
+                case None =>
+                  log.error("Received SubscribePartition without any subscription")
               }
-              case None => log.error("Received SubscribePartition without any subscription")
-            }
-          }
+          })
         } catch {
           case e: Throwable =>
             val msg = data.decodeString("UTF-8").replace("\r\n", "\\r\\n")
             log.error(s"Could not decode PubSubMessage: $msg", e)
         }
       }
-    case Subscribe(subscription) => subscriptionOpt = Some(subscription)
     case x => log.error(s"Received unexpected message: $x")
   }
   
@@ -86,5 +91,4 @@ class DecoderActor extends Actor with ActorLogging {
 object DecoderActor {
   case class Partition(data: ByteString, requests: Iterator[Request[_]], skip: Int)
   case class SubscribePartition(data: ByteString)
-  case class Subscribe(subscription: Subscription)
 }

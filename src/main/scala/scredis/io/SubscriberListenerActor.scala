@@ -3,8 +3,8 @@ package scredis.io
 import akka.routing.Broadcast
 import akka.util.ByteString
 import scredis.exceptions._
-import scredis.protocol.Request
-import scredis.protocol.requests.ConnectionRequests.Quit
+import scredis.protocol.{Request, SimpleStringResponse}
+import scredis.protocol.requests.ConnectionRequests.{Auth, Echo, Ping, Quit, Select}
 import scredis.protocol.requests.PubSubRequests
 import scredis.{PubSubMessage, Subscription}
 
@@ -13,6 +13,7 @@ import scala.concurrent.duration._
 import scala.language.existentials
 
 class SubscriberListenerActor(
+  subscription: Subscription,
   host: String,
   port: Int,
   passwordOpt: Option[String],
@@ -54,17 +55,15 @@ class SubscriberListenerActor(
   private var shouldSendRequests = false
   private var requestOpt: Option[Request[_]] = None
   private var requestResponsesCount = 0
-  private var subscriptionOpt: Option[Subscription] = None
-  private var previousSubscriptionOpt: Option[Subscription] = None
   private var subscribedCount = 0
   private var subscribedChannelsCount = 0
   private var subscribedPatternsCount = 0
+
+  override protected val decodingSubscription: Option[Subscription] = Some(subscription)
   
   override protected def onConnect(): Unit = {
     isInitialized = false
     shouldSendRequests = false
-    previousSubscriptionOpt = subscriptionOpt
-    subscriptionOpt = None
     requestOpt = None
     requestResponsesCount = 0
     subscribedCount = 0
@@ -74,10 +73,6 @@ class SubscriberListenerActor(
   
   override protected def onInitialized(): Unit = {
     isInitialized = true
-    val subscription = previousSubscriptionOpt.getOrElse(PartialFunction.empty)
-    subscriptionOpt = Some(subscription)
-    decoders.route(Broadcast(DecoderActor.Subscribe(subscription)), self)
-    
     subscribedChannels.foreach { channel =>
       log.info(s"Automatically re-subscribing to channel: $channel")
       val request = PubSubRequests.Subscribe(channel)
@@ -102,18 +97,9 @@ class SubscriberListenerActor(
   
   override protected def handleData(
     data: ByteString, responsesCount: Int
-  ): Unit = subscriptionOpt match {
-    case Some(_) => decoders.route(DecoderActor.SubscribePartition(data), self)
-    case None => super.handleData(data, responsesCount)
-  }
-  
+  ): Unit = decoders.route(DecoderActor.SubscribePartition(data), self)
+
   override protected def always: Receive = super.always orElse {
-    case Subscribe(subscription) => {
-      subscriptionOpt = Some(subscription)
-      if (isInitialized) {
-        decoders.route(Broadcast(DecoderActor.Subscribe(subscription)), self)
-      }
-    }
     case Complete(message) => {
       requestResponsesCount += 1
       val count = message match {
@@ -151,6 +137,7 @@ class SubscriberListenerActor(
           subscribedPatternsCount -= difference
           count
         }
+
         case x => throw RedisProtocolException(s"Unexpected pub sub message received: $x")
       }
       
@@ -188,6 +175,22 @@ class SubscriberListenerActor(
         }
       }
     }
+    case Confirm(value) =>
+      val request: Request[_] = requestOpt match {
+        case Some(request) => request
+        case None => requests.pop()
+      }
+
+      log.debug(s"Trying to complete ${request} with ${value}.")
+
+      if (request.isInstanceOf[Auth] || request.isInstanceOf[Echo] || request.isInstanceOf[Ping] || request.isInstanceOf[Quit] || request.isInstanceOf[Select] ) {
+        request.success(value.value)
+        requestOpt = None
+        requestResponsesCount = 0
+      } else {
+        requestOpt = Some(request)
+      }
+
     case Fail(message) => requests.pop().failure(RedisErrorResponseException(message))
     case SaveSubscriptions => {
       savedSubscribedChannels ++= subscribedChannels
@@ -215,8 +218,8 @@ class SubscriberListenerActor(
 }
 
 object SubscriberListenerActor {
-  case class Subscribe(subscription: Subscription)
   case class Complete(message: PubSubMessage)
+  case class Confirm(message: SimpleStringResponse)
   case class Fail(message: String)
   case object SaveSubscriptions
   case class SendAsRegularClient(request: Request[_])
