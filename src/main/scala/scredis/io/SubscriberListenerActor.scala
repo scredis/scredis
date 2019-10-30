@@ -184,7 +184,11 @@ class SubscriberListenerActor(
       log.debug(s"Trying to complete ${request} with ${value}.")
 
       if (request.isInstanceOf[Auth] || request.isInstanceOf[Echo] || request.isInstanceOf[Ping] || request.isInstanceOf[Quit] || request.isInstanceOf[Select] ) {
-        request.success(value.value)
+        if (request.isInstanceOf[Auth]) {
+          request.success(())
+        } else {
+          request.success(value.value)
+        }
         requestOpt = None
         requestResponsesCount = 0
       } else {

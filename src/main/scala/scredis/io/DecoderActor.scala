@@ -69,14 +69,16 @@ class DecoderActor(subscriptionOption: Option[Subscription]) extends Actor with 
                 sender ! SubscriberListenerActor.Confirm(value)
             }
           }
-          result.foreach(_.foreach { message =>
+          result match {
+            case Right(Right(message)) =>
               subscriptionOption match {
                 case Some(subscription) =>
                   Future {subscription.apply(message)}(ExecutionContext.global)
                 case None =>
                   log.error("Received SubscribePartition without any subscription")
               }
-          })
+            case _ =>
+          }
         } catch {
           case e: Throwable =>
             val msg = data.decodeString("UTF-8").replace("\r\n", "\\r\\n")

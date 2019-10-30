@@ -106,7 +106,7 @@ class ListenerActor(
         request match {
           case auth @ Auth(password) => if (password.isEmpty) {
             passwordOpt = None
-            auth.success("OK")
+            auth.success(())
           } else {
             passwordOpt = Some(password)
             doSend(auth)

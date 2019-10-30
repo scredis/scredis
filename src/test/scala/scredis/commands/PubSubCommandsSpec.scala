@@ -333,7 +333,7 @@ class PubSubCommandsSpec extends WordSpec
       )
 
       publisher.configSet("requirepass", "foobar").futureValue should be (())
-      client.auth("foobar").futureValue should be ("OK")
+      client.auth("foobar").futureValue should be (())
 
       client.unsubscribe().futureValue should be (4)
       client.pUnsubscribe().futureValue should be (0)
@@ -342,7 +342,7 @@ class PubSubCommandsSpec extends WordSpec
     "fail when wrong password provided" in {
       clear()
       client2.auth("wrongpass").failed.futureValue shouldBe an[RedisErrorResponseException]
-      client2.auth("foobar").futureValue should be ("OK")
+      client2.auth("foobar").futureValue should be (())
     }
   }
 
