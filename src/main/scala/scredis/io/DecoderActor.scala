@@ -40,8 +40,7 @@ class DecoderActor(subscriptionOption: Option[Subscription]) extends Actor with 
       val buffer = data.asByteBuffer
       while (buffer.remaining > 0) {
         try {
-          val msg = Protocol.decode(buffer)
-          val result = Protocol.decodePubSubResponse(msg)
+          val result = Protocol.decodePubSubResponse(Protocol.decode(buffer))
           result match {
             case Left(ErrorResponse(message)) =>
               sender ! SubscriberListenerActor.Fail(message)

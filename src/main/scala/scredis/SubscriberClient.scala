@@ -11,7 +11,7 @@ import scala.concurrent.duration._
 /**
  * Defines a Pub/Sub Redis client capable of subscribing to channels/patterns.
  *
- * @param subscription function handling received messages
+ * @param subscription function handling events related to subscriptions
  * @param host server address
  * @param port server port
  * @param passwordOpt optional server password
@@ -65,7 +65,7 @@ class SubscriberClient(
    * Constructs a $client instance from a [[scredis.RedisConfig]]
    * 
    * @param config [[scredis.RedisConfig]]
-   * @param subscription function handling received messages
+   * @param subscription function handling events related to subscriptions
    * @return the constructed $client
    */
   def this(config: RedisConfig, subscription: Subscription)(implicit system: ActorSystem) = this(
@@ -164,7 +164,7 @@ object SubscriberClient {
   /**
    * Creates a $client
    *
-   * @param subscription function handling received messages
+   * @param subscription function handling events related to subscriptions
    * @param host server address
    * @param port server port
    * @param passwordOpt optional server password
@@ -193,7 +193,7 @@ object SubscriberClient {
     akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
     akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath
   )(implicit system: ActorSystem): SubscriberClient = new SubscriberClient(
-    subscription,
+    subscription = subscription,
     host = host,
     port = port,
     passwordOpt = passwordOpt,
@@ -212,11 +212,12 @@ object SubscriberClient {
    * Constructs a $client instance from a [[scredis.RedisConfig]]
    * 
    * @param config [[scredis.RedisConfig]]
+   * @param subscription function handling events related to subscriptions
    * @return the constructed $client
    */
-  def apply(config: RedisConfig, handler: Subscription)(
+  def apply(config: RedisConfig, subscription: Subscription)(
     implicit system: ActorSystem
-  ): SubscriberClient = new SubscriberClient(config, handler)
+  ): SubscriberClient = new SubscriberClient(config, subscription)
   
   /**
    * Constructs a $client instance from a $tc

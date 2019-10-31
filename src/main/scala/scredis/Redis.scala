@@ -171,12 +171,7 @@ class Redis private[scredis] (
     subscription = subscription
   )
   
-  /**
-   * Constructs a $redis instance from a [[scredis.RedisConfig]].
-   * 
-   * @return the constructed $redis
-   */
-  def this(config: RedisConfig) = this(
+  def this(config: RedisConfig, subscription: Subscription) = this(
     host = config.Redis.Host,
     port = config.Redis.Port,
     passwordOpt = config.Redis.PasswordOpt,
@@ -191,9 +186,17 @@ class Redis private[scredis] (
     akkaListenerDispatcherPath = config.IO.Akka.ListenerDispatcherPath,
     akkaIODispatcherPath = config.IO.Akka.IODispatcherPath,
     akkaDecoderDispatcherPath = config.IO.Akka.DecoderDispatcherPath,
-    failCommandOnConnecting = config.Global.FailCommandOnConnecting
+    failCommandOnConnecting = config.Global.FailCommandOnConnecting,
+    subscription = subscription
   )
-  
+
+  /**
+   * Constructs a $redis instance from a [[scredis.RedisConfig]].
+   *
+   * @return the constructed $redis
+   */
+  def this(config: RedisConfig) = this(config, RedisConfigDefaults.LoggingSubscription)
+
   /**
    * Constructs a $redis instance using the default config.
    * 
@@ -425,7 +428,8 @@ object Redis {
    * @return the constructed $redis
    */
   def apply(config: RedisConfig): Redis = new Redis(config)
-  
+
+  def apply(subscription: Subscription): Redis = new Redis(RedisConfig(), subscription)
   /**
    * Constructs a $redis instance from a $tc.
    * 

@@ -2,7 +2,6 @@ package scredis
 
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
-import scredis.PubSubMessage.{Message, PMessage, PSubscribe, Subscribe, PUnsubscribe, Unsubscribe}
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
@@ -130,12 +129,12 @@ object RedisConfigDefaults extends LazyLogging {
   val Global = Config.Global
 
   val LoggingSubscription: Subscription = {
-    case m: scredis.PubSubMessage.Error => logger.info(s"Subscription received $m")
-    case m: Message => logger.info(s"Subscription received $m")
-    case m: PMessage => logger.info(s"Subscription received $m")
-    case m: Subscribe => logger.info(s"Subscription received $m")
-    case m: PSubscribe => logger.info(s"Subscription received $m")
-    case m: Unsubscribe => logger.info(s"Subscription received $m")
-    case m: PUnsubscribe => logger.info(s"Subscription received $m")
+    case m: PubSubMessage.Error => logger.info(s"Subscription received $m")
+    case m: PubSubMessage.Message => logger.info(s"Subscription received $m")
+    case m: PubSubMessage.PMessage => logger.info(s"Subscription received $m")
+    case m: PubSubMessage.Subscribe => logger.info(s"Subscription received $m")
+    case m: PubSubMessage.PSubscribe => logger.info(s"Subscription received $m")
+    case m: PubSubMessage.Unsubscribe => logger.info(s"Subscription received $m")
+    case m: PubSubMessage.PUnsubscribe => logger.info(s"Subscription received $m")
   }
 }
