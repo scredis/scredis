@@ -19,13 +19,11 @@ trait SubscriberCommands { self: SubscriberConnection =>
    * commands, except for additional SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE and PUNSUBSCRIBE commands.
    *
    * @param patterns the patterns
-   * @param subscription partial function handling received messages
    * @return the total number of subscribed channels and patterns
    *
    * @since 2.0.0
    */
-  def pSubscribe(patterns: String*)(subscription: Subscription): Future[Int] = {
-    setSubscription(subscription)
+  def pSubscribe(patterns: String*): Future[Int] = {
     if (patterns.nonEmpty) {
       sendAsSubscriber(PSubscribe(patterns: _*))
     } else {
@@ -54,13 +52,11 @@ trait SubscriberCommands { self: SubscriberConnection =>
    * commands, except for additional SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE and PUNSUBSCRIBE commands.
    *
    * @param channels channel name(s) of channel(s) to listen to
-   * @param subscription partial function handling received messages
    * @return the total number of subscribed channels and patterns
    *
    * @since 2.0.0
    */
-  def subscribe(channels: String*)(subscription: Subscription): Future[Int] = {
-    setSubscription(subscription)
+  def subscribe(channels: String*): Future[Int] = {
     if (channels.nonEmpty) {
       sendAsSubscriber(Subscribe(channels: _*))
     } else {

@@ -32,7 +32,8 @@ class Redis private[scredis] (
   akkaListenerDispatcherPath: String,
   akkaIODispatcherPath: String,
   akkaDecoderDispatcherPath: String,
-  failCommandOnConnecting: Boolean
+  failCommandOnConnecting: Boolean,
+  subscription: Subscription
 ) extends AkkaNonBlockingConnection(
   system = systemOrName match {
     case Left(system) => system
@@ -95,9 +96,10 @@ class Redis private[scredis] (
   /**
    * Lazily initialized [[scredis.SubscriberClient]].
    */
-  lazy val subscriber = {
+  lazy val subscriber: SubscriberClient = {
     shouldShutdownSubscriberClient = true
     SubscriberClient(
+      subscription,
       host = host,
       port = port,
       passwordOpt = getPasswordOpt,
@@ -148,7 +150,8 @@ class Redis private[scredis] (
     akkaListenerDispatcherPath: String = RedisConfigDefaults.IO.Akka.ListenerDispatcherPath,
     akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
     akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
-    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
+    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting,
+    subscription: Subscription = RedisConfigDefaults.LoggingSubscription
   ) = this(
     systemOrName = Right(actorSystemName),
     host = host,
@@ -164,15 +167,11 @@ class Redis private[scredis] (
     akkaListenerDispatcherPath = akkaListenerDispatcherPath,
     akkaIODispatcherPath = akkaIODispatcherPath,
     akkaDecoderDispatcherPath = akkaDecoderDispatcherPath,
-    failCommandOnConnecting = failCommandOnConnecting
+    failCommandOnConnecting = failCommandOnConnecting,
+    subscription = subscription
   )
   
-  /**
-   * Constructs a $redis instance from a [[scredis.RedisConfig]].
-   * 
-   * @return the constructed $redis
-   */
-  def this(config: RedisConfig) = this(
+  def this(config: RedisConfig, subscription: Subscription) = this(
     host = config.Redis.Host,
     port = config.Redis.Port,
     passwordOpt = config.Redis.PasswordOpt,
@@ -187,9 +186,17 @@ class Redis private[scredis] (
     akkaListenerDispatcherPath = config.IO.Akka.ListenerDispatcherPath,
     akkaIODispatcherPath = config.IO.Akka.IODispatcherPath,
     akkaDecoderDispatcherPath = config.IO.Akka.DecoderDispatcherPath,
-    failCommandOnConnecting = config.Global.FailCommandOnConnecting
+    failCommandOnConnecting = config.Global.FailCommandOnConnecting,
+    subscription = subscription
   )
-  
+
+  /**
+   * Constructs a $redis instance from a [[scredis.RedisConfig]].
+   *
+   * @return the constructed $redis
+   */
+  def this(config: RedisConfig) = this(config, RedisConfigDefaults.LoggingSubscription)
+
   /**
    * Constructs a $redis instance using the default config.
    * 
@@ -421,7 +428,8 @@ object Redis {
    * @return the constructed $redis
    */
   def apply(config: RedisConfig): Redis = new Redis(config)
-  
+
+  def apply(subscription: Subscription): Redis = new Redis(RedisConfig(), subscription)
   /**
    * Constructs a $redis instance from a $tc.
    * 
@@ -491,7 +499,8 @@ object Redis {
     akkaListenerDispatcherPath: String = RedisConfigDefaults.IO.Akka.ListenerDispatcherPath,
     akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
     akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath,
-    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting
+    failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting,
+    subscription: Subscription = RedisConfigDefaults.LoggingSubscription
   )(implicit system: ActorSystem): Redis = new Redis(
     systemOrName = Left(system),
     host = host,
@@ -507,7 +516,8 @@ object Redis {
     akkaListenerDispatcherPath = akkaListenerDispatcherPath,
     akkaIODispatcherPath = akkaIODispatcherPath,
     akkaDecoderDispatcherPath = akkaDecoderDispatcherPath,
-    failCommandOnConnecting = failCommandOnConnecting
+    failCommandOnConnecting = failCommandOnConnecting,
+    subscription = subscription
   )
   
   /**
@@ -544,7 +554,8 @@ object Redis {
     akkaListenerDispatcherPath = config.IO.Akka.ListenerDispatcherPath,
     akkaIODispatcherPath = config.IO.Akka.IODispatcherPath,
     akkaDecoderDispatcherPath = config.IO.Akka.DecoderDispatcherPath,
-    failCommandOnConnecting = config.Global.FailCommandOnConnecting
+    failCommandOnConnecting = config.Global.FailCommandOnConnecting,
+    subscription = RedisConfigDefaults.LoggingSubscription
   )
   
   /**

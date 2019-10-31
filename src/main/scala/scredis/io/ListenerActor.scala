@@ -7,7 +7,7 @@ import akka.actor._
 import akka.io.Tcp
 import akka.routing._
 import akka.util.ByteString
-import scredis.Transaction
+import scredis.{Subscription, Transaction}
 import scredis.exceptions.RedisIOException
 import scredis.protocol.requests.ConnectionRequests.{Auth, Quit, Select}
 import scredis.protocol.requests.ServerRequests
@@ -57,7 +57,9 @@ class ListenerActor(
   protected val requests = new util.LinkedList[Request[_]]()
   protected var ioActor: ActorRef = _
   protected var decoders: Router = _
-  
+
+  protected val decodingSubscription: Option[Subscription] = None
+
   private def createIOActor(): ActorRef = context.actorOf(
     Props(
       classOf[IOActor],
@@ -74,7 +76,7 @@ class ListenerActor(
   private def createDecodersRouter(): Router = {
     val routees = Vector.fill(decodersCount) {
       val ref = context.actorOf(
-        Props(classOf[DecoderActor]).withDispatcher(akkaIODispatcherPath),
+        Props(classOf[DecoderActor], decodingSubscription).withDispatcher(akkaIODispatcherPath),
         UniqueNameGenerator.getNumberedName(s"${nameOpt.getOrElse(s"$host-$port")}-decoder-actor")
       )
       context.watch(ref)

@@ -25,5 +25,4 @@ trait BlockingConnection {
 
 trait SubscriberConnection {
   protected[scredis] def sendAsSubscriber(request: Request[_]): Future[Int]
-  protected[scredis] def setSubscription(subscription: Subscription): Unit
 }

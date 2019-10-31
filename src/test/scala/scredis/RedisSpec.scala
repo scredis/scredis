@@ -20,9 +20,7 @@ class RedisSpec extends WordSpec
     "lazy clients are not initialized" should {
       "authenticate all clients" taggedAs (V100) in {
         redis1.auth("foobar").futureValue should be (())
-        redis1.subscriber.subscribe("TEST") {
-          case _ =>
-        }.futureValue should be (1)
+        redis1.subscriber.subscribe("TEST").futureValue should be (1)
         redis1.blocking.blPop(1, "LIST").get should be (empty)
         redis1.ping().futureValue should be ("PONG")
       }
@@ -30,9 +28,7 @@ class RedisSpec extends WordSpec
     "lazy clients are initialized" should {
       "authenticate all clients" taggedAs (V100) in {
         a [RedisErrorResponseException] should be thrownBy {
-          redis2.subscriber.subscribe("TEST") {
-            case _ =>
-          }.!
+          redis2.subscriber.subscribe("TEST").!
         }
         a [RedisErrorResponseException] should be thrownBy {
           redis2.blocking.blPop(1, "LIST").get
@@ -41,9 +37,7 @@ class RedisSpec extends WordSpec
           redis2.ping().!
         }
         redis2.auth("foobar").futureValue should be (())
-        redis2.subscriber.subscribe("TEST") {
-          case _ =>
-        }.futureValue should be (1)
+        redis2.subscriber.subscribe("TEST").futureValue should be (1)
         redis2.blocking.blPop(1, "LIST").get should be (empty)
         redis2.ping().futureValue should be ("PONG")
       }

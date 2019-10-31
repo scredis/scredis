@@ -322,9 +322,10 @@ object Protocol extends LazyLogging {
 
   private[scredis] def decodePubSubResponse(
     response: Response
-  ): Either[ErrorResponse, PubSubMessage] = response match {
+  ): Either[ErrorResponse, Either[SimpleStringResponse, PubSubMessage]] = response match {
     case e: ErrorResponse => Left(e)
-    case a: ArrayResponse => Right {
+    case s: SimpleStringResponse => Right(Left(s))
+    case a: ArrayResponse => Right(Right {
       val vector = a.parsed[Any, Vector] {
         case BulkStringResponse(valueOpt) => valueOpt
         case IntegerResponse(value) => value.toInt
@@ -359,7 +360,7 @@ object Protocol extends LazyLogging {
         case x =>
           throw RedisProtocolException(s"Invalid PubSubMessage type received: $x")
       }
-    }
+    })
     case x => throw RedisProtocolException(s"Invalid PubSubResponse received: $x")
   }
   

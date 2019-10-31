@@ -360,7 +360,7 @@ package object scredis {
     final case class Error(exception: Throwable) extends PubSubMessage
   }
   
-  type Subscription = PartialFunction[PubSubMessage, Any]
+  type Subscription = Function[PubSubMessage, Any]
   
   /**
    * Holds information about a `Redis` command. This type is returned by the

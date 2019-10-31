@@ -70,15 +70,31 @@ redis.hGetAll("my-hash") onComplete {
 // Executes a blocking command using the internal, lazily initialized BlockingClient
 redis.blocking.blPop(0, "queue")
 
-// Subscribes to a Pub/Sub channel using the internal, lazily initialized SubscriberClient
-redis.subscriber.subscribe("My Channel") {
-  case message @ PubSubMessage.Message(channel, messageBytes) => println(
-    message.readAs[String]()
-  )
-  case PubSubMessage.Subscribe(channel, subscribedChannelsCount) => println(
-    s"Successfully subscribed to $channel"
-  )
+// Shutdown all initialized internal clients along with the ActorSystem
+redis.quit()
+```
+
+```scala
+import scredis.PubSubMessage
+private val subscriptionHandler: Function[PubSubMessage, Unit] = {
+  case m: PubSubMessage.Subscribe => println(s"Subscribed to channel ${m.channel}")
+  case m: PubSubMessage.Message => println(s"Received message for channel ${m.channel} with data ${m.readAs[String]()}")
+  case m: PubSubMessage.Unsubscribe => println(s"Unsubscribed from channel ${m.channelOpt}")
+  case m: PubSubMessage.PSubscribe => println(s"Subscribed to channels matching pattern ${m.pattern}")
+  case m: PubSubMessage.PMessage => println(s"Received message for pattern ${m.pattern} on channel ${m.channel} with data ${m.readAs[String]()}")
+  case m: PubSubMessage.PUnsubscribe => println(s"Unsubscribed from pattern matching ${m.patternOpt}")
+  case e: PubSubMessage.Error => println(s"Scredis received error $e")
 }
+
+// Creates a Redis instance with default configuration.
+// Provide custom function handling pub/sub related events
+val redis = scredis.Redis(subscription = subscriptionHandler)
+
+// Subscribes to a Pub/Sub channel using the internal, lazily initialized SubscriberClient
+redis.subscriber.subscribe("My Channel")
+
+// Later unsubscribe from channel
+redis.subscriber.unsubscribe("My Channel")
 
 // Shutdown all initialized internal clients along with the ActorSystem
 redis.quit()

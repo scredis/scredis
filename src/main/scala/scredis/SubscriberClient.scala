@@ -10,7 +10,8 @@ import scala.concurrent.duration._
 
 /**
  * Defines a Pub/Sub Redis client capable of subscribing to channels/patterns.
- * 
+ *
+ * @param subscription function handling events related to subscriptions
  * @param host server address
  * @param port server port
  * @param passwordOpt optional server password
@@ -29,6 +30,7 @@ import scala.concurrent.duration._
  * @define tc com.typesafe.Config
  */
 class SubscriberClient(
+  subscription: Subscription,
   host: String = RedisConfigDefaults.Redis.Host,
   port: Int = RedisConfigDefaults.Redis.Port,
   passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
@@ -42,6 +44,7 @@ class SubscriberClient(
   akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
   akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath
 )(implicit system: ActorSystem) extends SubscriberAkkaConnection(
+  subscription,
   system = system,
   host = host,
   port = port,
@@ -62,9 +65,11 @@ class SubscriberClient(
    * Constructs a $client instance from a [[scredis.RedisConfig]]
    * 
    * @param config [[scredis.RedisConfig]]
+   * @param subscription function handling events related to subscriptions
    * @return the constructed $client
    */
-  def this(config: RedisConfig)(implicit system: ActorSystem) = this(
+  def this(config: RedisConfig, subscription: Subscription)(implicit system: ActorSystem) = this(
+    subscription = subscription,
     host = config.Redis.Host,
     port = config.Redis.Port,
     passwordOpt = config.Redis.PasswordOpt,
@@ -90,7 +95,7 @@ class SubscriberClient(
    * @param config $tc
    * @return the constructed $client
    */
-  def this(config: Config)(implicit system: ActorSystem) = this(RedisConfig(config))
+  def this(config: Config, subscription: Subscription)(implicit system: ActorSystem) = this(RedisConfig(config), subscription)
   
   /**
    * Constructs a $client instance from a config file.
@@ -103,7 +108,8 @@ class SubscriberClient(
    * @param configName config filename
    * @return the constructed $client
    */
-  def this(configName: String)(implicit system: ActorSystem) = this(RedisConfig(configName))
+  def this(configName: String, subscription: Subscription)(implicit system: ActorSystem) =
+    this(RedisConfig(configName), subscription)
   
   /**
    * Constructs a $client instance from a config file and using the provided path.
@@ -114,9 +120,8 @@ class SubscriberClient(
    * @param path path pointing to the scredis config object
    * @return the constructed $client
    */
-  def this(configName: String, path: String)(implicit system: ActorSystem) = this(
-    RedisConfig(configName, path)
-  )
+  def this(configName: String, path: String, subscription: Subscription)(implicit system: ActorSystem) =
+    this(RedisConfig(configName, path), subscription)
   
   /**
    * Authenticates to the server.
@@ -158,7 +163,8 @@ object SubscriberClient {
 
   /**
    * Creates a $client
-   * 
+   *
+   * @param subscription function handling events related to subscriptions
    * @param host server address
    * @param port server port
    * @param passwordOpt optional server password
@@ -173,6 +179,7 @@ object SubscriberClient {
    * @param akkaDecoderDispatcherPath path to decoder dispatcher definition
    */
   def apply(
+    subscription: Subscription = RedisConfigDefaults.LoggingSubscription,
     host: String = RedisConfigDefaults.Redis.Host,
     port: Int = RedisConfigDefaults.Redis.Port,
     passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
@@ -186,6 +193,7 @@ object SubscriberClient {
     akkaIODispatcherPath: String = RedisConfigDefaults.IO.Akka.IODispatcherPath,
     akkaDecoderDispatcherPath: String = RedisConfigDefaults.IO.Akka.DecoderDispatcherPath
   )(implicit system: ActorSystem): SubscriberClient = new SubscriberClient(
+    subscription = subscription,
     host = host,
     port = port,
     passwordOpt = passwordOpt,
@@ -204,11 +212,12 @@ object SubscriberClient {
    * Constructs a $client instance from a [[scredis.RedisConfig]]
    * 
    * @param config [[scredis.RedisConfig]]
+   * @param subscription function handling events related to subscriptions
    * @return the constructed $client
    */
-  def apply(config: RedisConfig)(
+  def apply(config: RedisConfig, subscription: Subscription)(
     implicit system: ActorSystem
-  ): SubscriberClient = new SubscriberClient(config)
+  ): SubscriberClient = new SubscriberClient(config, subscription)
   
   /**
    * Constructs a $client instance from a $tc
@@ -221,9 +230,9 @@ object SubscriberClient {
    * @param config $tc
    * @return the constructed $client
    */
-  def apply(config: Config)(
+  def apply(config: Config, subscription: Subscription)(
     implicit system: ActorSystem
-  ): SubscriberClient = new SubscriberClient(config)
+  ): SubscriberClient = new SubscriberClient(config, subscription)
   
   /**
    * Constructs a $client instance from a config file.
@@ -236,9 +245,9 @@ object SubscriberClient {
    * @param configName config filename
    * @return the constructed $client
    */
-  def apply(configName: String)(
+  def apply(configName: String, subscription: Subscription)(
     implicit system: ActorSystem
-  ): SubscriberClient = new SubscriberClient(configName)
+  ): SubscriberClient = new SubscriberClient(configName, subscription)
   
   /**
    * Constructs a $client instance from a config file and using the provided path.
@@ -249,8 +258,8 @@ object SubscriberClient {
    * @param path path pointing to the scredis config object
    * @return the constructed $client
    */
-  def apply(configName: String, path: String)(
+  def apply(configName: String, path: String, subscription: Subscription)(
     implicit system: ActorSystem
-  ): SubscriberClient = new SubscriberClient(configName, path)
+  ): SubscriberClient = new SubscriberClient(configName, path, subscription)
   
 }
