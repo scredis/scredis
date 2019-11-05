@@ -1,3 +1,5 @@
+## Serialization
+
 Scredis provides full support for customizing serialization and deserialization of relevant command parameters and command results.
 
 ### Reading

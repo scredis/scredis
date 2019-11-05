@@ -208,7 +208,9 @@ Released version is automatically populated to jcenter bintray [https://search.m
 Manual step is needed to populate to [mvnrepository](https://mvnrepository.com/artifact/com.github.scredis/scredis)
 
 Maintainer performing stable release should:
-* switch to master branch and update README with tag `X.Y.Z` and commit changes.
+* switch to master branch and update README with tag `X.Y.Z`
+* execute `./gen-doc.sh`
+* commit changes related to version and documentation
 * `git tag -a "vX.Y.Z" -m "Release version vX.Y.Z"` # tag current commit with given tag
 * `git push origin vX.Y.Z` # tags are not automatically pushed by `git push`
 * go to [bintray](https://bintray.com/scredis/maven/scredis#central) and click 'Sync' to push released version to mvnrepository.

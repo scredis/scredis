@@ -1,16 +1,4 @@
-### How to run the tests
-
-- Install the latest version of redis-server supported by scredis  
-- Start two redis servers  
-  1. Original config (port = 6379, no password)  
-    - Run `redis-server`  
-  2. Custom config (port = 6380, password = 'foobar')  
-    - Create a redis config file, i.e. `/path/custom.conf`  
-    - Configure `port 6380` and `requirepass foobar`  
-    - Run `redis-server /path/custom.conf`  
-- Run the tests using sbt
-
-> Note: you must not create any external connections to either of the redis servers while the tests are running as it might interfere with them.
+## Contributing
 
 ### Running the benchmarks
 

@@ -1,3 +1,5 @@
+## Configuration
+
 Scredis uses the [Typesafe Config Library](https://github.com/typesafehub/config). The list of parameters you can tweak can be seen in **reference.conf** below.
 
 ### Reference

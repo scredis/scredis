@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>Examples · Scredis</title>
+<title>Transactions · Scredis</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='scredis'/>
@@ -31,19 +31,19 @@
 <span class="home-icon">⌂</span>Scredis
 </a>
 <div class="version-number">
-2.2.6+25-dbda257a+20191105-1111
+2.2.6+26-c6331fe8+20191105-1254
 </div>
 </div>
 <div class="nav-toc">
 <ul>
   <li><a href="BlockingClient.html" class="page">Blocking Client</a></li>
   <li><a href="Client.html" class="page">Client</a></li>
-  <li><a href="Configuration.html" class="page">Reference</a></li>
-  <li><a href="Contributing.html" class="page">How to run the tests</a></li>
-  <li><a href="Pub-Sub.html" class="page">Publishing</a></li>
-  <li><a href="Redis.html" class="page">Initialization</a></li>
-  <li><a href="Serialization.html" class="page">Reading</a></li>
-  <li><a href="Transactions.html" class="active page">Examples</a></li>
+  <li><a href="Configuration.html" class="page">Configuration</a></li>
+  <li><a href="Contributing.html" class="page">Contributing</a></li>
+  <li><a href="Pub-Sub.html" class="page">Pub-Sub</a></li>
+  <li><a href="Redis.html" class="page">Redis</a></li>
+  <li><a href="Serialization.html" class="page">Serialization</a></li>
+  <li><a href="Transactions.html" class="active page">Transactions</a></li>
 </ul>
 </div>
 
@@ -75,19 +75,19 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <span class="home-icon">⌂</span>Scredis
 </a>
 <div class="version-number">
-2.2.6+25-dbda257a+20191105-1111
+2.2.6+26-c6331fe8+20191105-1254
 </div>
 </div>
 <div class="nav-toc">
 <ul>
   <li><a href="BlockingClient.html" class="page">Blocking Client</a></li>
   <li><a href="Client.html" class="page">Client</a></li>
-  <li><a href="Configuration.html" class="page">Reference</a></li>
-  <li><a href="Contributing.html" class="page">How to run the tests</a></li>
-  <li><a href="Pub-Sub.html" class="page">Publishing</a></li>
-  <li><a href="Redis.html" class="page">Initialization</a></li>
-  <li><a href="Serialization.html" class="page">Reading</a></li>
-  <li><a href="Transactions.html" class="active page">Examples</a></li>
+  <li><a href="Configuration.html" class="page">Configuration</a></li>
+  <li><a href="Contributing.html" class="page">Contributing</a></li>
+  <li><a href="Pub-Sub.html" class="page">Pub-Sub</a></li>
+  <li><a href="Redis.html" class="page">Redis</a></li>
+  <li><a href="Serialization.html" class="page">Serialization</a></li>
+  <li><a href="Transactions.html" class="active page">Transactions</a></li>
 </ul>
 </div>
 
@@ -104,7 +104,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="nav-breadcrumbs">
 <ul>
   <li><a href="index.html">Scredis</a></li>
-  <li>Examples</li>
+  <li>Transactions</li>
 </ul>
 </div>
 </div>
@@ -112,6 +112,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
+<h2><a href="#transactions" name="transactions" class="anchor"><span class="anchor-link"></span></a>Transactions</h2>
 <p>Scredis provides two methods for executing transactions, namely <code>inTransaction</code> and <code>withTransaction</code>. They only differ in what they return.</p>
 <pre class="prettyprint"><code class="language-scala">// Returns a Vector containing the result of each queued command
 def inTransaction(build: TransactionBuilder =&gt; Any): Future[Vector[Try[Any]]]
@@ -158,6 +159,19 @@ The source code for this page can be found <a href="https://github.com/scredis/s
 
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="Transactions.html#transactions" class="header">Transactions</a>
+  <ul>
+    <li><a href="Transactions.html#examples" class="header">Examples</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
 </div>
 </div>
 
@@ -220,7 +234,7 @@ The source code for this page can be found <a href="https://github.com/scredis/s
 <script type="text/javascript" src="lib/prettify/prettify.js"></script>
 <script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
 <script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
-<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '2.2.6+25-dbda257a+20191105-1111', 'https://github.com/scredis/scredis')});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '2.2.6+26-c6331fe8+20191105-1254', 'https://github.com/scredis/scredis')});</script>
 
 
 </html>

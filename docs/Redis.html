@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>Initialization · Scredis</title>
+<title>Redis · Scredis</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='scredis'/>
@@ -31,19 +31,19 @@
 <span class="home-icon">⌂</span>Scredis
 </a>
 <div class="version-number">
-2.2.6+25-dbda257a+20191105-1111
+2.2.6+26-c6331fe8+20191105-1254
 </div>
 </div>
 <div class="nav-toc">
 <ul>
   <li><a href="BlockingClient.html" class="page">Blocking Client</a></li>
   <li><a href="Client.html" class="page">Client</a></li>
-  <li><a href="Configuration.html" class="page">Reference</a></li>
-  <li><a href="Contributing.html" class="page">How to run the tests</a></li>
-  <li><a href="Pub-Sub.html" class="page">Publishing</a></li>
-  <li><a href="Redis.html" class="active page">Initialization</a></li>
-  <li><a href="Serialization.html" class="page">Reading</a></li>
-  <li><a href="Transactions.html" class="page">Examples</a></li>
+  <li><a href="Configuration.html" class="page">Configuration</a></li>
+  <li><a href="Contributing.html" class="page">Contributing</a></li>
+  <li><a href="Pub-Sub.html" class="page">Pub-Sub</a></li>
+  <li><a href="Redis.html" class="active page">Redis</a></li>
+  <li><a href="Serialization.html" class="page">Serialization</a></li>
+  <li><a href="Transactions.html" class="page">Transactions</a></li>
 </ul>
 </div>
 
@@ -75,19 +75,19 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <span class="home-icon">⌂</span>Scredis
 </a>
 <div class="version-number">
-2.2.6+25-dbda257a+20191105-1111
+2.2.6+26-c6331fe8+20191105-1254
 </div>
 </div>
 <div class="nav-toc">
 <ul>
   <li><a href="BlockingClient.html" class="page">Blocking Client</a></li>
   <li><a href="Client.html" class="page">Client</a></li>
-  <li><a href="Configuration.html" class="page">Reference</a></li>
-  <li><a href="Contributing.html" class="page">How to run the tests</a></li>
-  <li><a href="Pub-Sub.html" class="page">Publishing</a></li>
-  <li><a href="Redis.html" class="active page">Initialization</a></li>
-  <li><a href="Serialization.html" class="page">Reading</a></li>
-  <li><a href="Transactions.html" class="page">Examples</a></li>
+  <li><a href="Configuration.html" class="page">Configuration</a></li>
+  <li><a href="Contributing.html" class="page">Contributing</a></li>
+  <li><a href="Pub-Sub.html" class="page">Pub-Sub</a></li>
+  <li><a href="Redis.html" class="active page">Redis</a></li>
+  <li><a href="Serialization.html" class="page">Serialization</a></li>
+  <li><a href="Transactions.html" class="page">Transactions</a></li>
 </ul>
 </div>
 
@@ -104,7 +104,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="nav-breadcrumbs">
 <ul>
   <li><a href="index.html">Scredis</a></li>
-  <li>Initialization</li>
+  <li>Redis</li>
 </ul>
 </div>
 </div>
@@ -112,11 +112,12 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
+<h2><a href="#redis" name="redis" class="anchor"><span class="anchor-link"></span></a>Redis</h2>
 <p>The <code>Redis</code> class provides the full feature set of scredis in one place. It is a non-blocking <a href="./Client.html">Client</a> which also holds a lazily initialized <a href="./BlockingClient.html">BlockingClient</a> and a lazily initialized <a href="./SubscriberClient.html">Pub-Sub#subscribing</a>. In other words, a <code>Redis</code> instance can contain from one to three active clients/connections.</p>
 <h3><a href="#initialization" name="initialization" class="anchor"><span class="anchor-link"></span></a>Initialization</h3>
-<p>A <code>Redis</code> instance can be initialized similarly to a regular <a href="./Client.html">Client#initialization</a> except that it does not require an <code>ActorSystem</code> as it automatically creates one.</p>
+<p>A <code>Redis</code> instance can be initialized similarly to a regular <a href="Client.html#initialization">Client</a> except that it does not require an <code>ActorSystem</code> as it automatically creates one.</p>
 <h3><a href="#full-usage-example" name="full-usage-example" class="anchor"><span class="anchor-link"></span></a>Full usage example</h3>
-<pre class="prettyprint"><code class="language-scala">import scredis._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/scredis/scredis/tree/master/src/test/scala/scredis/examples/Examples.scala#L126-L151" target="_blank" title="Go to snippet source"></a><code class="language-scala">import scredis._
 import scala.util.{ Success, Failure }
 
 // Creates a Redis instance with default configuration (see reference.conf)
@@ -141,13 +142,7 @@ redis.blocking.brPop(timeoutSeconds = 5, &quot;list&quot;) match {
 }
 
 // Subscribe to a channel using the internal, lazily initialized SubscriberClient
-redis.subscriber.subscribe(&quot;channel&quot;) {
-  case message @ PubSubMessage.Message(channel, messageBytes) =&gt; {
-    val messageString = message.readAs[String]()
-    // do something with the message
-  }
-}
-</code></pre>
+redis.subscriber.subscribe(&quot;channel&quot;)</code></pre>
 <h3><a href="#global-commands" name="global-commands" class="anchor"><span class="anchor-link"></span></a>Global commands</h3>
 <p><code>Redis</code> overrides four commands in order to keep all its internal clients in sync, namely <code>auth</code>, <code>select</code>, <code>clientSetName</code> and <code>quit</code>.</p>
 <h4><a href="#auth" name="auth" class="anchor"><span class="anchor-link"></span></a>Auth</h4>
@@ -163,7 +158,7 @@ The source code for this page can be found <a href="https://github.com/scredis/s
 </div>
 
 <div class="nav-next">
-<p><strong>Next:</strong> <a href="Serialization.html">Reading</a></p>
+<p><strong>Next:</strong> <a href="Serialization.html">Serialization</a></p>
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
@@ -172,8 +167,9 @@ The source code for this page can be found <a href="https://github.com/scredis/s
 <div class="nav-title">On this page:</div>
 <div class="nav-toc">
 <ul>
-  <li><a href="Redis.html#initialization" class="header">Initialization</a>
+  <li><a href="Redis.html#redis" class="header">Redis</a>
   <ul>
+    <li><a href="Redis.html#initialization" class="header">Initialization</a></li>
     <li><a href="Redis.html#full-usage-example" class="header">Full usage example</a></li>
     <li><a href="Redis.html#global-commands" class="header">Global commands</a></li>
   </ul></li>
@@ -243,7 +239,7 @@ The source code for this page can be found <a href="https://github.com/scredis/s
 <script type="text/javascript" src="lib/prettify/prettify.js"></script>
 <script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
 <script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
-<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '2.2.6+25-dbda257a+20191105-1111', 'https://github.com/scredis/scredis')});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '2.2.6+26-c6331fe8+20191105-1254', 'https://github.com/scredis/scredis')});</script>
 
 
 </html>

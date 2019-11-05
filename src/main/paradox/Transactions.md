@@ -1,3 +1,5 @@
+## Transactions
+
 Scredis provides two methods for executing transactions, namely `inTransaction` and `withTransaction`. They only differ in what they return.
 
 ```scala
