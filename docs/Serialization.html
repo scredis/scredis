@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+
+<head>
+<title>Reading · My Documentation</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content='scredis'/>
+<link rel="canonical" href="https://github.com/scredis/scredisSerialization.html"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="js/page.js"></script>
+<script type="text/javascript" src="js/warnOldVersion.js"></script>
+<script type="text/javascript" src="js/groups.js"></script>
+<link rel="stylesheet" type="text/css" href="lib/foundation/dist/foundation.min.css"/>
+<link rel="stylesheet" type="text/css" href="css/page.css"/>
+
+<!--
+<link rel="shortcut icon" href="images/favicon.ico" />
+-->
+</head>
+
+<body>
+<div class="off-canvas-wrapper">
+<div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+
+<div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
+<nav class="off-canvas-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>My Documentation
+</a>
+<div class="version-number">
+2.2.6+23-2020be28+20191105-1102
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="BlockingClient.html" class="page">Blocking Client</a></li>
+  <li><a href="Client.html" class="page">Client</a></li>
+  <li><a href="Configuration.html" class="page">Reference</a></li>
+  <li><a href="Contributing.html" class="page">How to run the tests</a></li>
+  <li><a href="Pub-Sub.html" class="page">Publishing</a></li>
+  <li><a href="Redis.html" class="page">Initialization</a></li>
+  <li><a href="Serialization.html" class="active page">Reading</a></li>
+  <li><a href="Transactions.html" class="page">Examples</a></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="off-canvas-content" data-off-canvas-content>
+
+<header class="site-header expanded row">
+<div class="small-12 column">
+<a href="#" class="off-canvas-toggle hide-for-medium" data-toggle="off-canvas-menu"><svg class="svg-icon svg-icon-menu" version="1.1" id="Menu" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve"> <path class="svg-icon-menu-path" fill="#53CDEC" d="M16.4,9H3.6C3.048,9,3,9.447,3,10c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,9.447,16.952,9,16.4,9z M16.4,13
+H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
+C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
+</a>
+<div class="title"><a href="index.html">My Documentation</a></div>
+
+<!--
+<a href="https://www.example.com" class="logo show-for-medium">logo</a>
+-->
+</div>
+</header>
+
+<div class="expanded row">
+
+<div class="medium-3 large-2 show-for-medium column">
+<nav class="site-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>My Documentation
+</a>
+<div class="version-number">
+2.2.6+23-2020be28+20191105-1102
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="BlockingClient.html" class="page">Blocking Client</a></li>
+  <li><a href="Client.html" class="page">Client</a></li>
+  <li><a href="Configuration.html" class="page">Reference</a></li>
+  <li><a href="Contributing.html" class="page">How to run the tests</a></li>
+  <li><a href="Pub-Sub.html" class="page">Publishing</a></li>
+  <li><a href="Redis.html" class="page">Initialization</a></li>
+  <li><a href="Serialization.html" class="active page">Reading</a></li>
+  <li><a href="Transactions.html" class="page">Examples</a></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="small-12 medium-9 large-10 column">
+<section class="site-content">
+
+<span id="version-warning"></span>
+
+<div class="page-header row">
+<div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="index.html">My Documentation</a></li>
+  <li>Reading</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="page-content row">
+<div class="small-12 large-9 column" id="docs">
+<p>Scredis provides full support for customizing serialization and deserialization of relevant command parameters and command results.</p>
+<h3><a href="#reading" name="reading" class="anchor"><span class="anchor-link"></span></a>Reading</h3>
+<p>On relevant commands, you can tell scredis the type of data you expect and it will be deserialized for you. Indeed, selected commands have an extra implicit <code>Reader</code> argument, meaning that you can deserialize any type as long as you provide an implicit <code>Reader</code> for it.</p>
+<pre class="prettyprint"><code class="language-scala">def get[R: Reader](key: String): Future[Option[R]]
+</code></pre>
+<p>By default, most commands return <code>String</code> values. This is because the <code>scredis</code> package defines an implicit <code>UTF8StringReader</code>.</p>
+<pre class="prettyprint"><code class="language-scala">implicit val stringReader: Reader[String] = UTF8StringReader
+</code></pre>
+<p>Therefore, when writing <code>import scredis._</code>, the implicit <code>stringReader</code> is imported into the scope.</p>
+<p>The library provides a <code>Reader</code> for every Scala basic type, namely <code>Array[Byte]</code>, <code>String</code>, <code>Boolean</code>, <code>Short</code>, <code>Int</code>, <code>Long</code>, <code>Float</code> and <code>Double</code>. All <code>Reader</code> objects and implicit values are located in <code>scredis.serialization</code> and <code>scredis.serialization.Implicits</code>, respectively.</p>
+<h4><a href="#example" name="example" class="anchor"><span class="anchor-link"></span></a>Example</h4>
+<pre class="prettyprint"><code class="language-scala">import scredis._
+import scala.util.{ Success, Failure }
+
+// Creates a Redis instance with default configuration (see reference.conf)
+val redis = Redis()
+
+// Import the intenral ActorSystem&#39;s dispatcher (execution context) to register callbacks
+import redis.dispatcher
+
+// Import implicit LongReader
+import scredis.serialization.Implicits.longReader
+
+redis.get[Long](&quot;foo&quot;).onComplete {
+  case Success(Some(value: Long)) =&gt; // handle long value
+  case Success(None) =&gt; // there was no value associated to key &#39;foo&#39;
+  case Failure(e) =&gt; // an error occurred while executing the command
+}
+</code></pre>
+<h3><a href="#writing" name="writing" class="anchor"><span class="anchor-link"></span></a>Writing</h3>
+<p>Similarly, you can define how some command arguments should be serialized. Indeed, selected commands have one or multiple extra implicit <code>Writer</code> argument(s), meaning that you can serialize any type as long as you provide an implicit <code>Writer</code> for it.</p>
+<pre class="prettyprint"><code class="language-scala">def append[W: Writer](key: String, value: W): Future[Long]
+</code></pre>
+<p>The <code>scredis</code> package defines an implicit <code>Writer</code> for every base Scala type.</p>
+<pre class="prettyprint"><code class="language-scala">implicit val bytesWriter: Writer[Array[Byte]] = BytesWriter
+implicit val stringWriter: Writer[String] = UTF8StringWriter
+implicit val booleanWriter: Writer[Boolean] = BooleanWriter
+implicit val shortWriter: Writer[Short] = ShortWriter
+implicit val intWriter: Writer[Int] = IntWriter
+implicit val longWriter: Writer[Long] = LongWriter
+implicit val floatWriter: Writer[Float] = FloatWriter
+implicit val doubleWriter: Writer[Double] = DoubleWriter
+</code></pre>
+<p>Therefore, when writing <code>import scredis._</code>, all of them are imported into the scope and any base type can be serialized.</p>
+<p>Additionally, scredis provides an <code>AnyWriter</code> class which can serialize any type by first calling the <code>toString</code> method on it. It is not imported by default as it would interfere with user defined custom <code>Writer</code> objects. You can import it to serialize a collection containing multiple types, e.g. <code>List[Any](&quot;foo&quot;, 5, 3.0, true)</code>. All <code>Writer</code> objects and implicit values are located in <code>scredis.serialization</code> and <code>scredis.serialization.Implicits</code>, respectively.</p>
+<h3><a href="#defining-custom-readers-writers" name="defining-custom-readers-writers" class="anchor"><span class="anchor-link"></span></a>Defining Custom Readers &amp; Writers</h3>
+<p>You can define your own <code>Reader</code> and <code>Writer</code> instances by extending the base class. Let&rsquo;s consider the following example in which we want to store and retrieve a <code>Person</code>.</p>
+<pre class="prettyprint"><code class="language-scala">case class Person(name: String, age: Int)
+</code></pre>
+<p>Let&rsquo;s define a <code>Writer</code> and <code>Reader</code> class capable of serializing and deserializing a <code>Person</code>. To make it even more fun, let&rsquo;s say we want to encode the <code>String</code> values in UTF-16 instead of default UTF-8.</p>
+<pre class="prettyprint"><code class="language-scala">import scredis.serialization._
+
+implicit object PersonWriter extends Writer[Person] {
+  private val utf16StringWriter = new StringWriter(&quot;UTF-16&quot;)
+  
+  override def writeImpl(person: Person): Array[Byte] = {
+    utf16StringWriter.write(s&quot;${person.name}:${person.age}&quot;)
+  }
+}
+
+implicit object PersonReader extends Reader[Person] {
+  val utf16StringReader = new StringReader(&quot;UTF-16&quot;)
+  
+  override def readImpl(bytes: Array[Byte]): Person = {
+    val split = utf16StringReader.read(bytes).split(&quot;:&quot;)
+    val name = split(0)
+    val age = split(1).toInt
+    Person(name, age)
+  }
+}
+</code></pre>
+<h4><a href="#full-example" name="full-example" class="anchor"><span class="anchor-link"></span></a>Full example</h4>
+<pre class="prettyprint"><code class="language-scala">import scredis._
+import scredis.serialization._
+import scredis.exceptions._
+import scala.util.{ Success, Failure }
+
+// Creates a Redis instance with default configuration (see reference.conf)
+val redis = Redis()
+
+// Import the intenral ActorSystem&#39;s dispatcher (execution context) to register callbacks
+import redis.dispatcher
+
+case class Person(name: String, age: Int)
+
+implicit object PersonWriter extends Writer[Person] {
+  private val utf16StringWriter = new StringWriter(&quot;UTF-16&quot;)
+  
+  override def writeImpl(person: Person): Array[Byte] = {
+    utf16StringWriter.write(s&quot;${person.name}:${person.age}&quot;)
+  }
+}
+
+implicit object PersonReader extends Reader[Person] {
+  val utf16StringReader = new StringReader(&quot;UTF-16&quot;)
+  
+  override def readImpl(bytes: Array[Byte]): Person = {
+    val split = utf16StringReader.read(bytes).split(&quot;:&quot;)
+    val name = split(0)
+    val age = split(1).toInt
+    Person(name, age)
+  }
+}
+
+redis.set(&quot;key&quot;, Person(&quot;John Smith&quot;, 39)).onComplete {
+  case Success(true) =&gt; redis.get[Person](&quot;key&quot;).onComplete {
+    case Success(personOpt) =&gt; {
+      println(personOpt)
+      redis.quit()
+    }
+    case Failure(e: RedisReaderException) =&gt; // could not deserialize result
+    case Failure(e) =&gt; // any other error occurred
+  }
+  case Success(false) =&gt; // value was not set
+  case Failure(e: RedisWriterException) =&gt; // could not serialize argument
+  case Failure(e) =&gt; // any other error occurred
+}
+</code></pre>
+<div class="source-github">
+The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/master/src/main/paradox/Serialization.md">here</a>.
+</div>
+
+<div class="nav-next">
+<p><strong>Next:</strong> <a href="Transactions.html">Examples</a></p>
+</div>
+</div>
+<div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="Serialization.html#reading" class="header">Reading</a>
+  <ul>
+    <li><a href="Serialization.html#example" class="header">Example</a></li>
+    <li><a href="Serialization.html#writing" class="header">Writing</a></li>
+    <li><a href="Serialization.html#defining-custom-readers-writers" class="header">Defining Custom Readers &amp; Writers</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
+</div>
+</div>
+
+</section>
+</div>
+
+</div>
+
+<footer class="site-footer">
+
+<section class="site-footer-nav">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 medium-4 large-3 text-center column">
+<div class="nav-links">
+<ul>
+<!-- <li><a href="https://www.example.com/products/">Products</a> -->
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<section class="site-footer-base">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 text-center large-9 column">
+
+<!--
+<div class="copyright">
+<span class="text">&copy; 2019</span>
+<a href="https://www.example.com" class="logo">logo</a>
+</div>
+-->
+</div>
+
+</div>
+</div>
+</div>
+</section>
+</footer>
+
+</div>
+</div>
+</div>
+</body>
+
+<script type="text/javascript" src="lib/foundation/dist/foundation.min.js"></script>
+<script type="text/javascript">jQuery(document).foundation();</script>
+<script type="text/javascript" src="js/magellan.js"></script>
+
+<style type="text/css">@import "lib/prettify/prettify.css";</style>
+<script type="text/javascript" src="lib/prettify/prettify.js"></script>
+<script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
+<script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '2.2.6+23-2020be28+20191105-1102', 'https://github.com/scredis/scredis')});</script>
+
+
+</html>

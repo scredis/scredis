@@ -2,11 +2,11 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>My Documentation</title>
+<title>How to run the tests · My Documentation</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='scredis'/>
-<link rel="canonical" href="https://github.com/scredis/scredisindex.html"/>
+<link rel="canonical" href="https://github.com/scredis/scredisContributing.html"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="js/page.js"></script>
@@ -27,7 +27,7 @@
 <div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
 <nav class="off-canvas-nav">
 <div class="nav-home">
-<a href="index.html" class="active">
+<a href="index.html" >
 <span class="home-icon">⌂</span>My Documentation
 </a>
 <div class="version-number">
@@ -39,7 +39,7 @@
   <li><a href="BlockingClient.html" class="page">Blocking Client</a></li>
   <li><a href="Client.html" class="page">Client</a></li>
   <li><a href="Configuration.html" class="page">Reference</a></li>
-  <li><a href="Contributing.html" class="page">How to run the tests</a></li>
+  <li><a href="Contributing.html" class="active page">How to run the tests</a></li>
   <li><a href="Pub-Sub.html" class="page">Publishing</a></li>
   <li><a href="Redis.html" class="page">Initialization</a></li>
   <li><a href="Serialization.html" class="page">Reading</a></li>
@@ -58,7 +58,7 @@
 H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
 C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
 </a>
-<div class="title"><a href="index.html" class="active">My Documentation</a></div>
+<div class="title"><a href="index.html">My Documentation</a></div>
 
 <!--
 <a href="https://www.example.com" class="logo show-for-medium">logo</a>
@@ -71,7 +71,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="medium-3 large-2 show-for-medium column">
 <nav class="site-nav">
 <div class="nav-home">
-<a href="index.html" class="active">
+<a href="index.html" >
 <span class="home-icon">⌂</span>My Documentation
 </a>
 <div class="version-number">
@@ -83,7 +83,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="BlockingClient.html" class="page">Blocking Client</a></li>
   <li><a href="Client.html" class="page">Client</a></li>
   <li><a href="Configuration.html" class="page">Reference</a></li>
-  <li><a href="Contributing.html" class="page">How to run the tests</a></li>
+  <li><a href="Contributing.html" class="active page">How to run the tests</a></li>
   <li><a href="Pub-Sub.html" class="page">Publishing</a></li>
   <li><a href="Redis.html" class="page">Initialization</a></li>
   <li><a href="Serialization.html" class="page">Reading</a></li>
@@ -101,22 +101,74 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-header row">
 <div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="index.html">My Documentation</a></li>
+  <li>How to run the tests</li>
+</ul>
+</div>
 </div>
 </div>
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
-<h1><a href="#my-documentation" name="my-documentation" class="anchor"><span class="anchor-link"></span></a>My Documentation</h1>
-<p>This is my first documentation page!</p>
+<h3><a href="#how-to-run-the-tests" name="how-to-run-the-tests" class="anchor"><span class="anchor-link"></span></a>How to run the tests</h3>
+<ul>
+  <li>Install the latest version of redis-server supported by scredis</li>
+  <li>Start two redis servers</li>
+</ul>
+<ol>
+  <li>Original config (port = 6379, no password)
+    <ul>
+      <li>Run <code>redis-server</code></li>
+    </ul>
+  </li>
+  <li>Custom config (port = 6380, password = &lsquo;foobar&rsquo;)
+    <ul>
+      <li>Create a redis config file, i.e. <code>/path/custom.conf</code></li>
+      <li>Configure <code>port 6380</code> and <code>requirepass foobar</code></li>
+      <li>Run <code>redis-server /path/custom.conf</code></li>
+    </ul>
+  </li>
+</ol>
+<ul>
+  <li>Run the tests using sbt</li>
+</ul>
+<blockquote>
+  <p>Note: you must not create any external connections to either of the redis servers while the tests are running as it might interfere with them.</p>
+</blockquote>
+<h3><a href="#running-the-benchmarks" name="running-the-benchmarks" class="anchor"><span class="anchor-link"></span></a>Running the benchmarks</h3>
+<ul>
+  <li>Uncomment <a href="https://github.com/scredis/scredis/blob/master/src/test/scala/scredis/ClientBenchmark.scala">scredis.ClientBenchmark</a></li>
+  <li>Run <code>redis-server</code> with default configuration (port = 6379, no password)</li>
+  <li>Run <code>test-only *ClientBenchmark*</code> via sbt</li>
+  <li>It can take quite some time to complete, usually about 15 minutes</li>
+</ul>
+<blockquote>
+  <p>Note: it would be even better to run the benchmarks against a redis server hosted on a separate machine in the same LAN. That way redis-server&rsquo;s CPU usage would not impact scredis. </p>
+</blockquote>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/master/src/main/paradox/index.md">here</a>.
+The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/master/src/main/paradox/Contributing.md">here</a>.
 </div>
 
 <div class="nav-next">
-<p><strong>Next:</strong> <a href="BlockingClient.html">Blocking Client</a></p>
+<p><strong>Next:</strong> <a href="Pub-Sub.html">Publishing</a></p>
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="Contributing.html#how-to-run-the-tests" class="header">How to run the tests</a>
+  <ul>
+    <li><a href="Contributing.html#running-the-benchmarks" class="header">Running the benchmarks</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
 </div>
 </div>
 

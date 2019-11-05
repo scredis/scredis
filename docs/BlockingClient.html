@@ -2,11 +2,11 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>My Documentation</title>
+<title>Blocking Client · My Documentation</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='scredis'/>
-<link rel="canonical" href="https://github.com/scredis/scredisindex.html"/>
+<link rel="canonical" href="https://github.com/scredis/scredisBlockingClient.html"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="js/page.js"></script>
@@ -27,7 +27,7 @@
 <div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
 <nav class="off-canvas-nav">
 <div class="nav-home">
-<a href="index.html" class="active">
+<a href="index.html" >
 <span class="home-icon">⌂</span>My Documentation
 </a>
 <div class="version-number">
@@ -36,7 +36,7 @@
 </div>
 <div class="nav-toc">
 <ul>
-  <li><a href="BlockingClient.html" class="page">Blocking Client</a></li>
+  <li><a href="BlockingClient.html" class="active page">Blocking Client</a></li>
   <li><a href="Client.html" class="page">Client</a></li>
   <li><a href="Configuration.html" class="page">Reference</a></li>
   <li><a href="Contributing.html" class="page">How to run the tests</a></li>
@@ -58,7 +58,7 @@
 H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
 C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
 </a>
-<div class="title"><a href="index.html" class="active">My Documentation</a></div>
+<div class="title"><a href="index.html">My Documentation</a></div>
 
 <!--
 <a href="https://www.example.com" class="logo show-for-medium">logo</a>
@@ -71,7 +71,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="medium-3 large-2 show-for-medium column">
 <nav class="site-nav">
 <div class="nav-home">
-<a href="index.html" class="active">
+<a href="index.html" >
 <span class="home-icon">⌂</span>My Documentation
 </a>
 <div class="version-number">
@@ -80,7 +80,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 </div>
 <div class="nav-toc">
 <ul>
-  <li><a href="BlockingClient.html" class="page">Blocking Client</a></li>
+  <li><a href="BlockingClient.html" class="active page">Blocking Client</a></li>
   <li><a href="Client.html" class="page">Client</a></li>
   <li><a href="Configuration.html" class="page">Reference</a></li>
   <li><a href="Contributing.html" class="page">How to run the tests</a></li>
@@ -101,22 +101,68 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-header row">
 <div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="index.html">My Documentation</a></li>
+  <li>Blocking Client</li>
+</ul>
+</div>
 </div>
 </div>
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
-<h1><a href="#my-documentation" name="my-documentation" class="anchor"><span class="anchor-link"></span></a>My Documentation</h1>
-<p>This is my first documentation page!</p>
+<h2><a href="#blocking-client" name="blocking-client" class="anchor"><span class="anchor-link"></span></a>Blocking Client</h2>
+<p>The <code>BlockingClient</code> class represents a blocking Redis client. The major practical difference with blocking requests is that they return <code>scala.util.Try</code> instead of <code>scala.concurrent.Future</code>.</p>
+<blockquote>
+  <p>Note: the <code>BlockingClient</code> can only be used to issue blocking requests such as <em>BRPOP</em>.</p>
+</blockquote>
+<ul>
+  <li>To send regular requests, use <a href="Client.html">Client</a></li>
+  <li>To subscribe to channels/patterns, use <a href="Pub-Sub.html#subscribing">SubscriberClient</a></li>
+</ul>
+<h3><a href="#initialization" name="initialization" class="anchor"><span class="anchor-link"></span></a>Initialization</h3>
+<p>A <code>BlockingClient</code> can be initialized similarly to a regular <a href="Client.html#initialization">Client</a> with the exception that <code>receiveTimeout</code> cannot be set.</p>
+<h3><a href="#full-usage-example" name="full-usage-example" class="anchor"><span class="anchor-link"></span></a>Full usage example</h3>
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/scredis/scredis/tree/master/src/test/scala/scredis/examples/Examples.scala#L5-L21" target="_blank" title="Go to snippet source"></a><code class="language-scala"><br/>import scredis._
+import akka.actor.ActorSystem
+import scala.util.{Success, Failure}
+
+// Defines an actor system to use with the blocking client
+implicit val system: ActorSystem = ActorSystem(&quot;my-actor-system&quot;)
+
+// Creates a blocking client with default configuration (see reference.conf)
+val client = BlockingClient()
+
+// Send a blocking request and match upon the result
+client.brPop(timeoutSeconds = 5, &quot;list&quot;) match {
+  case Success(Some((key, value))) =&gt; // do something with the popped value
+  case Success(None) =&gt; // there was no value to be popped
+  case Failure(e) =&gt; // an error occurred while processing the request
+}</code></pre>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/master/src/main/paradox/index.md">here</a>.
+The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/master/src/main/paradox/BlockingClient.md">here</a>.
 </div>
 
 <div class="nav-next">
-<p><strong>Next:</strong> <a href="BlockingClient.html">Blocking Client</a></p>
+<p><strong>Next:</strong> <a href="Client.html">Client</a></p>
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="BlockingClient.html#blocking-client" class="header">Blocking Client</a>
+  <ul>
+    <li><a href="BlockingClient.html#initialization" class="header">Initialization</a></li>
+    <li><a href="BlockingClient.html#full-usage-example" class="header">Full usage example</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
 </div>
 </div>
 

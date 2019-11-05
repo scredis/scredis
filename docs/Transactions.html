@@ -2,11 +2,11 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>My Documentation</title>
+<title>Examples · My Documentation</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='scredis'/>
-<link rel="canonical" href="https://github.com/scredis/scredisindex.html"/>
+<link rel="canonical" href="https://github.com/scredis/scredisTransactions.html"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="js/page.js"></script>
@@ -27,7 +27,7 @@
 <div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
 <nav class="off-canvas-nav">
 <div class="nav-home">
-<a href="index.html" class="active">
+<a href="index.html" >
 <span class="home-icon">⌂</span>My Documentation
 </a>
 <div class="version-number">
@@ -43,7 +43,7 @@
   <li><a href="Pub-Sub.html" class="page">Publishing</a></li>
   <li><a href="Redis.html" class="page">Initialization</a></li>
   <li><a href="Serialization.html" class="page">Reading</a></li>
-  <li><a href="Transactions.html" class="page">Examples</a></li>
+  <li><a href="Transactions.html" class="active page">Examples</a></li>
 </ul>
 </div>
 
@@ -58,7 +58,7 @@
 H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
 C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
 </a>
-<div class="title"><a href="index.html" class="active">My Documentation</a></div>
+<div class="title"><a href="index.html">My Documentation</a></div>
 
 <!--
 <a href="https://www.example.com" class="logo show-for-medium">logo</a>
@@ -71,7 +71,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="medium-3 large-2 show-for-medium column">
 <nav class="site-nav">
 <div class="nav-home">
-<a href="index.html" class="active">
+<a href="index.html" >
 <span class="home-icon">⌂</span>My Documentation
 </a>
 <div class="version-number">
@@ -87,7 +87,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="Pub-Sub.html" class="page">Publishing</a></li>
   <li><a href="Redis.html" class="page">Initialization</a></li>
   <li><a href="Serialization.html" class="page">Reading</a></li>
-  <li><a href="Transactions.html" class="page">Examples</a></li>
+  <li><a href="Transactions.html" class="active page">Examples</a></li>
 </ul>
 </div>
 
@@ -101,20 +101,61 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-header row">
 <div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="index.html">My Documentation</a></li>
+  <li>Examples</li>
+</ul>
+</div>
 </div>
 </div>
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
-<h1><a href="#my-documentation" name="my-documentation" class="anchor"><span class="anchor-link"></span></a>My Documentation</h1>
-<p>This is my first documentation page!</p>
+<p>Scredis provides two methods for executing transactions, namely <code>inTransaction</code> and <code>withTransaction</code>. They only differ in what they return.</p>
+<pre class="prettyprint"><code class="language-scala">// Returns a Vector containing the result of each queued command
+def inTransaction(build: TransactionBuilder =&gt; Any): Future[Vector[Try[Any]]]
+// Returns whatever the build function returns
+def withTransaction[A](build: TransactionBuilder =&gt; A): A
+</code></pre>
+<blockquote>
+  <p>Note that the <code>TransactionBuilder</code> returns a <code>Future</code> for every queued command. Every command part of a transaction will be completed with its respective result once the transaction is executed.</p>
+</blockquote>
+<h3><a href="#examples" name="examples" class="anchor"><span class="anchor-link"></span></a>Examples</h3>
+<pre class="prettyprint"><code class="language-scala">import scredis._
+import scredis.exceptions.RedisTransactionAbortedException
+import scala.util.{ Success, Failure }
+
+// Creates a Redis instance with default configuration (see reference.conf)
+val redis = Redis()
+
+// Import the intenral ActorSystem&#39;s dispatcher (execution context) to register callbacks
+import redis.dispatcher
+
+// Execute a transaction and returns all the results of the queued commands in a Vector
+redis.inTransaction { t =&gt;
+  t.set(&quot;foo&quot;, &quot;bar&quot;)
+  t.get(&quot;foo&quot;)
+}.onComplete {
+  case Success(results) =&gt; // Vector(Success(true), Success(Some(&quot;bar&quot;)))
+  case Failure(RedisTransactionAbortedException) =&gt; // transaction was aborted due to watched keys
+  case Failure(e) =&gt; // an error occurred while executing the transaction
+}
+
+// Executes a transaction and returns whatever the block returns
+redis.withTransaction { t =&gt;
+  t.set(&quot;foo&quot;, &quot;bar&quot;)
+  t.get(&quot;foo&quot;)
+}.onComplete {
+  case Success(valueOpt) =&gt; // Some(&quot;bar&quot;)
+  case Failure(RedisTransactionAbortedException) =&gt; // transaction was aborted due to watched keys
+  case Failure(e) =&gt; // an error occurred while executing the transaction
+}
+</code></pre>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/master/src/main/paradox/index.md">here</a>.
+The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/master/src/main/paradox/Transactions.md">here</a>.
 </div>
 
-<div class="nav-next">
-<p><strong>Next:</strong> <a href="BlockingClient.html">Blocking Client</a></p>
-</div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
 </div>

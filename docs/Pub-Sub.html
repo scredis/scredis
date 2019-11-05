@@ -2,11 +2,11 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>My Documentation</title>
+<title>Publishing · My Documentation</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='scredis'/>
-<link rel="canonical" href="https://github.com/scredis/scredisindex.html"/>
+<link rel="canonical" href="https://github.com/scredis/scredisPub-Sub.html"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="js/page.js"></script>
@@ -27,7 +27,7 @@
 <div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
 <nav class="off-canvas-nav">
 <div class="nav-home">
-<a href="index.html" class="active">
+<a href="index.html" >
 <span class="home-icon">⌂</span>My Documentation
 </a>
 <div class="version-number">
@@ -40,7 +40,7 @@
   <li><a href="Client.html" class="page">Client</a></li>
   <li><a href="Configuration.html" class="page">Reference</a></li>
   <li><a href="Contributing.html" class="page">How to run the tests</a></li>
-  <li><a href="Pub-Sub.html" class="page">Publishing</a></li>
+  <li><a href="Pub-Sub.html" class="active page">Publishing</a></li>
   <li><a href="Redis.html" class="page">Initialization</a></li>
   <li><a href="Serialization.html" class="page">Reading</a></li>
   <li><a href="Transactions.html" class="page">Examples</a></li>
@@ -58,7 +58,7 @@
 H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
 C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
 </a>
-<div class="title"><a href="index.html" class="active">My Documentation</a></div>
+<div class="title"><a href="index.html">My Documentation</a></div>
 
 <!--
 <a href="https://www.example.com" class="logo show-for-medium">logo</a>
@@ -71,7 +71,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="medium-3 large-2 show-for-medium column">
 <nav class="site-nav">
 <div class="nav-home">
-<a href="index.html" class="active">
+<a href="index.html" >
 <span class="home-icon">⌂</span>My Documentation
 </a>
 <div class="version-number">
@@ -84,7 +84,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="Client.html" class="page">Client</a></li>
   <li><a href="Configuration.html" class="page">Reference</a></li>
   <li><a href="Contributing.html" class="page">How to run the tests</a></li>
-  <li><a href="Pub-Sub.html" class="page">Publishing</a></li>
+  <li><a href="Pub-Sub.html" class="active page">Publishing</a></li>
   <li><a href="Redis.html" class="page">Initialization</a></li>
   <li><a href="Serialization.html" class="page">Reading</a></li>
   <li><a href="Transactions.html" class="page">Examples</a></li>
@@ -101,22 +101,105 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-header row">
 <div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="index.html">My Documentation</a></li>
+  <li>Publishing</li>
+</ul>
+</div>
 </div>
 </div>
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
-<h1><a href="#my-documentation" name="my-documentation" class="anchor"><span class="anchor-link"></span></a>My Documentation</h1>
-<p>This is my first documentation page!</p>
+<p>This page describes how to do Pub/Sub with scredis.</p>
+<h3><a href="#publishing" name="publishing" class="anchor"><span class="anchor-link"></span></a>Publishing</h3>
+<p>To publish messages, you can use the <a href="./Redis.html">Redis</a> instance or the regular non-blocking <a href="./Client.html">Client</a>.</p>
+<pre class="prettyprint"><code class="language-scala">import scredis._
+import scala.util.{ Success, Failure }
+
+// Creates a Redis instance with default configuration (see reference.conf)
+val redis = Redis()
+
+// Import the intenral ActorSystem&#39;s dispatcher (execution context) to register callbacks
+import redis.dispatcher
+
+// Send a GET request and register a callback
+redis.publish(&quot;channel&quot;, &quot;foo&quot;).onComplete {
+  case Success(count) =&gt; // the message was published to &#39;count&#39; client
+  case Failure(e) =&gt; // an error occurred while publishing the message &#39;foo&#39; to channel &#39;channel&#39;
+}
+</code></pre>
+<h3><a href="#subscribing" name="subscribing" class="anchor"><span class="anchor-link"></span></a>Subscribing</h3>
+<p>To subscribe to messages and events, you must use a <code>SubscriberClient</code>. You can either create one or use the lazily initialized one present in a <code>Redis</code> instance.</p>
+<p>The <code>subscribe</code> and <code>pSubscribe</code> methods require a <code>scredis.Subscription</code> which simply denotes a partial function of <code>scredis.PubSubMessage</code> to <code>Any</code>.</p>
+<pre class="prettyprint"><code class="language-scala">type Subscription = PartialFunction[PubSubMessage, Any]
+</code></pre>
+<p>The complete list of <code>scredis.PubSubMessage</code> can be found <a href="http://scredis.github.io/scredis/api/snapshot/#scredis.package$$PubSubMessage$">here</a>.</p>
+<pre class="prettyprint"><code class="language-scala">import scredis._
+
+// Creates a Redis instance with default configuration (see reference.conf)
+val redis = Redis()
+
+// Subscribe to &#39;channel1&#39; and &#39;channel2&#39;
+redis.subscriber.subscribe(&quot;channel1&quot;, &quot;channel2&quot;) {
+  case message @ PubSubMessage.Message(channel, messageBytes) =&gt; {
+    val messageString = message.readAs[String]()
+    // handle received message
+  }
+  case PubSubMessage.Subscribe(channel, channelsCount) =&gt; // client subscribed to channel
+  case PubSubMessage.Unsubscribe(channel, channelsCount) =&gt; // client unsubscribed from channel
+  case PubSubMessage.Error(exception) =&gt; {
+    // an error occurred, e.g. NOAUTH when trying to subscribe without being authenticated
+  }
+}
+</code></pre>
+<p>As a convenient feature, scredis also tracks <code>Subscribe</code>, <code>PSubscribe</code>, <code>Unsubscribe</code> and <code>PUnsubscribe</code> messages in order to detect when a command is completed. This allows <code>SubscriberClient</code> commands to also return a <code>Future</code> as any other commands.</p>
+<pre class="prettyprint"><code class="language-scala">import scredis._
+import scala.util.{ Success, Failure }
+
+// Creates a Redis instance with default configuration (see reference.conf)
+val redis = Redis()
+
+// Import the intenral ActorSystem&#39;s dispatcher (execution context) to register callbacks
+import redis.dispatcher
+
+// Subscribe to &#39;channel1&#39; and &#39;channel2&#39;
+redis.subscriber.subscribe(&quot;channel1&quot;, &quot;channel2&quot;) {
+  case message @ PubSubMessage.Message(channel, messageBytes) =&gt; {
+    val messageString = message.readAs[String]()
+    // handle received message
+  }
+}.onComplete {
+  case Success(channelsCount) =&gt; // the client successfully subscribed to both channels
+  case Failure(e) =&gt; {
+    // an error occurred while subscribing to the channels, e.g. NOAUTH when trying to subscribe
+    // without being authenticated
+  }
+}
+</code></pre>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/master/src/main/paradox/index.md">here</a>.
+The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/master/src/main/paradox/Pub-Sub.md">here</a>.
 </div>
 
 <div class="nav-next">
-<p><strong>Next:</strong> <a href="BlockingClient.html">Blocking Client</a></p>
+<p><strong>Next:</strong> <a href="Redis.html">Initialization</a></p>
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="Pub-Sub.html#publishing" class="header">Publishing</a>
+  <ul>
+    <li><a href="Pub-Sub.html#subscribing" class="header">Subscribing</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
 </div>
 </div>
 
