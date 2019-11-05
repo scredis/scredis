@@ -1,0 +1,136 @@
+Scredis uses the [Typesafe Config Library](https://github.com/typesafehub/config). The list of parameters you can tweak can be seen in **reference.conf** below.
+
+### Reference
+
+```ruby
+scredis {
+  
+  redis {
+    # Redis server address
+    host = localhost
+    
+    # Redis server port
+    port = 6379
+    
+    # Redis server password (optional)
+    # password = foobar
+    
+    # Database to be selected when connection is established
+    database = 0
+    
+    # Name of this connection (optional). Setting this parameter will have the client send a
+    # CLIENT SETNAME (available since 2.6.9) command just after having established the connection
+    # name = 
+  }
+  
+  io {
+    # Maximum amount of time allowed to establish a connection to the Redis server
+    connect-timeout = 2 seconds
+    
+    # Maximum amount of time allowed to receive a batch of responses from the Redis server. A batch
+    # of responses can contain as little as one response and as many as thousands of responses.
+    receive-timeout = 5 seconds
+    
+    # Maximum amount of bytes to be sent to the Redis server at once. This controls the level of
+    # request pipelining
+    max-write-batch-size = 50000
+    
+    # Provides a hint to the underlying operating system of the size to allocate to the TCP send
+    # buffer, in bytes
+    tcp-send-buffer-size-hint = 5000000
+    
+    # Provides a hint to the underlying operating system of the size to allocate to the TCP receive
+    # buffer, in bytes
+    tcp-receive-buffer-size-hint = 500000
+    
+    akka {
+      # Name of the actor system created by the Redis.scala instance.
+      actor-system-name = "scredis"
+      
+      # Path to the definition of the io dispatcher used by the IOActor
+      io-dispatcher-path = "scredis.io.akka.io-dispatcher"
+      
+      # Path to the definition of the listener dispatcher used by the ListenerActor
+      listener-dispatcher-path = "scredis.io.akka.listener-dispatcher"
+      
+      # Path to the definition of the decoder dispatcher used by the DecoderActors
+      decoder-dispatcher-path = "scredis.io.akka.decoder-dispatcher"
+      
+      io-dispatcher {
+        executor = "thread-pool-executor"
+        type = PinnedDispatcher
+      }
+      
+      listener-dispatcher {
+        executor = "thread-pool-executor"
+        type = PinnedDispatcher
+      }
+      
+      decoder-dispatcher {
+        mailbox-type = "akka.dispatch.BoundedMailbox"
+        mailbox-capacity = 1024
+        throughput = 1024
+      }
+    }
+  }
+  
+  # Defines global parameters, i.e. applied to all Clients together.
+  # These parameters can only be modified in application.conf and will apply to all clients, no
+  # matter how they were initialized or configured.
+  global {
+    # Maximum number of overall concurrently processing requests. This parameter directly
+    # influences the memory consumption of scredis. Reducing it too much will impact performance
+    # negatively.
+    max-concurrent-requests = 30000
+    
+    # Configures the buffer pool used to encode requests.
+    # The pool reduces garbage collection overhead.
+    encode-buffer-pool {
+      # Maximum capacity of the buffer pool, i.e. maximum number of buffers to pool
+      pool-max-capacity = 30500
+      
+      # Maximum size of a buffer, in bytes. If more than 'buffer-max-size' bytes are required to
+      # encode a request, the allocated buffer will not be pooled and thus garbage collected.
+      buffer-max-size = 5000
+    }
+  }
+  
+}
+```
+
+### Example Setup: Multiple Environments
+
+#### Config: application.conf
+```ruby
+local.scredis {
+  redis {
+    password = "BUppsdAS^"
+  }
+}
+development.scredis {
+  redis {
+    host = "dev.host.org"
+    password = "LKU8tb6asd"
+  }
+}
+production.scredis {
+  redis {
+    host = "host.org"
+    password = "OANDs8asd7o"
+  }
+}
+
+# These parameters can only be set globally
+scredis.global {
+  
+}
+```
+
+#### Initialization
+```scala
+import scredis._
+
+val redisLocal = Redis("application.conf", "local.scredis")
+val redisDevelopment = Redis("application.conf", "development.scredis")
+val redisProduction = Redis("application.conf", "production.scredis")
+```
