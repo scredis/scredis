@@ -11,6 +11,6 @@
 
 @@@
 
-# My Documentation
+# Scredis
 
-This is my first documentation page!
+Scredis information.
