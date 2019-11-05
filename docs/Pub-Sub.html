@@ -31,7 +31,7 @@
 <span class="home-icon">⌂</span>Scredis
 </a>
 <div class="version-number">
-2.3.2
+2.3.2+0-6d4531eb+20191105-1502
 </div>
 </div>
 <div class="nav-toc">
@@ -42,8 +42,8 @@
   <li><a href="Contributing.html" class="page">Contributing</a></li>
   <li><a href="Pub-Sub.html" class="active page">Pub-Sub</a></li>
   <li><a href="Redis.html" class="page">Redis</a></li>
-  <li><a href="Serialization.html" class="page">Serialization</a></li>
   <li><a href="Transactions.html" class="page">Transactions</a></li>
+  <li><a href="Serialization.html" class="page">Serialization</a></li>
 </ul>
 </div>
 
@@ -75,7 +75,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <span class="home-icon">⌂</span>Scredis
 </a>
 <div class="version-number">
-2.3.2
+2.3.2+0-6d4531eb+20191105-1502
 </div>
 </div>
 <div class="nav-toc">
@@ -86,8 +86,8 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="Contributing.html" class="page">Contributing</a></li>
   <li><a href="Pub-Sub.html" class="active page">Pub-Sub</a></li>
   <li><a href="Redis.html" class="page">Redis</a></li>
-  <li><a href="Serialization.html" class="page">Serialization</a></li>
   <li><a href="Transactions.html" class="page">Transactions</a></li>
+  <li><a href="Serialization.html" class="page">Serialization</a></li>
 </ul>
 </div>
 
@@ -116,7 +116,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <p>This page describes how to do Pub/Sub with scredis.</p>
 <h3><a href="#publishing" name="publishing" class="anchor"><span class="anchor-link"></span></a>Publishing</h3>
 <p>To publish messages, you can use the <a href="Redis.html">Redis</a> instance or the regular non-blocking <a href="Client.html">Client</a>.</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/scredis/scredis/tree/v2.3.2/src/test/scala/scredis/examples/Examples.scala#L84-L97" target="_blank" title="Go to snippet source"></a><code class="language-scala">import scredis._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/scredis/scredis/tree/master/src/test/scala/scredis/examples/Examples.scala#L84-L97" target="_blank" title="Go to snippet source"></a><code class="language-scala">import scredis._
 import scala.util.{ Success, Failure }
 
 // Creates a Redis instance with default configuration (see reference.conf)
@@ -136,7 +136,7 @@ redis.publish(&quot;channel&quot;, &quot;foo&quot;).onComplete {
 <pre class="prettyprint"><code class="language-scala">type Subscription = Function[scredis.PubSubMessage, Any]
 </code></pre>
 <p>The complete list of <code>scredis.PubSubMessage</code> can be found <a href="http://scredis.github.io/scredis/api/snapshot/#scredis.package$$PubSubMessage$">here</a>.</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/scredis/scredis/tree/v2.3.2/src/test/scala/scredis/examples/Examples.scala#L103-L120" target="_blank" title="Go to snippet source"></a><code class="language-scala">import scredis.PubSubMessage
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/scredis/scredis/tree/master/src/test/scala/scredis/examples/Examples.scala#L103-L120" target="_blank" title="Go to snippet source"></a><code class="language-scala">import scredis.PubSubMessage
 private val subscriptionHandler: Function[PubSubMessage, Unit] = {
   case m: PubSubMessage.Subscribe =&gt; println(s&quot;Subscribed to channel ${m.channel}&quot;)
   case m: PubSubMessage.Message =&gt; println(s&quot;Received message for channel ${m.channel} with data ${m.readAs[String]()}&quot;)
@@ -155,7 +155,7 @@ val redis = scredis.Redis(subscription = subscriptionHandler)
 val subscribeF: Future[Int] = redis.subscriber.subscribe(&quot;channel1&quot;, &quot;channel2&quot;)
 // subscribeF will evaluate to 2</code></pre>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/v2.3.2/src/main/paradox/Pub-Sub.md">here</a>.
+The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/master/src/main/paradox/Pub-Sub.md">here</a>.
 </div>
 
 <div class="nav-next">
@@ -239,7 +239,7 @@ The source code for this page can be found <a href="https://github.com/scredis/s
 <script type="text/javascript" src="lib/prettify/prettify.js"></script>
 <script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
 <script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
-<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '2.3.2', 'https://github.com/scredis/scredis')});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '2.3.2+0-6d4531eb+20191105-1502', 'https://github.com/scredis/scredis')});</script>
 
 
 </html>
