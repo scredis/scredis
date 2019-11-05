@@ -79,3 +79,7 @@ parallelExecution in Test := false
 testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
+
+// Documentation
+enablePlugins(ParadoxPlugin)
+paradoxTheme := Some(builtinParadoxTheme("generic"))

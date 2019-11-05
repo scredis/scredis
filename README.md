@@ -34,7 +34,7 @@ It has been (and still is) extensively used in production at Livestream.
 
 ### Binaries
 
-Scredis 2.1.7+ is compatible with Scala 2.11 and 2.12.
+Scredis 2.2.5+ is compatible with Scala 2.11, 2.12 and 2.13.
 Binary releases are hosted on the Sonatype Central Repository.
 
 ```scala
