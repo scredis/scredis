@@ -31,7 +31,7 @@
 <span class="home-icon">⌂</span>Scredis
 </a>
 <div class="version-number">
-2.3.2+0-6d4531eb+20191105-1502
+2.3.3
 </div>
 </div>
 <div class="nav-toc">
@@ -42,8 +42,8 @@
   <li><a href="Contributing.html" class="page">Contributing</a></li>
   <li><a href="Pub-Sub.html" class="page">Pub-Sub</a></li>
   <li><a href="Redis.html" class="active page">Redis</a></li>
-  <li><a href="Transactions.html" class="page">Transactions</a></li>
   <li><a href="Serialization.html" class="page">Serialization</a></li>
+  <li><a href="Transactions.html" class="page">Transactions</a></li>
 </ul>
 </div>
 
@@ -75,7 +75,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <span class="home-icon">⌂</span>Scredis
 </a>
 <div class="version-number">
-2.3.2+0-6d4531eb+20191105-1502
+2.3.3
 </div>
 </div>
 <div class="nav-toc">
@@ -86,8 +86,8 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="Contributing.html" class="page">Contributing</a></li>
   <li><a href="Pub-Sub.html" class="page">Pub-Sub</a></li>
   <li><a href="Redis.html" class="active page">Redis</a></li>
-  <li><a href="Transactions.html" class="page">Transactions</a></li>
   <li><a href="Serialization.html" class="page">Serialization</a></li>
+  <li><a href="Transactions.html" class="page">Transactions</a></li>
 </ul>
 </div>
 
@@ -117,7 +117,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <h3><a href="#initialization" name="initialization" class="anchor"><span class="anchor-link"></span></a>Initialization</h3>
 <p>A <code>Redis</code> instance can be initialized similarly to a regular <a href="Client.html#initialization">Client</a> except that it does not require an <code>ActorSystem</code> as it automatically creates one.</p>
 <h3><a href="#full-usage-example" name="full-usage-example" class="anchor"><span class="anchor-link"></span></a>Full usage example</h3>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/scredis/scredis/tree/master/src/test/scala/scredis/examples/Examples.scala#L126-L151" target="_blank" title="Go to snippet source"></a><code class="language-scala">import scredis._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/scredis/scredis/tree/v2.3.3/src/test/scala/scredis/examples/Examples.scala#L126-L151" target="_blank" title="Go to snippet source"></a><code class="language-scala">import scredis._
 import scala.util.{ Success, Failure }
 
 // Creates a Redis instance with default configuration (see reference.conf)
@@ -154,11 +154,11 @@ redis.subscriber.subscribe(&quot;channel&quot;)</code></pre>
 <h4><a href="#quit" name="quit" class="anchor"><span class="anchor-link"></span></a>Quit</h4>
 <p>Upon executing <code>redis.quit()</code>, the non-blocking client as well as all initialized clients will be sending a <em>QUIT</em> command to the Redis server.</p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/master/src/main/paradox/Redis.md">here</a>.
+The source code for this page can be found <a href="https://github.com/scredis/scredis/tree/v2.3.3/src/main/paradox/Redis.md">here</a>.
 </div>
 
 <div class="nav-next">
-<p><strong>Next:</strong> <a href="Transactions.html">Transactions</a></p>
+<p><strong>Next:</strong> <a href="Serialization.html">Serialization</a></p>
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
@@ -239,7 +239,7 @@ The source code for this page can be found <a href="https://github.com/scredis/s
 <script type="text/javascript" src="lib/prettify/prettify.js"></script>
 <script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
 <script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
-<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '2.3.2+0-6d4531eb+20191105-1502', 'https://github.com/scredis/scredis')});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '2.3.3', 'https://github.com/scredis/scredis')});</script>
 
 
 </html>
