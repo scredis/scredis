@@ -215,6 +215,26 @@ Maintainer performing stable release should:
 * `git push origin vX.Y.Z` # tags are not automatically pushed by `git push`
 * go to [bintray](https://bintray.com/scredis/maven/scredis#central) and click 'Sync' to push released version to mvnrepository.
 
+## Documentation
+
+Can be found  in [https://scredis.github.io/scredis/](https://scredis.github.io/scredis/)
+
+Documentation is generated using sbt plugin [paradox](https://developer.lightbend.com/docs/paradox/current/index.html).
+
+All files found in `src/main/paradox` are converted to proper html files and placed into `target/paradox/site/main`.
+
+To generate documentation one must execute `sbt paradox`.
+
+Github is configured to serve scredis page from files found in `/docs` that's why there is a need to copy generated
+documentation to mentioned directory to be properly served by github.
+
+To ease this process there is a script called `gen-doc.sh` that generates and moves documentation into proper place.
+
+When locally working on documentation this script can be used and documentation can be found in `./docs/index.html`.
+
+All snipets should be added to `Examples.scala` in test scope and included from documentation to
+ensure snipets always compile with latest version.
+
 
 ## License
 
