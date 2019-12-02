@@ -6,8 +6,10 @@ import scredis._
 import scredis.exceptions._
 import scredis.tags._
 import scredis.util.TestUtils._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class SerializationSpec extends WordSpec
+class SerializationSpec extends AnyWordSpec
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers

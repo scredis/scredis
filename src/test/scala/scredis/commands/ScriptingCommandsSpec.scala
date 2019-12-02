@@ -9,8 +9,10 @@ import scredis.protocol.requests.ScriptingRequests._
 import scredis.serialization.UTF8StringWriter
 import scredis.tags._
 import scredis.util.TestUtils._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ScriptingCommandsSpec extends WordSpec
+class ScriptingCommandsSpec extends AnyWordSpec
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers

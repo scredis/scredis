@@ -1,15 +1,17 @@
 package scredis.commands
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
+import org.scalatest.BeforeAndAfterAll
 import scredis.Client
 import scredis.exceptions.RedisErrorResponseException
 import scredis.protocol.requests.GeoAddEntries.GeoAddEntry
 import scredis.protocol.requests.GeoRequests._
 import scredis.protocol.requests.{GeoDistUnit, GeoSortOrder}
 import scredis.util.TestUtils._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class GeoCommandsSpec extends WordSpec
+class GeoCommandsSpec extends AnyWordSpec
   with BeforeAndAfterAll
   with Matchers
   with ScalaFutures {

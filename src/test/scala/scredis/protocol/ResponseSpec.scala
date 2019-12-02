@@ -5,8 +5,10 @@ import java.nio.ByteBuffer
 import org.scalatest._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scredis.{ClusterSlotRange, ClusterSlotRangeNodeInfo, Server}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ResponseSpec extends WordSpec with ScalaCheckDrivenPropertyChecks with Inside
+class ResponseSpec extends AnyWordSpec with ScalaCheckDrivenPropertyChecks with Inside
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers {

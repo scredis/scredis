@@ -1,10 +1,11 @@
 package scredis.protocol
 
 import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ClusterCRC16Spec extends WordSpec with Matchers with ScalaCheckDrivenPropertyChecks with TableDrivenPropertyChecks {
+class ClusterCRC16Spec extends AnyWordSpec with Matchers with ScalaCheckDrivenPropertyChecks with TableDrivenPropertyChecks {
 
   val examples = Table(
     ("input", "output"),
