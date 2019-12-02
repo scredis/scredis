@@ -5,8 +5,10 @@ import akka.util.ByteString
 import org.scalacheck.Gen
 import org.scalatest._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ProtocolSpec extends WordSpec with ScalaCheckDrivenPropertyChecks with Inside
+class ProtocolSpec extends AnyWordSpec with ScalaCheckDrivenPropertyChecks with Inside
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers {

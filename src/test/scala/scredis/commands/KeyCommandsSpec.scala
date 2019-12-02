@@ -10,8 +10,10 @@ import scredis.util.TestUtils._
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class KeyCommandsSpec extends WordSpec
+class KeyCommandsSpec extends AnyWordSpec
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers

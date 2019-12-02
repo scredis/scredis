@@ -9,8 +9,10 @@ import scredis.tags._
 import scredis.util.TestUtils._
 
 import scala.collection.mutable.ListBuffer
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class SetCommandsSpec extends WordSpec
+class SetCommandsSpec extends AnyWordSpec
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers

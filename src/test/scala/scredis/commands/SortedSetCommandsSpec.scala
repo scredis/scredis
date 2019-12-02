@@ -11,9 +11,11 @@ import scredis.util.TestUtils._
 import scala.collection.mutable.ListBuffer
 
 import scredis.util.LinkedHashSetSequencing._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 
-class SortedSetCommandsSpec extends WordSpec
+class SortedSetCommandsSpec extends AnyWordSpec
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers

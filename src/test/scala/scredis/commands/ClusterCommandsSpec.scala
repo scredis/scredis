@@ -3,7 +3,6 @@ package scredis.commands
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scredis.exceptions.RedisErrorResponseException
 import scredis.protocol.Protocol
@@ -11,8 +10,10 @@ import scredis.protocol.requests.ClusterRequests._
 import scredis.{ClusterSlotRange, RedisCluster, Server}
 
 import scala.concurrent.duration._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ClusterCommandsSpec extends WordSpec
+class ClusterCommandsSpec extends AnyWordSpec
   with Matchers
   with ScalaFutures
   with ScalaCheckDrivenPropertyChecks
