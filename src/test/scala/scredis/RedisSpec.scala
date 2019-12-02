@@ -5,8 +5,10 @@ import org.scalatest.concurrent._
 import scredis.exceptions._
 import scredis.tags._
 import scredis.util.TestUtils._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class RedisSpec extends WordSpec
+class RedisSpec extends AnyWordSpec
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers

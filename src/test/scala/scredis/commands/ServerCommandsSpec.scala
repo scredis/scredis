@@ -7,8 +7,10 @@ import scredis.exceptions._
 import scredis.protocol.requests.ServerRequests.{CommandInfo, _}
 import scredis.tags._
 import scredis.util.TestUtils._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ServerCommandsSpec extends WordSpec
+class ServerCommandsSpec extends AnyWordSpec
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers

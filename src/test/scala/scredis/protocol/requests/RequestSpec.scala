@@ -3,8 +3,10 @@ package scredis.protocol.requests
 import org.scalatest._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scredis.{ClusterNode, Server}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class RequestSpec extends WordSpec with ScalaCheckDrivenPropertyChecks with Inside
+class RequestSpec extends AnyWordSpec with ScalaCheckDrivenPropertyChecks with Inside
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers {

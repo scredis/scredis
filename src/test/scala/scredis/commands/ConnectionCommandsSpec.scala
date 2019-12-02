@@ -7,8 +7,10 @@ import scredis.exceptions._
 import scredis.protocol.requests.ConnectionRequests._
 import scredis.tags._
 import scredis.util.TestUtils._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ConnectionCommandsSpec extends WordSpec
+class ConnectionCommandsSpec extends AnyWordSpec
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers

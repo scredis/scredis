@@ -1,12 +1,13 @@
 package scredis
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class RedisClusterSpec extends WordSpec
+class RedisClusterSpec extends AnyWordSpec
   with Matchers
   with ScalaFutures
   with ScalaCheckDrivenPropertyChecks {

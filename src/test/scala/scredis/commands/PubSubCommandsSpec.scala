@@ -15,8 +15,10 @@ import scredis.util.TestUtils._
 import scala.jdk.CollectionConverters._
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class PubSubCommandsSpec extends WordSpec
+class PubSubCommandsSpec extends AnyWordSpec
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers

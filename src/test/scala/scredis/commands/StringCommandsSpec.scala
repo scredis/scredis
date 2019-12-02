@@ -11,8 +11,10 @@ import scredis.util.TestUtils._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class StringCommandsSpec extends WordSpec
+class StringCommandsSpec extends AnyWordSpec
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers

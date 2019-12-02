@@ -10,8 +10,10 @@ import scredis.util.TestUtils._
 
 import scala.concurrent.Future
 import scala.util.Success
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class TransactionCommandsSpec extends WordSpec
+class TransactionCommandsSpec extends AnyWordSpec
   with GivenWhenThen
   with BeforeAndAfterAll
   with Matchers
