@@ -28,7 +28,7 @@ git.remoteRepo := "git@github.com:scredis/scredis.git"
 val akkaV = "2.5.27"
 val loggingV = "3.9.2"
 val configV = "1.4.0"
-val collectionCompatV = "2.1.2"
+val collectionCompatV = "2.1.3"
 
 libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % loggingV,
