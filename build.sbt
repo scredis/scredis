@@ -41,7 +41,7 @@ libraryDependencies ++= Seq(
   "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.3" % Test,
 //  "com.storm-enroute" %% "scalameter" % "0.8.2" % Test,  /* only used for ClientBenchmark testing */
-  "org.slf4j" % "slf4j-simple" % "1.7.29" % Test
+  "org.slf4j" % "slf4j-simple" % "1.7.30" % Test
 )
 
 Test / testOptions += Tests.Argument("-F", sys.props.getOrElse("F", "1.0"))
