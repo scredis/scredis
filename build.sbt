@@ -45,7 +45,7 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-simple" % "1.7.30" % Test
 )
 
-Test / testOptions += Tests.Argument("-F", sys.props.getOrElse("F", "1.0"))
+Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-F", sys.props.getOrElse("F", "1.0"))
 
 // required so that test actor systems don't get messed up
 Test / fork := true
@@ -77,7 +77,8 @@ bintrayOrganization := Some("scredis")
 bintrayRepository := "maven"
 bintrayPackageLabels := Seq("redis")
 
-//testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
+val scalaMeterFramework = new TestFramework("org.scalameter.ScalaMeterFramework")
+testFrameworks += scalaMeterFramework
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 
