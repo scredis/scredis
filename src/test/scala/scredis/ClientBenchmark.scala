@@ -1,35 +1,37 @@
-/*
 package scredis
 
 import org.scalameter.api._
-
+import org.scalameter.picklers.Implicits._
 import akka.actor.ActorSystem
+import org.scalameter.execution.SeparateJvmsExecutor
 
-import scala.concurrent.{ Future, Await }
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-object ClientBenchmark extends PerformanceTest {
+object ClientBenchmark extends Bench[Double] {
   
   private var system: ActorSystem = _
   private var client: Client = _
   
   /* configuration */
-  lazy val executor = SeparateJvmsExecutor(
+  override lazy val measurer = new Measurer.Default
+  override lazy val executor = SeparateJvmsExecutor(
     new Executor.Warmer.Default,
     Aggregator.average,
-    new Measurer.Default
+    measurer
   )
-  lazy val reporter = Reporter.Composite(
+  override lazy val reporter = Reporter.Composite(
     new RegressionReporter(
       RegressionReporter.Tester.Accepter(),
       RegressionReporter.Historian.Complete()
     ),
-    HtmlReporter(true)
+    HtmlReporter(embedDsv = true)
   )
-  lazy val persistor = Persistor.None
+  override lazy val persistor: Persistor = Persistor.None
   
   /* inputs */
 
-  val sizes = Gen.range("size")(1000000, 3000000, 1000000)
+  final val milion = 1_000_000
+  final val sizes: Gen[Int] = Gen.range("size")(milion, 3 * milion, milion)
 
   /* tests */
 
@@ -43,16 +45,16 @@ object ClientBenchmark extends PerformanceTest {
         system = ActorSystem()
         client = Client()(system)
       } tearDown { _ =>
-        Await.result(client.quit(), 2 seconds)
-        system.shutdown()
+        Await.result(client.quit(), 2.seconds)
+        Await.result(system.terminate(), 10.seconds)
         client = null
         system = null
       } in { i =>
         implicit val ec = system.dispatcher
-        val future = Future.traverse(1 to i) { i =>
+        val future = Future.traverse(1 to i) { _ =>
           client.ping()
         }
-        Await.result(future, 30 seconds)
+        Await.result(future, 30.seconds)
       }
     }
     
@@ -64,19 +66,19 @@ object ClientBenchmark extends PerformanceTest {
       } setUp { _ =>
         system = ActorSystem()
         client = Client()(system)
-        Await.result(client.set("foo", "bar"), 2 seconds)
+        Await.result(client.set("foo", "bar"), 2.seconds)
       } tearDown { _ =>
-        Await.result(client.del("foo"), 2 seconds)
-        Await.result(client.quit(), 2 seconds)
-        system.shutdown()
+        Await.result(client.del("foo"), 2.seconds)
+        Await.result(client.quit(), 2.seconds)
+        Await.result(system.terminate(), 10.seconds)
         client = null
         system = null
       } in { i =>
         implicit val ec = system.dispatcher
-        val future = Future.traverse(1 to i) { i =>
+        val future = Future.traverse(1 to i) { _ =>
           client.get("foo")
         }
-        Await.result(future, 30 seconds)
+        Await.result(future, 30.seconds)
       }
     }
     
@@ -89,19 +91,18 @@ object ClientBenchmark extends PerformanceTest {
         system = ActorSystem()
         client = Client()(system)
       } tearDown { _ =>
-        Await.result(client.del("foo"), 2 seconds)
-        Await.result(client.quit(), 2 seconds)
-        system.shutdown()
+        Await.result(client.del("foo"), 2.seconds)
+        Await.result(client.quit(), 2.seconds)
+        Await.result(system.terminate(), 10.seconds)
         client = null
         system = null
       } in { i =>
         implicit val ec = system.dispatcher
-        val future = Future.traverse(1 to i) { i =>
+        val future = Future.traverse(1 to i) { _ =>
           client.set("foo", "bar")
         }
-        Await.result(future, 30 seconds)
+        Await.result(future, 30.seconds)
       }
     }
   }
-  
-}*/
+}
