@@ -104,16 +104,16 @@ redis.quit()
 
 The following benchmarks have been performed using [ScalaMeter](http://scalameter.github.io/) with the 
 `SeparateJvmsExecutor`, configured with `Warmer.Default`, `Measurer.Default` and `Aggregator.average`.
-The source code can be found [here](https://github.com/scredis/scredis/blob/master/src/test/scala/scredis/ClientBenchmark.scala).
+The source code can be found [here](src/bench/scala/scredis/ClientBenchmark.scala).
 
 
 
 ### Running benchmark tests
 
-Execute `start-redis.sh` to launch redis-server which will be used for performance testing. 
+Execute `./start-redis.sh` script to launch redis-server which will be used for performance testing. 
 Tests are executed against locally running redis-server instance.
 
-To execute tests run command:
+You can simply run tests from intellij or execute them from console with command:
  
 `sbt "bench:testOnly scredis.ClientBenchmark"`
 
