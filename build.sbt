@@ -29,25 +29,27 @@ val akkaV = "2.5.27"
 val loggingV = "3.9.2"
 val configV = "1.4.0"
 val collectionCompatV = "2.1.3"
+val typesafeConfigV = "1.3.3"
 
 libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % loggingV,
-  "com.typesafe" % "config" % "1.3.3",
+  "com.typesafe" % "config" % typesafeConfigV,
   "com.typesafe.akka" %% "akka-actor" % akkaV,
 
   "org.scala-lang.modules" %% "scala-collection-compat" % collectionCompatV,
 
   "org.scalatest" %% "scalatest" % "3.1.0" % Test,
-  "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % Test,
+  "org.scalatestplus" %% "scalacheck-1-14" % "3.1.0.0" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.3" % Test,
-//  "com.storm-enroute" %% "scalameter" % "0.8.2" % Test,  /* only used for ClientBenchmark testing */
+  "com.storm-enroute" %% "scalameter" % "0.19" % Test,
   "org.slf4j" % "slf4j-simple" % "1.7.30" % Test
 )
 
-Test / testOptions += Tests.Argument("-F", sys.props.getOrElse("F", "1.0"))
+Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-F", sys.props.getOrElse("F", "1.0"))
 
 // required so that test actor systems don't get messed up
-fork in Test := true
+Test / fork := true
+Test / parallelExecution := false
 
 publishMavenStyle := true
 publishArtifact in Test := false
@@ -75,12 +77,17 @@ bintrayOrganization := Some("scredis")
 bintrayRepository := "maven"
 bintrayPackageLabels := Seq("redis")
 
-parallelExecution in Test := false
-
-testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
+val scalaMeterFramework = new TestFramework("org.scalameter.ScalaMeterFramework")
+testFrameworks += scalaMeterFramework
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 
 // Documentation
 enablePlugins(ParadoxPlugin)
 paradoxTheme := Some(builtinParadoxTheme("generic"))
+
+
+// Scalameter Benchmark tests
+lazy val Benchmark = config("bench") extend Test
+configs(Benchmark)
+inConfig(Benchmark)(Defaults.testSettings)
