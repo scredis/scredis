@@ -85,3 +85,9 @@ concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
 // Documentation
 enablePlugins(ParadoxPlugin)
 paradoxTheme := Some(builtinParadoxTheme("generic"))
+
+
+// Scalameter Benchmark tests
+lazy val Benchmark = config("bench") extend Test
+configs(Benchmark)
+inConfig(Benchmark)(Defaults.testSettings)
