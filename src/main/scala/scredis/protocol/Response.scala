@@ -45,7 +45,7 @@ case class BulkStringResponse(valueOpt: Option[Array[Byte]]) extends Response {
 case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
 
   def headOpt[R](decoder: Decoder[R]): Option[R] = if (length > 0) {
-    val position = buffer.position
+    val position = buffer.position()
     val response = Protocol.decode(buffer)
     if (decoder.isDefinedAt(response)) {
       val decoded = decoder.apply(response)

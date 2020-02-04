@@ -215,7 +215,7 @@ object Protocol extends LazyLogging {
         char == SimpleStringResponseByte ||
         char == IntegerResponseByte
       ) {
-        position = buffer.position - 1
+        position = buffer.position() - 1
         while (buffer.remaining > 0 && char != '\n') {
           char = buffer.get()
         }
@@ -225,14 +225,14 @@ object Protocol extends LazyLogging {
           stop()
         }
       } else if (char == BulkStringResponseByte) {
-        position = buffer.position - 1
+        position = buffer.position() - 1
         try {
           val length = parseInt(buffer) match {
             case -1 => 0
             case x => x + 2
           }
           if (buffer.remaining >= length) {
-            buffer.position(buffer.position + length)
+            buffer.position(buffer.position() + length)
             increment()
           } else {
             stop()
@@ -242,7 +242,7 @@ object Protocol extends LazyLogging {
         }
       } else if (char == ArrayResponseByte) {
         if (arrayStack.isEmpty) {
-          arrayPosition = buffer.position - 1
+          arrayPosition = buffer.position() - 1
         }
         try {
           val length = parseInt(buffer)

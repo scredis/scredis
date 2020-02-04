@@ -178,7 +178,7 @@ class ListenerActor(
     
     val buffer = completedData.asByteBuffer
     val responsesCount = Protocol.count(buffer)
-    val position = buffer.position
+    val position = buffer.position()
     
     if (buffer.remaining > 0) {
       remainingByteStringOpt = Some(ByteString(buffer))

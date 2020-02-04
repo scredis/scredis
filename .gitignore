@@ -3,6 +3,9 @@
 .project
 .settings/
 .idea
+.bloop
+.metals
+/project/metals.sbt
 target/
 /bin
 appendonly.aof
