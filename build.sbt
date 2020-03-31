@@ -25,7 +25,7 @@ buildInfoOptions += BuildInfoOption.BuildTime
 
 git.remoteRepo := "git@github.com:scredis/scredis.git"
 
-val akkaV = "2.5.30"
+val akkaV = "2.5.31"
 val loggingV = "3.9.2"
 val configV = "1.4.0"
 val collectionCompatV = "2.1.4"
