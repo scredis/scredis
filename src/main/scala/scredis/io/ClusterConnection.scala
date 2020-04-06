@@ -5,9 +5,11 @@ import com.typesafe.scalalogging.LazyLogging
 import scredis.exceptions._
 import scredis.protocol._
 import scredis.protocol.requests.ClusterRequests.{ClusterCountKeysInSlot, ClusterInfo, ClusterSlots}
+import scredis.protocol.requests.ConnectionRequests.Quit
 import scredis.util.UniqueNameGenerator
 import scredis.{ClusterSlotRange, RedisConfigDefaults, Server}
 
+import scala.collection.immutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future, Promise}
@@ -38,6 +40,8 @@ abstract class ClusterConnection(
     passwordOpt: Option[String] = RedisConfigDefaults.Config.Redis.PasswordOpt
   ) extends NonBlockingConnection with LazyLogging {
 
+  type CONNECTIONS = Map[Server, (AkkaNonBlockingConnection, Int)]
+
   private val maxHashMisses = 100
   private val maxConnectionMisses = 3
 
@@ -46,7 +50,7 @@ abstract class ClusterConnection(
   /** Set of active cluster node connections. Initialized from `nodes` parameter. */
   // TODO it may be more efficient to save the connections in hashSlots directly
   // TODO we need some information about node health for updates
-  private[scredis] var connections: Map[Server, (NonBlockingConnection, Int)] = initialConnections
+  private[scredis] var connections: CONNECTIONS = initialConnections
 
   // TODO keep master-slave associations to be able to ask slaves for data with appropriate config
 
@@ -57,12 +61,16 @@ abstract class ClusterConnection(
   /** Miss counter for hashSlots accesses. */
   private var hashMisses = 0
 
+
+  private val defaultBlockingTimeout: FiniteDuration = 5.seconds
+
+
   // bootstrapping: init with info from cluster
   // I guess is it okay to to a blocking await here? or move it to a factory method?
   Await.ready(updateCache(maxRetries), connectTimeout)
 
   /** Set up initial connections from configuration. */
-  private def initialConnections: Map[Server, (NonBlockingConnection, Int)] =
+  private def initialConnections: CONNECTIONS =
     nodes.map { server => (server, (makeConnection(server, systemOpt), 0))}.toMap
 
 
@@ -110,7 +118,7 @@ abstract class ClusterConnection(
   }
 
   /** Creates a new connection to a server. */
-  private def makeConnection(server: Server, systemOpt:Option[ActorSystem]): NonBlockingConnection = {
+  private def makeConnection(server: Server, systemOpt:Option[ActorSystem]): AkkaNonBlockingConnection = {
     val systemName = RedisConfigDefaults.IO.Akka.ActorSystemName
     val system = systemOpt.getOrElse(ActorSystem(UniqueNameGenerator.getUniqueName(systemName)))
 
@@ -132,6 +140,7 @@ abstract class ClusterConnection(
     delayedF.future
   }
 
+
   /**
    * Send a Redis request object and handle cluster specific error cases
    * @param request request object
@@ -147,13 +156,7 @@ abstract class ClusterConnection(
                       error: Option[RedisException] = None): Future[A] = {
     if (retry <= 0) Future.failed(RedisIOException(s"Gave up on request after $maxRetries retries: $request", error.orNull))
     else {
-      val (connection,_) = connections.getOrElse(server, {
-        val con = makeConnection(server, systemOpt)
-        connections = this.synchronized {
-          connections.updated(server, (con,0))
-        }
-        (con,0)
-      })
+      val (connection,_) = connections.getOrElse(server, createConnectionIfMissing(server))
 
       // handle cases that should be retried (MOVE, ASK, TRYAGAIN)
       connection.send(request).recoverWith {
@@ -217,7 +220,7 @@ abstract class ClusterConnection(
       (con, errors) <- connections.get(server)
     } {
       val nextConnections =
-        if (errors >= maxConnectionMisses) connections - server
+        if (errors >= maxConnectionMisses) removeServerFromConnections(connections, server)
         else connections.updated(server, (con,errors+1))
 
       this.connections =
@@ -232,6 +235,35 @@ abstract class ClusterConnection(
         else nextConnections
     }
   }
+
+  private def removeServerFromConnections(conns: CONNECTIONS, server: Server): CONNECTIONS = {
+    val connToRemove  = connections(server)._1
+    closeConnection(connToRemove)
+    connections - server
+  }
+
+  private def closeConnection(connToRemove: NonBlockingConnection): Future[Unit] = {
+    val req = Quit()
+    connToRemove.send(req)
+    req.future
+  }
+
+  /** Create a new connection if required, and update connections.
+    * Protects against race conditions leading to same connection being created multiple times
+    * TODO: It is still possible to have race conditions when creating connections
+    */
+  private def createConnectionIfMissing(server: Server): (NonBlockingConnection, Int) =
+    this.synchronized {
+      connections.get(server) match {
+        case Some(conn) => conn
+        case None =>
+          val con = makeConnection(server, systemOpt)
+          connections = connections.updated(server, (con, 0))
+          (con,0)
+      }
+    }
+
+  override def clone(): AnyRef = super.clone()
 
   override protected[scredis] def send[A](request: Request[A]): Future[A] =
     request match {
@@ -263,6 +295,17 @@ abstract class ClusterConnection(
         // but arbitrary choice is probably not what's intended..
         Future.failed(RedisInvalidArgumentException("This command is not supported for clusters"))
     }
+
+  def quit(): Future[Unit] = {
+    // Shut down all connections
+    val allQuit = Future.traverse(connections.toSeq) { case (server: Server, (connection: NonBlockingConnection, _)) =>
+      closeConnection(connection)
+    }
+
+    connections.values.foreach(_._1.awaitTermination(defaultBlockingTimeout))
+
+    Future.successful(())
+  }
 
   // TODO at init: fetch all hash slot-node associations: CLUSTER SLOTS
 }

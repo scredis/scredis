@@ -4,6 +4,7 @@ import akka.actor._
 import scredis.Transaction
 import scredis.exceptions._
 import scredis.protocol._
+import scredis.protocol.requests.ConnectionRequests.Quit
 import scredis.util.UniqueNameGenerator
 
 import scala.concurrent.Future
@@ -88,5 +89,4 @@ abstract class AkkaNonBlockingConnection(
       Protocol.send(transaction, listenerActor)
     }
   }
-  
 }
