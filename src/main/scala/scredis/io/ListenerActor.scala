@@ -76,7 +76,7 @@ class ListenerActor(
   private def createDecodersRouter(): Router = {
     val routees = Vector.fill(decodersCount) {
       val ref = context.actorOf(
-        Props(classOf[DecoderActor], decodingSubscription).withDispatcher(akkaIODispatcherPath),
+        Props(classOf[DecoderActor], decodingSubscription).withDispatcher(akkaDecoderDispatcherPath),
         UniqueNameGenerator.getNumberedName(s"${nameOpt.getOrElse(s"$host-$port")}-decoder-actor")
       )
       context.watch(ref)
