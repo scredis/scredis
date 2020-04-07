@@ -307,7 +307,10 @@ abstract class ClusterConnection(
 
     connections.values.foreach(_._1.awaitTermination(defaultBlockingTimeout))
 
-    Future.successful(())
+    systemOpt match {
+      case Some(callerSys) =>     Future.successful(())
+      case None =>                system.terminate().map(_ => ())
+    }
   }
 
   // TODO at init: fetch all hash slot-node associations: CLUSTER SLOTS
