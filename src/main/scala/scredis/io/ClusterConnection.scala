@@ -79,7 +79,6 @@ abstract class ClusterConnection(
     nodes.map { server => (server, (makeConnection(server, system), 0))}.toMap
 
 
-
   /**
    * Update the ClusterClient's connections and hash slots cache.
    * Sends a CLUSTER SLOTS query to the cluster to get a current mapping of hash slots to servers, and updates
@@ -125,6 +124,7 @@ abstract class ClusterConnection(
 
   /** Creates a new connection to a server. */
   private def makeConnection(server: Server, system:ActorSystem): AkkaNonBlockingConnection = {
+
     new AkkaNonBlockingConnection(
       system = system, host = server.host, port = server.port, passwordOpt = passwordOpt,
       database = 0, nameOpt = None, decodersCount = 2,
