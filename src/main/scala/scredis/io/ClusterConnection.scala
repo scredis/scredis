@@ -298,12 +298,11 @@ abstract class ClusterConnection(
         Future.failed(RedisInvalidArgumentException("This command is not supported for clusters"))
     }
 
-  def quit(): Future[Unit] = {
+  def quit(): Future[Unit] = 
     // Shut down all connections
     Future.traverse(connections.toSeq) { case (server: Server, (connection: NonBlockingConnection, _)) =>
       closeConnection(connection)
     }.map(_ => ())
-  }
 
   // TODO at init: fetch all hash slot-node associations: CLUSTER SLOTS
 }
