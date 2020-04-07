@@ -260,7 +260,7 @@ abstract class ClusterConnection(
       connections.get(server) match {
         case Some(conn) => conn
         case None =>
-          val con = makeConnection(server, systemOpt)
+          val con = makeConnection(server, system)
           connections = connections.updated(server, (con, 0))
           (con,0)
       }
