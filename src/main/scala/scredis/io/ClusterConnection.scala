@@ -262,7 +262,6 @@ abstract class ClusterConnection(
         case Some(conn) => conn
         case None =>
           val con = makeConnection(server, system)
-
           connections = connections.updated(server, (con, 0))
           (con,0)
       }
