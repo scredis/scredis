@@ -65,10 +65,7 @@ abstract class ClusterConnection(
 
   /** Miss counter for hashSlots accesses. */
   private var hashMisses = 0
-
-
-  private val defaultBlockingTimeout: FiniteDuration = 5.seconds
-
+  
 
   // bootstrapping: init with info from cluster
   // I guess is it okay to to a blocking await here? or move it to a factory method?
@@ -301,6 +298,6 @@ abstract class ClusterConnection(
     Future.traverse(connections.toSeq) { case (server: Server, (connection: NonBlockingConnection, _)) =>
       closeConnection(connection)
     }.map(_ => ())
-  
+
   // TODO at init: fetch all hash slot-node associations: CLUSTER SLOTS
 }
