@@ -267,9 +267,7 @@ abstract class ClusterConnection(
       }
     }
 
-
   override protected[scredis] def send[A](request: Request[A]): Future[A] = request match {
-
       case req @ ClusterCountKeysInSlot(slot) =>
         // special case handling for slot counting in clusters: redirect to the proper cluster node
         if (slot >= Protocol.CLUSTER_HASHSLOTS || slot < 0)
@@ -298,11 +296,11 @@ abstract class ClusterConnection(
         Future.failed(RedisInvalidArgumentException("This command is not supported for clusters"))
     }
 
-  def quit(): Future[Unit] = 
+  def quit(): Future[Unit] =
     // Shut down all connections
     Future.traverse(connections.toSeq) { case (server: Server, (connection: NonBlockingConnection, _)) =>
       closeConnection(connection)
     }.map(_ => ())
-
+  
   // TODO at init: fetch all hash slot-node associations: CLUSTER SLOTS
 }
