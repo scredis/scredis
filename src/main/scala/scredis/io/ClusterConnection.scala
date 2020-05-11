@@ -44,6 +44,7 @@ abstract class ClusterConnection(
 
   private val maxHashMisses = 100
   private val maxConnectionMisses = 3
+  private val deadConnectionRemovalInterval: FiniteDuration = 1.minutes
 
   private val system = {
     val systemName = RedisConfigDefaults.IO.Akka.ActorSystemName
@@ -65,7 +66,10 @@ abstract class ClusterConnection(
 
   /** Miss counter for hashSlots accesses. */
   private var hashMisses = 0
-  
+
+  private[scredis] var connectionsToClose:Set[AkkaNonBlockingConnection] = Set.empty
+
+  scheduler.schedule(deadConnectionRemovalInterval, deadConnectionRemovalInterval)(closeDeadConnections)
 
   // bootstrapping: init with info from cluster
   // I guess is it okay to to a blocking await here? or move it to a factory method?
@@ -218,7 +222,7 @@ abstract class ClusterConnection(
       (con, errors) <- connections.get(server)
     } {
       val nextConnections =
-        if (errors >= maxConnectionMisses) removeServerFromConnections(server)
+        if (errors >= maxConnectionMisses) removeServerFromConnectionsUnsafe(server)
         else connections.updated(server, (con,errors+1))
 
       this.connections =
@@ -235,15 +239,23 @@ abstract class ClusterConnection(
   }
 
   /** Should be called only within a synchronized block
-   * Returned new [[CONNECTIONS]] with the server removed, and
+   * Marks the connection to be closed later.
+   * Returns new [[CONNECTIONS]] with the server removed
    * */
-  private def removeServerFromConnections(server: Server): CONNECTIONS = {
+  private def removeServerFromConnectionsUnsafe(server: Server): CONNECTIONS = {
     val connToRemove  = connections(server)._1
-    closeConnection(connToRemove)
+    connectionsToClose = connectionsToClose + connToRemove
     connections - server
   }
 
+  private def closeDeadConnections = this.synchronized{
+      /** First filter out connections that have already been closed */
+      connectionsToClose = connectionsToClose.filter(conn => !conn.isTerminated)
+      connectionsToClose.foreach(closeConnection)
+    }
+
   private def closeConnection(connToRemove: NonBlockingConnection): Future[Unit] = {
+    logger.info("closing connection {}",connToRemove )
     val req = Quit()
     connToRemove.send(req)
     req.future
@@ -295,7 +307,8 @@ abstract class ClusterConnection(
 
   def quit(): Future[Unit] =
     // Shut down all connections
-    Future.traverse(connections.toSeq) { case (server: Server, (connection: NonBlockingConnection, _)) =>
+    Future.traverse(connections.toSeq) { case (server: Server, (connection: AkkaNonBlockingConnection, _)) =>
+      connection.awaitTermination()
       closeConnection(connection)
     }.map(_ => ())
 
