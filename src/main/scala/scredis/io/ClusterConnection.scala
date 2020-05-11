@@ -75,7 +75,6 @@ abstract class ClusterConnection(
   Await.ready(updateCache(maxRetries), connectTimeout)
 
   /** Set up initial connections from configuration. */
-
   private def initialConnections: CONNECTIONS =
     nodes.map { server => (server, (makeConnection(server, system), 0))}.toMap
 
@@ -124,7 +123,6 @@ abstract class ClusterConnection(
 
   /** Creates a new connection to a server. */
   private def makeConnection(server: Server, system:ActorSystem): AkkaNonBlockingConnection = {
-
     new AkkaNonBlockingConnection(
       system = system, host = server.host, port = server.port, passwordOpt = passwordOpt,
       database = 0, nameOpt = None, decodersCount = 2,
@@ -245,7 +243,7 @@ abstract class ClusterConnection(
   private def removeServerFromConnections(server: Server): CONNECTIONS = {
     val connToRemove  = connections(server)._1
     closeConnection(connToRemove)
-    connections
+    connections - server
   }
 
   private def closeConnection(connToRemove: NonBlockingConnection): Future[Unit] = {
@@ -264,13 +262,14 @@ abstract class ClusterConnection(
         case Some(conn) => conn
         case None =>
           val con = makeConnection(server, system)
+
           connections = connections.updated(server, (con, 0))
           (con,0)
       }
     }
 
-  override protected[scredis] def send[A](request: Request[A]): Future[A] =
-    request match {
+
+  override protected[scredis] def send[A](request: Request[A]): Future[A] = request match {
 
       case req @ ClusterCountKeysInSlot(slot) =>
         // special case handling for slot counting in clusters: redirect to the proper cluster node
