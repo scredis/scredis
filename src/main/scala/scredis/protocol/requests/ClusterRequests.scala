@@ -224,12 +224,17 @@ object ClusterRequests {
     val configEpoch = fields(6).toLong
     val linkStateConnected = fields(7) == "connected"
     val slots = fields.slice(8, fields.length)
-      .filter(!_.startsWith("["))
+      .filter(f => !f.startsWith("[") || f.contains("->-")) // ignore IMPORTING slots, keep MIGRATING slots
       .map { slot =>
-      slot.split('-') match {
-        case Array(s) => (s.toLong,s.toLong)
-        case Array(begin,end) => (begin.toLong,end.toLong)
-      }
+        if (slot.startsWith("[")) {
+          val s = slot.substring(1, slot.indexOf("->-")).toLong
+          (s, s)
+        } else {
+          slot.split('-') match {
+            case Array(s) => (s.toLong, s.toLong)
+            case Array(begin, end) => (begin.toLong, end.toLong)
+          }
+        }
     }.toVector
 
     ClusterNode(id,Server(host,pport.toInt),flags,master,pingSent,pongRecv,configEpoch,linkStateConnected,slots)
