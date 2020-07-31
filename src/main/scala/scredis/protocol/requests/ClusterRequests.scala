@@ -223,7 +223,9 @@ object ClusterRequests {
     val pongRecv = fields(5).toLong
     val configEpoch = fields(6).toLong
     val linkStateConnected = fields(7) == "connected"
-    val slots = fields.slice(8, fields.length).map { slot =>
+    val slots = fields.slice(8, fields.length)
+      .filter(!_.startsWith("["))
+      .map { slot =>
       slot.split('-') match {
         case Array(s) => (s.toLong,s.toLong)
         case Array(begin,end) => (begin.toLong,end.toLong)

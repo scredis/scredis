@@ -38,7 +38,7 @@ abstract class ClusterConnection(
     passwordOpt: Option[String] = RedisConfigDefaults.Config.Redis.PasswordOpt
   ) extends NonBlockingConnection with LazyLogging {
 
-  private val maxHashMisses = 100
+  private val maxHashMisses = 10
   private val maxConnectionMisses = 3
 
   private val system = {
@@ -127,9 +127,9 @@ abstract class ClusterConnection(
   }
 
   /** Delay a Future-returning operation. */
-  private def delayed[A](delay: Duration)(f: => Future[A]): Future[A] = {
+  private def delayed[A](delay: FiniteDuration)(f: => Future[A]): Future[A] = {
     val delayedF = Promise[A]()
-    scheduler.scheduleOnce(clusterDownWait) {
+    scheduler.scheduleOnce(delay) {
       delayedF.completeWith(f)
     }
     delayedF.future
