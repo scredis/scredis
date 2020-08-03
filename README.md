@@ -38,7 +38,7 @@ Scredis 2.2.5+ is compatible with Scala 2.11, 2.12 and 2.13.
 Binary releases are hosted on the Sonatype Central Repository.
 
 ```scala
-libraryDependencies += "com.github.scredis" %% "scredis" % "2.3.3"
+libraryDependencies += "com.github.scredis" %% "scredis" % "2.3.4"
 ```
 
 Snapshots / development versions are hosted on a separate bintray repository.
@@ -125,7 +125,7 @@ When you want to update test results please remember to do following steps:
 
 ```
 # scala version: 2.13.1
-# scredis version: 2.3.3
+# scredis version: 2.3.4
 
 > java -version
 java version "1.7.0_45"
