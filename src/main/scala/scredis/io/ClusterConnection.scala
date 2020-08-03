@@ -38,7 +38,7 @@ abstract class ClusterConnection(
     passwordOpt: Option[String] = RedisConfigDefaults.Config.Redis.PasswordOpt
   ) extends NonBlockingConnection with LazyLogging {
 
-  private val maxHashMisses = 10
+  private val maxHashMisses = RedisConfigDefaults.Redis.MaxClusterHashMisses
   private val maxConnectionMisses = 3
 
   private val system = {
