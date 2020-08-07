@@ -38,8 +38,8 @@ libraryDependencies ++= Seq(
 
   "org.scala-lang.modules" %% "scala-collection-compat" % collectionCompatV,
 
-  "org.scalatest" %% "scalatest" % "3.2.1" % Test,
-  "org.scalatestplus" %% "scalacheck-1-14" % "3.2.0.0" % Test,
+  "org.scalatest" %% "scalatest" % "3.2.0" % Test,
+  "org.scalatestplus" %% "scalacheck-1-14" % "3.2.1.0" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.3" % Test,
   "com.storm-enroute" %% "scalameter" % "0.19" % Test,
   "org.slf4j" % "slf4j-simple" % "1.7.30" % Test
