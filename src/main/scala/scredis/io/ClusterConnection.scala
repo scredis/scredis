@@ -193,7 +193,7 @@ abstract class ClusterConnection(
           val nextTriedServers = triedServers + server
           // try any server that isn't one we tried already
           connections.keys.find { s => !nextTriedServers.contains(s)  } match {
-            case Some(nextServer) => send(request, nextServer, nextTriedServers, retry - 1, remainingTimeout, Option(err))
+            case Some(nextServer) => send(request, nextServer, nextTriedServers, retry, remainingTimeout, Option(err))
             case None => Future.failed(RedisIOException("No valid connection available.", err))
           }
       }
