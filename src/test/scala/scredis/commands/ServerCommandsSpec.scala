@@ -82,6 +82,7 @@ class ServerCommandsSpec extends AnyWordSpec
           val split = data("addr").split(":")
           client1.clientKill(split(0), split(1).toInt).futureValue should be (())
         }
+        waitForClientReconnection()
       }
     }
   }
@@ -89,8 +90,6 @@ class ServerCommandsSpec extends AnyWordSpec
   s"${ClientKill.toString}-2.8.12" when {
     "killing by addresses" should {
       "succeed" taggedAs (V2812) in {
-        // reinit because killed in previous test
-        try { client2.clientList().futureValue } catch {case e: Throwable => () }
         client1.clientSetName("client1").futureValue should be (())
         client2.clientSetName("client2").futureValue should be (())
         client3.clientSetName("client3").futureValue should be (())
@@ -103,6 +102,7 @@ class ServerCommandsSpec extends AnyWordSpec
           (split(0), split(1).toInt)
         }
         client1.clientKillWithFilters(addrOpt = Some((ip2, port2))).futureValue should be (1)
+        waitForClientReconnection()
       }
     }
     "killing by ids" should {
@@ -115,6 +115,7 @@ class ServerCommandsSpec extends AnyWordSpec
           map("name") == "client3"
         }.head("id").toInt
         client1.clientKillWithFilters(idOpt = Some(client3Id)).futureValue should be (1)
+        waitForClientReconnection()
       }
     }
     "killing by type" should {
@@ -126,6 +127,7 @@ class ServerCommandsSpec extends AnyWordSpec
         client1.clientKillWithFilters(
           typeOpt = Some(ClientType.Normal), skipMe = true
         ).futureValue should be (2)
+        waitForClientReconnection()
       }
       Given("that skipMe is false")
       "kill all clients including self" taggedAs (V2812) in {
@@ -135,6 +137,7 @@ class ServerCommandsSpec extends AnyWordSpec
         client1.clientKillWithFilters(
           typeOpt = Some(ClientType.Normal), skipMe = false
         ).futureValue should be (3)
+        waitForClientReconnection()
       }
     }
   }
@@ -142,8 +145,6 @@ class ServerCommandsSpec extends AnyWordSpec
   ClientList.toString when {
     "3 clients are connected" should {
       "list the 3 clients" taggedAs (V240) in {
-        // reinit because killed in previous test
-        try { client2.clientList().futureValue } catch {case e: Throwable => () }
         client1.clientSetName("client1").futureValue should be (())
         client2.clientSetName("client2").futureValue should be (())
         client3.clientSetName("client3").futureValue should be (())
@@ -462,6 +463,10 @@ class ServerCommandsSpec extends AnyWordSpec
       seconds should be > (0L)
       microseconds should be >= (0L)
     }
+  }
+
+  private def waitForClientReconnection(): Unit = {
+    try { client2.clientList().futureValue } catch {case e: Throwable => () }
   }
   
   override def afterAll(): Unit = {
