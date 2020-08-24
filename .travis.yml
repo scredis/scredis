@@ -4,6 +4,10 @@ jdk: oraclejdk8
 
 dist: trusty
 
+git:
+  depth: false
+  quiet: true
+
 services:
   - redis-server
 
