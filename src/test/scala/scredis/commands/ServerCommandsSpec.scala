@@ -142,6 +142,9 @@ class ServerCommandsSpec extends AnyWordSpec
   ClientList.toString when {
     "3 clients are connected" should {
       "list the 3 clients" taggedAs (V240) in {
+        // reinit because killed in previous test
+        try { client2.clientList().futureValue } catch {case e: Throwable => () }
+        client1.clientSetName("client1").futureValue should be (())
         client2.clientSetName("client2").futureValue should be (())
         client3.clientSetName("client3").futureValue should be (())
         client1.clientList().futureValue should have size (3)
