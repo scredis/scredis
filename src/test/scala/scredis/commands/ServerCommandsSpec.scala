@@ -463,8 +463,10 @@ class ServerCommandsSpec extends AnyWordSpec
   
   override def afterAll(): Unit = {
     clients.foreach { c =>
-      c.flushAll().!
-      c.quit().!
+      try {
+        c.flushAll().!
+        c.quit().!
+      } catch { case e: RedisIOException => println(s"Failed to quit client(${c.host}:${c.port}) because ${e.message}")}
     }
   }
   
