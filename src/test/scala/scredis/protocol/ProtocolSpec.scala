@@ -57,31 +57,31 @@ class ProtocolSpec extends AnyWordSpec with ScalaCheckDrivenPropertyChecks with 
         
         fragmented = ByteString("-").toByteBuffer
         Protocol.count(fragmented) should be (0)
-        fragmented.position should be (0)
+        fragmented.position() should be (0)
         
         fragmented = ByteString("-error").toByteBuffer
         Protocol.count(fragmented) should be (0)
-        fragmented.position should be (0)
+        fragmented.position() should be (0)
         
         fragmented = ByteString("-error\r").toByteBuffer
         Protocol.count(fragmented) should be (0)
-        fragmented.position should be (0)
+        fragmented.position() should be (0)
         
         fragmented = ByteString("-error\r\n+hello").toByteBuffer
         Protocol.count(fragmented) should be (1)
-        fragmented.position should be (8)
+        fragmented.position() should be (8)
         
         fragmented = ByteString(
           "*5\r\n-error\r\n+simple\r\n:1000\r\n:-1000\r\n$3\r\nlol\r"
         ).toByteBuffer
         Protocol.count(fragmented) should be (0)
-        fragmented.position should be (0)
+        fragmented.position() should be (0)
         
         fragmented = ByteString(
           s"$ArrayString*3\r\n*2\r\n$ArrayString$ArrayString*2\r\n$ArrayString-error\r\n$$3\r\n"
         ).toByteBuffer
         Protocol.count(fragmented) should be (1)
-        fragmented.position should be (ArrayString.size)
+        fragmented.position() should be (ArrayString.length)
       }
     }
   }

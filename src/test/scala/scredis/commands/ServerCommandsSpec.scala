@@ -22,7 +22,7 @@ class ServerCommandsSpec extends AnyWordSpec
   private val client2 = Client(port = 6380, passwordOpt = Some("foobar"))
   private val client3 = Client(port = 6380, passwordOpt = Some("foobar"))
 
-  private val clients = List(client, client1)
+  private val clients = List(client, client1, client2, client3)
 
   client.configSet("slowlog-log-slower-than", 0).futureValue should be (())
 
@@ -89,6 +89,8 @@ class ServerCommandsSpec extends AnyWordSpec
   s"${ClientKill.toString}-2.8.12" when {
     "killing by addresses" should {
       "succeed" taggedAs (V2812) in {
+        // reinit because killed in previous test
+        try { client2.clientList().futureValue } catch {case e: Throwable => () }
         client1.clientSetName("client1").futureValue should be (())
         client2.clientSetName("client2").futureValue should be (())
         client3.clientSetName("client3").futureValue should be (())
