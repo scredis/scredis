@@ -198,7 +198,7 @@ Maintainer performing stable release should:
 * commit changes `git add README.md && git commit -m "Release version vX.Y.Z`
 * `git tag -a "vX.Y.Z" -m "Release version vX.Y.Z"` # tag current commit with given tag
 * execute `./gen-doc.sh` and `git add -A && git commit --amend --no-edit` to append changes to last commit
-* `git push origin vX.Y.Z` # tags are not automatically pushed by `git push`
+* `git push origin vX.Y.Z && git push` # tags are not automatically pushed by `git push`
 * go to [bintray](https://bintray.com/scredis/maven/scredis#central) and click 'Sync' to push released version to mvnrepository.
 
 ## Documentation
