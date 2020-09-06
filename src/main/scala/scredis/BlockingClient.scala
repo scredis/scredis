@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import scredis.commands._
 import scredis.io.AkkaBlockingConnection
+import scredis.protocol.AuthConfig
 import scredis.protocol.requests.ConnectionRequests.{Auth, Quit, Select}
 import scredis.protocol.requests.ServerRequests.ClientSetName
 
@@ -15,7 +16,7 @@ import scala.util.Try
  * 
  * @param host server address
  * @param port server port
- * @param passwordOpt optional server password
+ * @param authOpt optional server authorization credentials
  * @param database database index to select
  * @param nameOpt optional client name (available since 2.6.9)
  * @param connectTimeout connection timeout
@@ -33,7 +34,7 @@ import scala.util.Try
 class BlockingClient(
   host: String = RedisConfigDefaults.Redis.Host,
   port: Int = RedisConfigDefaults.Redis.Port,
-  passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
+  authOpt: Option[AuthConfig] = RedisConfigDefaults.Redis.AuthOpt,
   database: Int = RedisConfigDefaults.Redis.Database,
   nameOpt: Option[String] = RedisConfigDefaults.Redis.NameOpt,
   connectTimeout: FiniteDuration = RedisConfigDefaults.IO.ConnectTimeout,
@@ -48,7 +49,7 @@ class BlockingClient(
   system = system,
   host = host,
   port = port,
-  passwordOpt = passwordOpt,
+  authOpt = authOpt,
   database = database,
   nameOpt = nameOpt,
   connectTimeout = connectTimeout,
@@ -71,7 +72,7 @@ class BlockingClient(
   def this(config: RedisConfig)(implicit system: ActorSystem) = this(
     host = config.Redis.Host,
     port = config.Redis.Port,
-    passwordOpt = config.Redis.PasswordOpt,
+    authOpt = config.Redis.AuthOpt,
     database = config.Redis.Database,
     nameOpt = config.Redis.NameOpt,
     connectTimeout = config.IO.ConnectTimeout,
@@ -143,7 +144,8 @@ class BlockingClient(
    *
    * @since 1.0.0
    */
-  def auth(password: String)(implicit timeout: Duration): Try[Unit] = sendBlocking(Auth(password))
+  def auth(password: String, username: Option[String] = None)(implicit timeout: Duration): Try[Unit] =
+    sendBlocking(Auth(password, username))
   
   /**
    * Changes the selected database on the current client.
@@ -179,7 +181,7 @@ object BlockingClient {
    * 
    * @param host server address
    * @param port server port
-   * @param passwordOpt optional server password
+   * @param authOpt optional server authorization credentials
    * @param database database index to select
    * @param nameOpt optional client name (available since 2.6.9)
    * @param connectTimeout connection timeout
@@ -193,7 +195,7 @@ object BlockingClient {
   def apply(
     host: String = RedisConfigDefaults.Redis.Host,
     port: Int = RedisConfigDefaults.Redis.Port,
-    passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
+    authOpt: Option[AuthConfig] = RedisConfigDefaults.Redis.AuthOpt,
     database: Int = RedisConfigDefaults.Redis.Database,
     nameOpt: Option[String] = RedisConfigDefaults.Redis.NameOpt,
     connectTimeout: FiniteDuration = RedisConfigDefaults.IO.ConnectTimeout,
@@ -207,7 +209,7 @@ object BlockingClient {
   )(implicit system: ActorSystem): BlockingClient = new BlockingClient(
     host = host,
     port = port,
-    passwordOpt = passwordOpt,
+    authOpt = authOpt,
     database = database,
     nameOpt = nameOpt,
     connectTimeout = connectTimeout,

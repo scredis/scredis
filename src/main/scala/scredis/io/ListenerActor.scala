@@ -11,7 +11,7 @@ import scredis.{Subscription, Transaction}
 import scredis.exceptions.RedisIOException
 import scredis.protocol.requests.ConnectionRequests.{Auth, Quit, Select}
 import scredis.protocol.requests.ServerRequests
-import scredis.protocol.{Protocol, Request}
+import scredis.protocol.{AuthConfig, Protocol, Request}
 import scredis.util.UniqueNameGenerator
 
 import scala.collection.mutable.ListBuffer
@@ -22,7 +22,7 @@ import scredis.Transaction._
 class ListenerActor(
   host: String,
   port: Int,
-  var passwordOpt: Option[String],
+  var authOpt: Option[AuthConfig],
   var database: Int,
   var nameOpt: Option[String],
   var decodersCount: Int,
@@ -104,11 +104,11 @@ class ListenerActor(
         request.failure(RedisIOException("Shutting down"))
       } else {
         request match {
-          case auth @ Auth(password) => if (password.isEmpty) {
-            passwordOpt = None
+          case auth @ Auth(password, username) => if (password.isEmpty) {
+            authOpt = None
             auth.success(())
           } else {
-            passwordOpt = Some(password)
+            authOpt = Some(AuthConfig(username, password))
             doSend(auth)
           }
           case select @ Select(db) =>
@@ -307,8 +307,8 @@ class ListenerActor(
       } else {
         onConnect()
 
-        val authRequestOpt = passwordOpt.map { password =>
-          Auth(password)
+        val authRequestOpt = authOpt.map { auth =>
+          Auth(auth.password, auth.username)
         }
         val selectRequestOpt = if (database > 0) {
           Some(Select(database))
@@ -352,13 +352,13 @@ class ListenerActor(
         }
 
         authFuture.failed.foreach { e =>
-          log.error(s"Could not authenticate to $remote", e)
+          log.error(e, s"Could not authenticate to $remote")
         }
         selectFuture.failed.foreach { e =>
-          log.error(s"Could not select database '$database' in $remote", e)
+          log.error(e, s"Could not select database '$database' in $remote")
         }
         setNameFuture.failed.foreach { e =>
-          log.error(s"Could not set client name in $remote", e)
+          log.error(e, s"Could not set client name in $remote")
         }
       }
     case ReceiveTimeout =>

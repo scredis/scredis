@@ -7,6 +7,7 @@ import scredis.tags._
 import scredis.util.TestUtils._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import scredis.protocol.AuthConfig
 
 class RedisSpec extends AnyWordSpec
   with GivenWhenThen
@@ -16,7 +17,7 @@ class RedisSpec extends AnyWordSpec
   
   private val redis1 = Redis(port = 6380)
   private val redis2 = Redis(port = 6380)
-  private val redis3 = Redis(port = 6380, passwordOpt = Some("foobar"))
+  private val redis3 = Redis(port = 6380, authOpt = Some(AuthConfig(None, "foobar")))
   
   "Auth" when {
     "lazy clients are not initialized" should {

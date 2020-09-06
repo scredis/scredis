@@ -12,6 +12,7 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import scredis.protocol.AuthConfig
 
 class KeyCommandsSpec extends AnyWordSpec
   with GivenWhenThen
@@ -21,7 +22,7 @@ class KeyCommandsSpec extends AnyWordSpec
   with ScalaFutures {
   
   private val client = Client()
-  private val client2 = Client(port = 6380, passwordOpt = Some("foobar"))
+  private val client2 = Client(port = 6380, authOpt = Some(AuthConfig(None, "foobar")))
   private val SomeValue = "HelloWorld!虫àéç蟲"
 
   private var dumpedValue: Array[Byte] = _

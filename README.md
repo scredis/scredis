@@ -49,6 +49,11 @@ resolvers += Resolver.bintrayRepo("scredis","maven")
 libraryDependencies += "com.github.scredis" %% "scredis" % "<version>"
 ```
 
+Scredis library is tested on CI against Redis version 6.0.5.
+Using redis version 6.0.5 or above gives best compatibility guarantees.
+If you find any issues with your version of Redis please open issue on github
+providing your Redis server version and version of scredis you use. 
+
 ### Quick example
 ```scala
 import scredis._

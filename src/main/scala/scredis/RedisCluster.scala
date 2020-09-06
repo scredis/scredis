@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import scredis.commands._
 import scredis.io.{ClusterConnection, Connection}
+import scredis.protocol.AuthConfig
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
@@ -31,7 +32,7 @@ class RedisCluster private[scredis](
     clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
     systemOpt:Option[ActorSystem] = None,
     failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting,
-    passwordOpt: Option[String] = RedisConfigDefaults.Config.Redis.PasswordOpt
+    authOpt: Option[AuthConfig] = RedisConfigDefaults.Config.Redis.AuthOpt
   )
   extends ClusterConnection(
     nodes = nodes,
@@ -47,7 +48,7 @@ class RedisCluster private[scredis](
     clusterDownWait = clusterDownWait,
     systemOpt = systemOpt,
     failCommandOnConnecting = failCommandOnConnecting,
-    passwordOpt = passwordOpt
+    authOpt = authOpt
   ) with Connection
   with ClusterCommands
   with HashCommands
@@ -84,7 +85,7 @@ class RedisCluster private[scredis](
     clusterDownWait = config.IO.Cluster.ClusterDownWait,
     systemOpt = systemOpt,
     failCommandOnConnecting = config.Global.FailCommandOnConnecting,
-    passwordOpt = config.Redis.PasswordOpt
+    authOpt = config.Redis.AuthOpt
   )
 
   /**
@@ -128,7 +129,7 @@ object RedisCluster {
     * @param clusterDownWait time to wait for a retry after CLUSTERDOWN response
     * @param systemOpt Actor System (optionally)
     * @param failCommandOnConnecting indicates whether to fail fast on all requests until there is a working connection.
-    * @param passwordOpt Auth password (optionally)
+    * @param authOpt optional server authorization credentials
     * @return the constructed $redisCluster
     */
   def apply(
@@ -146,7 +147,7 @@ object RedisCluster {
     clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
     systemOpt: Option[ActorSystem] = None,
     failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting,
-    passwordOpt: Option[String] = RedisConfigDefaults.Config.Redis.PasswordOpt
+    authOpt: Option[AuthConfig] = RedisConfigDefaults.Config.Redis.AuthOpt
   ) = new RedisCluster(
     nodes = nodes,
     maxRetries = maxRetries,
@@ -160,7 +161,7 @@ object RedisCluster {
     clusterDownWait = clusterDownWait,
     systemOpt = systemOpt,
     failCommandOnConnecting = failCommandOnConnecting,
-    passwordOpt = passwordOpt
+    authOpt = authOpt
   )
 
 

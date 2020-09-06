@@ -2,15 +2,13 @@
 
 To run the Scredis tests, we need
 
-* Redis 3.0.0+
-* Ruby for redis-trib
-* `gem install redis`
-* redis-server, redis-trib.rb on path
+* Redis 4.0.0+
+* Docker installed and daemon running
 
 
 From `scredis` directory:
 
-    ./start-redis-test-instances.sh
+    ./run-redis-cluster.sh
 
 Run tests from sbt as usual.
 

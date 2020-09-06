@@ -22,7 +22,7 @@ abstract class SubscriberAkkaConnection(
   system: ActorSystem,
   host: String,
   port: Int,
-  passwordOpt: Option[String],
+  authOpt: Option[AuthConfig],
   nameOpt: Option[String],
   decodersCount: Int,
   receiveTimeoutOpt: Option[FiniteDuration],
@@ -37,7 +37,7 @@ abstract class SubscriberAkkaConnection(
   system = system,
   host = host,
   port = port,
-  passwordOpt = passwordOpt,
+  authOpt = authOpt,
   database = 0,
   nameOpt = nameOpt,
   decodersCount = decodersCount,
@@ -59,7 +59,7 @@ abstract class SubscriberAkkaConnection(
       subscription,
       host,
       port,
-      passwordOpt,
+      authOpt,
       nameOpt,
       decodersCount,
       receiveTimeoutOpt,
@@ -101,15 +101,15 @@ abstract class SubscriberAkkaConnection(
     }
   }
   
-  protected def authenticate(password: String): Future[Unit] = {
+  protected def authenticate(password: String, username: Option[String]): Future[Unit] = {
     lock.acquire()
-    val auth = Auth(password)
+    val auth = Auth(password, username)
     listenerActor ! SubscriberListenerActor.SaveSubscriptions
     unsubscribeAndThen {
       listenerActor ! SubscriberListenerActor.SendAsRegularClient(auth)
     }
     auth.future.onComplete {
-      case _ => {
+      _ => {
         listenerActor ! SubscriberListenerActor.RecoverPreviousSubscriberState
         lock.release()
       }
@@ -125,7 +125,7 @@ abstract class SubscriberAkkaConnection(
       listenerActor ! SubscriberListenerActor.SendAsRegularClient(setName)
     }
     setName.future.onComplete {
-      case _ => {
+      _ => {
         listenerActor ! SubscriberListenerActor.RecoverPreviousSubscriberState
         lock.release()
       }

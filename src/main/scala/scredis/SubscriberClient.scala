@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import scredis.commands._
 import scredis.io.SubscriberAkkaConnection
+import scredis.protocol.AuthConfig
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -14,7 +15,7 @@ import scala.concurrent.duration._
  * @param subscription function handling events related to subscriptions
  * @param host server address
  * @param port server port
- * @param passwordOpt optional server password
+ * @param authOpt optional server authorization credentials
  * @param nameOpt optional client name (available since 2.6.9)
  * @param connectTimeout connection timeout
  * @param receiveTimeoutOpt optional batch receive timeout
@@ -33,7 +34,7 @@ class SubscriberClient(
   subscription: Subscription,
   host: String = RedisConfigDefaults.Redis.Host,
   port: Int = RedisConfigDefaults.Redis.Port,
-  passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
+  authOpt: Option[AuthConfig] = RedisConfigDefaults.Redis.AuthOpt,
   nameOpt: Option[String] = RedisConfigDefaults.Redis.NameOpt,
   connectTimeout: FiniteDuration = RedisConfigDefaults.IO.ConnectTimeout,
   receiveTimeoutOpt: Option[FiniteDuration] = RedisConfigDefaults.IO.ReceiveTimeoutOpt,
@@ -48,7 +49,7 @@ class SubscriberClient(
   system = system,
   host = host,
   port = port,
-  passwordOpt = passwordOpt,
+  authOpt = authOpt,
   nameOpt = nameOpt,
   connectTimeout = connectTimeout,
   receiveTimeoutOpt = receiveTimeoutOpt,
@@ -72,7 +73,7 @@ class SubscriberClient(
     subscription = subscription,
     host = config.Redis.Host,
     port = config.Redis.Port,
-    passwordOpt = config.Redis.PasswordOpt,
+    authOpt = config.Redis.AuthOpt,
     nameOpt = config.Redis.NameOpt,
     connectTimeout = config.IO.ConnectTimeout,
     receiveTimeoutOpt = config.IO.ReceiveTimeoutOpt,
@@ -133,7 +134,7 @@ class SubscriberClient(
    *
    * @since 1.0.0
    */
-  def auth(password: String): Future[Unit] = authenticate(password)
+  def auth(password: String, username: Option[String]): Future[Unit] = authenticate(password, username)
   
   /**
    * Sets the current client name. If the empty string is provided, the name will be unset.
@@ -167,7 +168,7 @@ object SubscriberClient {
    * @param subscription function handling events related to subscriptions
    * @param host server address
    * @param port server port
-   * @param passwordOpt optional server password
+   * @param authOpt optional server authorization credentials
    * @param nameOpt optional client name (available since 2.6.9)
    * @param connectTimeout connection timeout
    * @param receiveTimeoutOpt optional batch receive timeout
@@ -182,7 +183,7 @@ object SubscriberClient {
     subscription: Subscription = RedisConfigDefaults.LoggingSubscription,
     host: String = RedisConfigDefaults.Redis.Host,
     port: Int = RedisConfigDefaults.Redis.Port,
-    passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
+    authOpt: Option[AuthConfig] = RedisConfigDefaults.Redis.AuthOpt,
     nameOpt: Option[String] = RedisConfigDefaults.Redis.NameOpt,
     connectTimeout: FiniteDuration = RedisConfigDefaults.IO.ConnectTimeout,
     receiveTimeoutOpt: Option[FiniteDuration] = RedisConfigDefaults.IO.ReceiveTimeoutOpt,
@@ -196,7 +197,7 @@ object SubscriberClient {
     subscription = subscription,
     host = host,
     port = port,
-    passwordOpt = passwordOpt,
+    authOpt = authOpt,
     nameOpt = nameOpt,
     connectTimeout = connectTimeout,
     receiveTimeoutOpt = receiveTimeoutOpt,

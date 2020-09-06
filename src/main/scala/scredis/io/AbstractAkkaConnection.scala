@@ -4,17 +4,18 @@ import java.util.concurrent.{CountDownLatch, TimeUnit}
 
 import akka.actor._
 import com.typesafe.scalalogging.LazyLogging
-import scredis.protocol.Request
+import scredis.protocol.{AuthConfig, Request}
 import scredis.protocol.requests.ConnectionRequests.{Auth, Quit, Select}
 import scredis.protocol.requests.ServerRequests.{ClientSetName, Shutdown}
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 abstract class AbstractAkkaConnection(
   protected val system: ActorSystem,
   val host: String,
   val port: Int,
-  @volatile protected var passwordOpt: Option[String],
+  @volatile protected var authOpt: Option[AuthConfig],
   @volatile protected var database: Int,
   @volatile protected var nameOpt: Option[String],
   protected val decodersCount: Int,
@@ -32,15 +33,15 @@ abstract class AbstractAkkaConnection(
   
   @volatile protected var isShuttingDown = false
   
-  override implicit val dispatcher = system.dispatcher
+  override implicit val dispatcher: ExecutionContext = system.dispatcher
   
   protected val listenerActor: ActorRef
   
   protected def updateState(request: Request[_]): Unit = request match {
-    case Auth(password) => if (password.isEmpty) {
-      passwordOpt = None
+    case Auth(password, username) => if (password.isEmpty) {
+      authOpt = None
     } else {
-      passwordOpt = Some(password)
+      authOpt = Some(AuthConfig(username, password))
     }
     case Select(db) => database = db
     case ClientSetName(name) => if (name.isEmpty) {
@@ -54,7 +55,7 @@ abstract class AbstractAkkaConnection(
     case _            =>
   }
   
-  protected def getPasswordOpt: Option[String] = passwordOpt
+  protected def getAuthOpt: Option[AuthConfig] = authOpt
   protected def getDatabase: Int = database
   protected def getNameOpt: Option[String] = nameOpt
   
