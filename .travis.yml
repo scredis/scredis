@@ -1,15 +1,14 @@
 language: scala
 
-jdk: oraclejdk8
-
-dist: trusty
+dist: bionic
+os: linux
 
 git:
   depth: false
   quiet: true
 
 services:
-  - redis-server
+  - redis
 
 before_script:
   - redis-server --version
@@ -27,8 +26,6 @@ after_script:
 after_success:
   # - '[[ $TRAVIS_BRANCH == "master" ]] || [[ $TRAVIS_BRANCH =~ ^v[0-9.]+$ ]] && sbt "+ publish"'
   - '[[ $TRAVIS_BRANCH == "master" ]] || [[ $TRAVIS_BRANCH =~ ^v[0-9.]+$ ]] && (sbt "+ publish" && ./sync-with-central.sh)'
-
-sudo: false
 
 cache:
   directories:
