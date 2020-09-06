@@ -10,7 +10,8 @@ object ConnectionRequests {
   object Quit extends ZeroArgCommand("QUIT")
   object Select extends Command("SELECT")
   
-  case class Auth(password: String) extends Request[Unit](Auth, password) {
+  case class Auth(password: String, username: Option[String])
+      extends Request[Unit](Auth, authParams(username, password): _*) {
     override def decode = {  
       case SimpleStringResponse(value) => ()
     }
@@ -40,4 +41,7 @@ object ConnectionRequests {
     }
   }
 
+  private def authParams(username: Option[String], password: String): List[String] = {
+    List(username, Some(password)).flatten
+  }
 }

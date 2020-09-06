@@ -4,6 +4,7 @@ import akka.actor._
 import com.typesafe.config.Config
 import scredis.commands._
 import scredis.io.AkkaNonBlockingConnection
+import scredis.protocol.AuthConfig
 import scredis.util.UniqueNameGenerator
 
 import scala.concurrent.Future
@@ -21,7 +22,7 @@ class Redis private[scredis] (
   systemOrName: Either[ActorSystem, String],
   host: String,
   port: Int,
-  passwordOpt: Option[String],
+  authOpt: Option[AuthConfig],
   database: Int,
   nameOpt: Option[String],
   connectTimeout: FiniteDuration,
@@ -41,7 +42,7 @@ class Redis private[scredis] (
   },
   host = host,
   port = port,
-  passwordOpt = passwordOpt,
+  authOpt = authOpt,
   database = database,
   nameOpt = nameOpt,
   connectTimeout = connectTimeout,
@@ -80,7 +81,7 @@ class Redis private[scredis] (
     BlockingClient(
       host = host,
       port = port,
-      passwordOpt = getPasswordOpt,
+      authOpt = getAuthOpt,
       database = getDatabase,
       nameOpt = getNameOpt,
       connectTimeout = connectTimeout,
@@ -102,7 +103,7 @@ class Redis private[scredis] (
       subscription,
       host = host,
       port = port,
-      passwordOpt = getPasswordOpt,
+      authOpt = getAuthOpt,
       nameOpt = getNameOpt,
       connectTimeout = connectTimeout,
       receiveTimeoutOpt = receiveTimeoutOpt,
@@ -121,7 +122,7 @@ class Redis private[scredis] (
    * 
    * @param host server address
    * @param port server port
-   * @param passwordOpt optional server password
+   * @param authOpt optional server authorization credentials
    * @param database database index to select
    * @param nameOpt optional client name (available since 2.6.9)
    * @param connectTimeout connection timeout
@@ -138,7 +139,7 @@ class Redis private[scredis] (
   def this(
     host: String = RedisConfigDefaults.Redis.Host,
     port: Int = RedisConfigDefaults.Redis.Port,
-    passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
+    authOpt: Option[AuthConfig] = RedisConfigDefaults.Redis.AuthOpt,
     database: Int = RedisConfigDefaults.Redis.Database,
     nameOpt: Option[String] = RedisConfigDefaults.Redis.NameOpt,
     connectTimeout: FiniteDuration = RedisConfigDefaults.IO.ConnectTimeout,
@@ -156,7 +157,7 @@ class Redis private[scredis] (
     systemOrName = Right(actorSystemName),
     host = host,
     port = port,
-    passwordOpt = passwordOpt,
+    authOpt = authOpt,
     database = database,
     nameOpt = nameOpt,
     connectTimeout = connectTimeout,
@@ -174,7 +175,7 @@ class Redis private[scredis] (
   def this(config: RedisConfig, subscription: Subscription) = this(
     host = config.Redis.Host,
     port = config.Redis.Port,
-    passwordOpt = config.Redis.PasswordOpt,
+    authOpt = config.Redis.AuthOpt,
     database = config.Redis.Database,
     nameOpt = config.Redis.NameOpt,
     connectTimeout = config.IO.ConnectTimeout,
@@ -248,7 +249,7 @@ class Redis private[scredis] (
    *
    * @since 1.0.0
    */
-  override def auth(password: String): Future[Unit] = {
+  override def auth(password: String, username: Option[String]): Future[Unit] = {
     if (shouldShutdownBlockingClient) {
       try {
         blocking.auth(password)(defaultBlockingTimeout)
@@ -257,7 +258,7 @@ class Redis private[scredis] (
       }
     }
     val future = if (shouldShutdownSubscriberClient) {
-      subscriber.auth(password)
+      subscriber.auth(password, username)
     } else {
       Future.successful(())
     }
@@ -366,7 +367,7 @@ object Redis {
    * 
    * @param host server address
    * @param port server port
-   * @param passwordOpt optional server password
+   * @param authOpt optional server authorization credentials
    * @param database database index to select
    * @param nameOpt optional client name (available since 2.6.9)
    * @param connectTimeout connection timeout
@@ -383,7 +384,7 @@ object Redis {
   def apply(
     host: String = RedisConfigDefaults.Redis.Host,
     port: Int = RedisConfigDefaults.Redis.Port,
-    passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
+    authOpt: Option[AuthConfig] = RedisConfigDefaults.Redis.AuthOpt,
     database: Int = RedisConfigDefaults.Redis.Database,
     nameOpt: Option[String] = RedisConfigDefaults.Redis.NameOpt,
     connectTimeout: FiniteDuration = RedisConfigDefaults.IO.ConnectTimeout,
@@ -399,7 +400,7 @@ object Redis {
   ): Redis = new Redis(
     host = host,
     port = port,
-    passwordOpt = passwordOpt,
+    authOpt = authOpt,
     database = database,
     nameOpt = nameOpt,
     connectTimeout = connectTimeout,
@@ -471,7 +472,7 @@ object Redis {
    * 
    * @param host server address
    * @param port server port
-   * @param passwordOpt optional server password
+   * @param authOpt optional server authorization credentials
    * @param database database index to select
    * @param nameOpt optional client name (available since 2.6.9)
    * @param connectTimeout connection timeout
@@ -488,7 +489,7 @@ object Redis {
   def withActorSystem(
     host: String = RedisConfigDefaults.Redis.Host,
     port: Int = RedisConfigDefaults.Redis.Port,
-    passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
+    authOpt: Option[AuthConfig] = RedisConfigDefaults.Redis.AuthOpt,
     database: Int = RedisConfigDefaults.Redis.Database,
     nameOpt: Option[String] = RedisConfigDefaults.Redis.NameOpt,
     connectTimeout: FiniteDuration = RedisConfigDefaults.IO.ConnectTimeout,
@@ -505,7 +506,7 @@ object Redis {
     systemOrName = Left(system),
     host = host,
     port = port,
-    passwordOpt = passwordOpt,
+    authOpt = authOpt,
     database = database,
     nameOpt = nameOpt,
     connectTimeout = connectTimeout,
@@ -543,7 +544,7 @@ object Redis {
     systemOrName = Left(system),
     host = config.Redis.Host,
     port = config.Redis.Port,
-    passwordOpt = config.Redis.PasswordOpt,
+    authOpt = config.Redis.AuthOpt,
     database = config.Redis.Database,
     nameOpt = config.Redis.NameOpt,
     connectTimeout = config.IO.ConnectTimeout,

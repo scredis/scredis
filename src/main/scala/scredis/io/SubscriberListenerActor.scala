@@ -1,9 +1,8 @@
 package scredis.io
 
-import akka.routing.Broadcast
 import akka.util.ByteString
 import scredis.exceptions._
-import scredis.protocol.{Request, SimpleStringResponse}
+import scredis.protocol.{AuthConfig, Request, SimpleStringResponse}
 import scredis.protocol.requests.ConnectionRequests.{Auth, Echo, Ping, Quit, Select}
 import scredis.protocol.requests.PubSubRequests
 import scredis.{PubSubMessage, Subscription}
@@ -16,7 +15,7 @@ class SubscriberListenerActor(
   subscription: Subscription,
   host: String,
   port: Int,
-  passwordOpt: Option[String],
+  authOpt: Option[AuthConfig],
   nameOpt: Option[String],
   decodersCount: Int,
   receiveTimeoutOpt: Option[FiniteDuration],
@@ -29,7 +28,7 @@ class SubscriberListenerActor(
 ) extends ListenerActor(
   host = host,
   port = port,
-  passwordOpt = passwordOpt,
+  authOpt = authOpt,
   database = 0,
   nameOpt = nameOpt,
   decodersCount = decodersCount,

@@ -37,7 +37,7 @@ abstract class ClusterConnection(
     clusterDownWait: FiniteDuration = RedisConfigDefaults.IO.Cluster.ClusterDownWait,
     systemOpt:Option[ActorSystem] = None,
     failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting,
-    passwordOpt: Option[String] = RedisConfigDefaults.Config.Redis.PasswordOpt
+    authOpt: Option[AuthConfig] = RedisConfigDefaults.Config.Redis.AuthOpt
   ) extends NonBlockingConnection with LazyLogging {
 
   // Int parameter - count number of errors for given connection.
@@ -128,11 +128,22 @@ abstract class ClusterConnection(
   private def makeConnection(server: Server, system:ActorSystem): AkkaNonBlockingConnection = {
     logger.info("Starting new connection to server {}", server)
     new AkkaNonBlockingConnection(
-      system = system, host = server.host, port = server.port, passwordOpt = passwordOpt,
-      database = 0, nameOpt = None, decodersCount = 2,
-      receiveTimeoutOpt, connectTimeout, maxWriteBatchSize, tcpSendBufferSizeHint,
-      tcpReceiveBufferSizeHint, akkaListenerDispatcherPath, akkaIODispatcherPath,
-      akkaDecoderDispatcherPath, failCommandOnConnecting
+      system = system,
+      host = server.host,
+      port = server.port,
+      authOpt = authOpt,
+      database = 0,
+      nameOpt = None,
+      decodersCount = 2,
+      receiveTimeoutOpt,
+      connectTimeout,
+      maxWriteBatchSize,
+      tcpSendBufferSizeHint,
+      tcpReceiveBufferSizeHint,
+      akkaListenerDispatcherPath,
+      akkaIODispatcherPath,
+      akkaDecoderDispatcherPath,
+      failCommandOnConnecting
     ) {
       watchTermination()
     }

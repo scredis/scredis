@@ -2,6 +2,7 @@ package scredis
 
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
+import scredis.protocol.AuthConfig
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
@@ -49,9 +50,16 @@ class RedisConfig(config: Config = ConfigFactory.load().getConfig("scredis")) {
     private implicit val config = mergedConfig.getConfig("redis")
     val Host = config.getString("host")
     val Port = config.getInt("port")
-    val PasswordOpt = optionally("password") {
+
+    private val PasswordOpt = optionally("password") {
       config.getString("password")
     }
+    private val UsernameOpt = optionally("username") {
+      config.getString("username")
+    }
+
+    val AuthOpt = PasswordOpt.map(password => AuthConfig(UsernameOpt, password))
+
     val Database = config.getInt("database")
     val NameOpt = optionally("name") {
       config.getString("name")

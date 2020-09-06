@@ -7,6 +7,8 @@ git:
   depth: false
   quiet: true
 
+# travis uses version 6.0.5
+# grokzen/redis-cluster at this moment support latest=6.0.1
 services:
   - redis
 
@@ -14,7 +16,7 @@ before_script:
   - redis-server --version
   - mkdir -p /tmp/redis-6380
   - redis-server ./src/test/resources/redis-6380.conf &
-  - docker run --rm --name redis -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003 -p 7004:7004 -p 7005:7005 grokzen/redis-cluster:4.0.11
+  - docker run --rm --name redis -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003 -p 7004:7004 -p 7005:7005 grokzen/redis-cluster:6.0.1
 
 script:
   - sbt +compile

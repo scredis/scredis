@@ -1,5 +1,7 @@
 package scredis.examples
 
+import scredis.protocol.AuthConfig
+
 import scala.concurrent.Future
 
 object BlockingClientExample {
@@ -42,7 +44,7 @@ object ClientInitializationExample {
   val clientWithParameters = Client(
     host = "192.168.1.1",
     port = 6380,
-    passwordOpt = Some("foobar")
+    authOpt = Some(AuthConfig(username = Some("userX"), password = "foobar"))
   )
 
   // Explicitly load a config instance

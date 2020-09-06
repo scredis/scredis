@@ -9,6 +9,7 @@ import scredis.tags._
 import scredis.util.TestUtils._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import scredis.protocol.AuthConfig
 
 class ServerCommandsSpec extends AnyWordSpec
   with GivenWhenThen
@@ -18,9 +19,9 @@ class ServerCommandsSpec extends AnyWordSpec
   with ScalaFutures {
   
   private val client = Client()
-  private val client1 = Client(port = 6380, passwordOpt = Some("foobar"))
-  private val client2 = Client(port = 6380, passwordOpt = Some("foobar"))
-  private val client3 = Client(port = 6380, passwordOpt = Some("foobar"))
+  private val client1 = Client(port = 6380, authOpt = Some(AuthConfig(None, "foobar")))
+  private val client2 = Client(port = 6380, authOpt = Some(AuthConfig(None, "foobar")))
+  private val client3 = Client(port = 6380, authOpt = Some(AuthConfig(None, "foobar")))
 
   private val clients = List(client, client1, client2, client3)
 

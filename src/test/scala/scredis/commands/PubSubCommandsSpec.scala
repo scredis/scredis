@@ -17,6 +17,7 @@ import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import scredis.protocol.AuthConfig
 
 class PubSubCommandsSpec extends AnyWordSpec
   with GivenWhenThen
@@ -57,11 +58,11 @@ class PubSubCommandsSpec extends AnyWordSpec
     case e: scredis.PubSubMessage.Error => fail(s"Scredis received error $e")
   }
 
-  private val publisher = Client(port = 6380, passwordOpt = Some("foobar"))
-  private val client = SubscriberClient(port = 6380, passwordOpt = Some("foobar"), subscription = subscriptionHandler)
-  private val client2 = SubscriberClient(port = 6380, passwordOpt = Some("foobar"), subscription = subscriptionHandler)
-  private val client3 = SubscriberClient(port = 6380, passwordOpt = Some("foobar"), subscription = subscriptionHandler)
-  private val client4 = SubscriberClient(port = 6380, passwordOpt = Some("foobar"), subscription = subscriptionHandler)
+  private val publisher = Client(port = 6380, authOpt = Some(AuthConfig(None, "foobar")))
+  private val client = SubscriberClient(port = 6380, authOpt = Some(AuthConfig(None, "foobar")), subscription = subscriptionHandler)
+  private val client2 = SubscriberClient(port = 6380, authOpt = Some(AuthConfig(None, "foobar")), subscription = subscriptionHandler)
+  private val client3 = SubscriberClient(port = 6380, authOpt = Some(AuthConfig(None, "foobar")), subscription = subscriptionHandler)
+  private val client4 = SubscriberClient(port = 6380, authOpt = Some(AuthConfig(None, "foobar")), subscription = subscriptionHandler)
 
   private val SomeValue = "HelloWorld!虫àéç蟲"
 
@@ -315,7 +316,7 @@ class PubSubCommandsSpec extends AnyWordSpec
 
       publisher.configSet("requirepass", "").futureValue should be (())
 
-      client.auth("").futureValue should be (())
+      client.auth("", None).futureValue should be (())
 
       subscribes.poll(2) should have size (2)
       pSubscribes.poll(3) should have size (3)
@@ -335,7 +336,7 @@ class PubSubCommandsSpec extends AnyWordSpec
       )
 
       publisher.configSet("requirepass", "foobar").futureValue should be (())
-      client.auth("foobar").futureValue should be (())
+      client.auth("foobar", None).futureValue should be (())
 
       client.unsubscribe().futureValue should be (4)
       client.pUnsubscribe().futureValue should be (0)
@@ -343,9 +344,11 @@ class PubSubCommandsSpec extends AnyWordSpec
 
     "fail when wrong password provided" in {
       clear()
-      client2.auth("wrongpass").failed.futureValue shouldBe an[RedisErrorResponseException]
-      client2.auth("foobar").futureValue should be (())
+      client2.auth("wrongpass", None).failed.futureValue shouldBe an[RedisErrorResponseException]
+      client2.auth("foobar", None).futureValue should be (())
     }
+
+    //TODO: ADD TESTS FOR USERNAME auth
   }
 
   "Automatic re-subscribe" when {

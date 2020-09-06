@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import scredis.commands._
 import scredis.io.AkkaNonBlockingConnection
+import scredis.protocol.AuthConfig
 
 import scala.concurrent.duration._
 
@@ -12,7 +13,7 @@ import scala.concurrent.duration._
  * 
  * @param host server address
  * @param port server port
- * @param passwordOpt optional server password
+ * @param authOpt optional server authorization credentials
  * @param database database index to select
  * @param nameOpt optional client name (available since 2.6.9)
  * @param connectTimeout connection timeout
@@ -31,7 +32,7 @@ import scala.concurrent.duration._
 class Client(
   host: String = RedisConfigDefaults.Redis.Host,
   port: Int = RedisConfigDefaults.Redis.Port,
-  passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
+  authOpt: Option[AuthConfig] = RedisConfigDefaults.Redis.AuthOpt,
   database: Int = RedisConfigDefaults.Redis.Database,
   nameOpt: Option[String] = RedisConfigDefaults.Redis.NameOpt,
   connectTimeout: FiniteDuration = RedisConfigDefaults.IO.ConnectTimeout,
@@ -47,7 +48,7 @@ class Client(
   system = system,
   host = host,
   port = port,
-  passwordOpt = passwordOpt,
+  authOpt = authOpt,
   database = database,
   nameOpt = nameOpt,
   connectTimeout = connectTimeout,
@@ -83,7 +84,7 @@ class Client(
   def this(config: RedisConfig)(implicit system: ActorSystem) = this(
     host = config.Redis.Host,
     port = config.Redis.Port,
-    passwordOpt = config.Redis.PasswordOpt,
+    authOpt = config.Redis.AuthOpt,
     database = config.Redis.Database,
     nameOpt = config.Redis.NameOpt,
     connectTimeout = config.IO.ConnectTimeout,
@@ -153,7 +154,7 @@ object Client {
    * 
    * @param host server address
    * @param port server port
-   * @param passwordOpt optional server password
+   * @param authOpt optional server authorization credentials
    * @param database database index to select
    * @param nameOpt optional client name (available since 2.6.9)
    * @param connectTimeout connection timeout
@@ -168,7 +169,7 @@ object Client {
   def apply(
     host: String = RedisConfigDefaults.Redis.Host,
     port: Int = RedisConfigDefaults.Redis.Port,
-    passwordOpt: Option[String] = RedisConfigDefaults.Redis.PasswordOpt,
+    authOpt: Option[AuthConfig] = RedisConfigDefaults.Redis.AuthOpt,
     database: Int = RedisConfigDefaults.Redis.Database,
     nameOpt: Option[String] = RedisConfigDefaults.Redis.NameOpt,
     connectTimeout: FiniteDuration = RedisConfigDefaults.IO.ConnectTimeout,
@@ -183,7 +184,7 @@ object Client {
   )(implicit system: ActorSystem): Client = new Client(
     host = host,
     port = port,
-    passwordOpt = passwordOpt,
+    authOpt = authOpt,
     database = database,
     nameOpt = nameOpt,
     connectTimeout = connectTimeout,

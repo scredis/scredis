@@ -25,7 +25,7 @@ trait ConnectionCommands { self: NonBlockingConnection =>
    *
    * @since 1.0.0
    */
-  def auth(password: String): Future[Unit] = send(Auth(password))
+  def auth(password: String, username: Option[String] = None): Future[Unit] = send(Auth(password, username))
   
   /**
    * Echoes the given string on the server.
