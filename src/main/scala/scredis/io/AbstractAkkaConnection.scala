@@ -48,7 +48,9 @@ abstract class AbstractAkkaConnection(
     } else {
       nameOpt = Some(name)
     }
-    case Quit() | Shutdown(_) => isShuttingDown = true
+    case Quit() | Shutdown(_) =>
+      logger.info(s"Shutting down connection to ${host}:${port}")
+      isShuttingDown = true
     case _            =>
   }
   
@@ -83,12 +85,14 @@ abstract class AbstractAkkaConnection(
     shutdownLatch.getCount == 0
 }
 
-class WatchActor(actor: ActorRef, shutdownLatch: CountDownLatch) extends Actor {
+class WatchActor(actor: ActorRef, shutdownLatch: CountDownLatch) extends Actor with ActorLogging {
+  context.watch(actor)
+
   def receive: Receive = {
-    case Terminated(_) => {
+    case Terminated(_) =>
+      log.info("AkkaConnection actor terminated {}", actor)
       shutdownLatch.countDown()
       context.stop(self)
-    }
   }
-  context.watch(actor)
+
 }

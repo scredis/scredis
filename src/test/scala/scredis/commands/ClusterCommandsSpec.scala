@@ -1,12 +1,14 @@
 package scredis.commands
 
 import org.scalacheck.Gen
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scredis.exceptions.RedisErrorResponseException
 import scredis.protocol.Protocol
 import scredis.protocol.requests.ClusterRequests._
+import scredis.util.TestUtils._
 import scredis.{ClusterSlotRange, RedisCluster, Server}
 
 import scala.concurrent.duration._
@@ -16,11 +18,12 @@ import org.scalatest.wordspec.AnyWordSpec
 class ClusterCommandsSpec extends AnyWordSpec
   with Matchers
   with ScalaFutures
+  with BeforeAndAfterAll
   with ScalaCheckDrivenPropertyChecks
   with TableDrivenPropertyChecks {
 
 
-  private val cluster = RedisCluster((7000 to 7005).map(port => Server("localhost",port)))
+  private val cluster: RedisCluster = RedisCluster((7000 to 7005).map(port => Server("localhost",port)))
 
   private val slots = Gen.choose(0L, Protocol.CLUSTER_HASHSLOTS.toLong - 1)
 
@@ -118,4 +121,8 @@ class ClusterCommandsSpec extends AnyWordSpec
   }
 
   // effecty commands elided ... they are somewhat harder to test properly because they change cluster state
+
+  override def afterAll(): Unit = {
+    cluster.quit().!
+  }
 }
