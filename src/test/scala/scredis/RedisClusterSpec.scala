@@ -1,5 +1,7 @@
 package scredis
 
+import scredis.util.TestUtils._
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
@@ -10,13 +12,14 @@ import org.scalatest.wordspec.AnyWordSpec
 class RedisClusterSpec extends AnyWordSpec
   with Matchers
   with ScalaFutures
+  with BeforeAndAfterAll
   with ScalaCheckDrivenPropertyChecks {
 
   val keys = org.scalacheck.Arbitrary.arbString.arbitrary
 
   // we assume there is a local cluster started on ports 7000 - 7005
   // see testing.md
-  lazy val cluster = RedisCluster(Server("localhost",7000))
+  lazy val cluster: RedisCluster = RedisCluster(Server("localhost",7000))
 
   val badSeed1 = Server("localhost",7777)
   val badSeed2 = Server("localhost",2302)
@@ -70,5 +73,9 @@ class RedisClusterSpec extends AnyWordSpec
   }
 
   // TODO basic test for each supported / unsupported command
+
+  override def afterAll(): Unit = {
+    cluster.quit().!
+  }
 
 }

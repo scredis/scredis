@@ -40,16 +40,22 @@ abstract class ClusterConnection(
     passwordOpt: Option[String] = RedisConfigDefaults.Config.Redis.PasswordOpt
   ) extends NonBlockingConnection with LazyLogging {
 
+  // Int parameter - count number of errors for given connection.
+  // When defined threshold is reached connection to this server is removed and no longer used.
   type CONNECTIONS = Map[Server, (AkkaNonBlockingConnection, Int)]
 
   private val maxHashMisses = RedisConfigDefaults.Redis.MaxClusterHashMisses
   private val maxConnectionMisses = 3
-  private val deadConnectionRemovalInterval: FiniteDuration = 1.minutes
 
-  private val system = {
+  // Externally provided ActorSystem must be closed by caller.
+  // Only internally created ActorSystem is stopped automatically on shutdown.
+  private val systemState: ActorSystemState = {
     val systemName = RedisConfigDefaults.IO.Akka.ActorSystemName
-    systemOpt.getOrElse(ActorSystem(UniqueNameGenerator.getUniqueName(systemName)))
+    systemOpt.map(ActorSystemState(_, shouldTerminate = false))
+      .getOrElse(ActorSystemState(ActorSystem(UniqueNameGenerator.getUniqueName(systemName)), shouldTerminate = true))
   }
+
+  private def system: ActorSystem = systemState.system
 
   private val scheduler = system.scheduler
 
@@ -66,10 +72,6 @@ abstract class ClusterConnection(
 
   /** Miss counter for hashSlots accesses. */
   private var hashMisses = 0
-
-  private[scredis] var connectionsToClose:Set[AkkaNonBlockingConnection] = Set.empty
-
-  scheduler.schedule(deadConnectionRemovalInterval, deadConnectionRemovalInterval)(closeDeadConnections)
 
   // bootstrapping: init with info from cluster
   // I guess is it okay to to a blocking await here? or move it to a factory method?
@@ -124,13 +126,16 @@ abstract class ClusterConnection(
 
   /** Creates a new connection to a server. */
   private def makeConnection(server: Server, system:ActorSystem): AkkaNonBlockingConnection = {
+    logger.info("Starting new connection to server {}", server)
     new AkkaNonBlockingConnection(
       system = system, host = server.host, port = server.port, passwordOpt = passwordOpt,
       database = 0, nameOpt = None, decodersCount = 2,
       receiveTimeoutOpt, connectTimeout, maxWriteBatchSize, tcpSendBufferSizeHint,
       tcpReceiveBufferSizeHint, akkaListenerDispatcherPath, akkaIODispatcherPath,
       akkaDecoderDispatcherPath, failCommandOnConnecting
-    ) {}
+    ) {
+      watchTermination()
+    }
   }
 
   /** Delay a Future-returning operation. */
@@ -142,7 +147,6 @@ abstract class ClusterConnection(
     delayedF.future
   }
 
-
   /**
    * Send a Redis request object and handle cluster specific error cases
    * @param request request object
@@ -152,13 +156,15 @@ abstract class ClusterConnection(
    * @tparam A response type
    * @return
    */
-  private def send[A](request: Request[A], server: Server,
+  private def send[A](request: Request[A],
+                      server: Server,
                       triedServers: Set[Server] = Set.empty,
-                      retry: Int = maxRetries, remainingTimeout: Duration = connectTimeout,
+                      retry: Int = maxRetries,
+                      remainingTimeout: Duration = connectTimeout,
                       error: Option[RedisException] = None): Future[A] = {
     if (retry <= 0) Future.failed(RedisIOException(s"Gave up on request after $maxRetries retries: $request", error.orNull))
     else {
-      val (connection,_) = connections.getOrElse(server, createConnectionIfMissing(server))
+      val connection = connections.getOrElse(server, createConnectionIfMissing(server))._1
 
       // handle cases that should be retried (MOVE, ASK, TRYAGAIN)
       connection.send(request).recoverWith {
@@ -194,7 +200,7 @@ abstract class ClusterConnection(
           updateServerErrors(server)
           val nextTriedServers = triedServers + server
           // try any server that isn't one we tried already
-          connections.keys.find { s => !nextTriedServers.contains(s)  } match {
+          connections.keys.find { s => !nextTriedServers.contains(s) } match {
             case Some(nextServer) => send(request, nextServer, nextTriedServers, retry, remainingTimeout, Option(err))
             case None => Future.failed(RedisIOException("No valid connection available.", err))
           }
@@ -202,7 +208,7 @@ abstract class ClusterConnection(
     }
   }
 
-  private def updateHashMisses(slot: Int, newServer: Server) = this.synchronized {
+  private def updateHashMisses(slot: Int, newServer: Server): Unit = this.synchronized {
     // I believe it is safe to synchronize only updates to hashSlots.
     // If another concurrent read is outdated it will be redirected anyway and potentially repeat the update.
     hashMisses += 1
@@ -222,13 +228,13 @@ abstract class ClusterConnection(
       (con, errors) <- connections.get(server)
     } {
       val nextConnections =
-        if (errors >= maxConnectionMisses) removeServerFromConnectionsUnsafe(server)
-        else connections.updated(server, (con,errors+1))
+        if (errors >= maxConnectionMisses) removeServerFromConnectionsUnsafe(con, server)
+        else connections.updated(server, (con, errors + 1))
 
       this.connections =
         if (nextConnections.isEmpty) {
           // TODO how quickly will this happen when a node is failing?
-          // will we have a constant slew of reinit attempts when all is kaput?
+          // will we have a constant slew of re-init attempts when all is kaput?
           logger.warn(
             "No cluster node connection alive. " +
             s"Attempting to recover with initial node configuration: $nodes")
@@ -242,20 +248,15 @@ abstract class ClusterConnection(
    * Marks the connection to be closed later.
    * Returns new [[CONNECTIONS]] with the server removed
    * */
-  private def removeServerFromConnectionsUnsafe(server: Server): CONNECTIONS = {
-    val connToRemove  = connections(server)._1
-    connectionsToClose = connectionsToClose + connToRemove
+  private def removeServerFromConnectionsUnsafe(connToRemove: AkkaNonBlockingConnection, server: Server): CONNECTIONS = {
+    closeConnection(connToRemove).onComplete { result =>
+      logger.info(s"Connection to ${connToRemove.host}:${connToRemove.port} closed with result $result")
+    }
     connections - server
   }
 
-  private def closeDeadConnections = this.synchronized{
-      /** First filter out connections that have already been closed */
-      connectionsToClose = connectionsToClose.filter(conn => !conn.isTerminated)
-      connectionsToClose.foreach(closeConnection)
-    }
-
   private def closeConnection(connToRemove: NonBlockingConnection): Future[Unit] = {
-    logger.info("closing connection {}",connToRemove )
+    logger.info("closing connection {}", connToRemove)
     val req = Quit()
     connToRemove.send(req)
     req.future
@@ -270,9 +271,9 @@ abstract class ClusterConnection(
       connections.get(server) match {
         case Some(conn) => conn
         case None =>
-          val con = makeConnection(server, system)
-          connections = connections.updated(server, (con, 0))
-          (con,0)
+          val con = (makeConnection(server, system), 0)
+          connections = connections.updated(server, con)
+          con
       }
     }
 
@@ -305,12 +306,29 @@ abstract class ClusterConnection(
         Future.failed(RedisInvalidArgumentException("This command is not supported for clusters"))
     }
 
-  def quit(): Future[Unit] =
-    // Shut down all connections
-    Future.traverse(connections.toSeq) { case (server: Server, (connection: AkkaNonBlockingConnection, _)) =>
+  def quit(): Future[Unit] = {
+    val toCloseConnections = this.synchronized {
+      val cons = connections.values.map(_._1)
+      connections = Map.empty
+      cons
+    }
+    val result = Future.traverse(toCloseConnections) { connection =>
+      val f = closeConnection(connection)
       connection.awaitTermination()
-      closeConnection(connection)
-    }.map(_ => ())
+      f
+    }.flatMap(_ => {
+      if (systemState.shouldTerminate) {
+        systemState.system.terminate()
+        systemState.system.whenTerminated.map(_ => ())
+      } else {
+        Future.successful(())
+      }
+    })
+    result.onComplete(r => logger.info("RedisCluster stopped with result {}", r))
+    result
+  }
 
   // TODO at init: fetch all hash slot-node associations: CLUSTER SLOTS
 }
+
+case class ActorSystemState(system: ActorSystem, shouldTerminate: Boolean)
