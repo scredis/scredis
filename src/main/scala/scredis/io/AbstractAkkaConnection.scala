@@ -78,7 +78,9 @@ abstract class AbstractAkkaConnection(
       shutdownLatch.await()
     }
   }
-  
+
+  def isTerminated: Boolean =
+    shutdownLatch.getCount == 0
 }
 
 class WatchActor(actor: ActorRef, shutdownLatch: CountDownLatch) extends Actor {
