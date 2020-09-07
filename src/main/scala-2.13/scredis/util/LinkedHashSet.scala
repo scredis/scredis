@@ -97,21 +97,21 @@ object LinkedHashSet {
 
   class LinkedHashSetBuilder[A]() extends mutable.Builder[A, LinkedHashSet[A]] {
     protected var elems: MLinkedHashSet[A] = MLinkedHashSet.empty
-    def addOne(x: A): this.type = { elems += x; this }
-    def clear(): Unit = { elems = MLinkedHashSet.empty }
-    def result: LinkedHashSet[A] = new LinkedHashSet[A](elems.toList: _*)
+    override def addOne(x: A): this.type = { elems += x; this }
+    override def clear(): Unit = { elems = MLinkedHashSet.empty }
+    override def result(): LinkedHashSet[A] = new LinkedHashSet[A](elems.toList: _*)
   }
 
   implicit def linkedHashSetFactory[A]: Factory[A, LinkedHashSet[A]] = new Factory[A, LinkedHashSet[A]] {
     def apply(from: Nothing): mutable.Builder[A, LinkedHashSet[A]] = throw new UnsupportedOperationException()
 
-    def apply(): mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]
+    def apply(): mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]()
 
-    def fromSpecific(it: IterableOnce[A]): LinkedHashSet[A] = new LinkedHashSetBuilder[A].addAll(it).result
+    def fromSpecific(it: IterableOnce[A]): LinkedHashSet[A] = new LinkedHashSetBuilder[A]().addAll(it).result()
 
-    def newBuilder: mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]
+    def newBuilder: mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]()
   }
 
-  def newBuilder[A]: mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]
+  def newBuilder[A]: mutable.Builder[A, LinkedHashSet[A]] = new LinkedHashSetBuilder[A]()
 }
 

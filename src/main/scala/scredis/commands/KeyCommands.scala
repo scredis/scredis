@@ -2,8 +2,9 @@ package scredis.commands
 
 import scala.language.postfixOps
 import scredis.io.NonBlockingConnection
+import scredis.protocol.AuthConfig
 import scredis.protocol.requests.KeyRequests._
-import scredis.serialization.{ Reader, Writer }
+import scredis.serialization.{Reader, Writer}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -91,6 +92,7 @@ trait KeyCommands { self: NonBlockingConnection =>
    * @param host destination host
    * @param port destination port
    * @param database destination database
+   * @param authOpt destination server authorization credentials
    * @param timeout timeout duration, up to milliseconds precision
    * @param copy if $true, do not remove the key from the local instance
    * @param replace if $true, replace existing key on the remote instance
@@ -103,7 +105,8 @@ trait KeyCommands { self: NonBlockingConnection =>
     host: String,
     port: Int = 6379,
     database: Int = 0,
-    timeout: FiniteDuration = 2 seconds,
+    authOpt: Option[AuthConfig] = None,
+    timeout: FiniteDuration = 2.seconds,
     copy: Boolean = false,
     replace: Boolean = false
   ): Future[Unit] = send(
@@ -112,6 +115,7 @@ trait KeyCommands { self: NonBlockingConnection =>
       host = host,
       port = port,
       database = database,
+      authOpt = authOpt,
       timeout = timeout,
       copy = copy,
       replace = replace

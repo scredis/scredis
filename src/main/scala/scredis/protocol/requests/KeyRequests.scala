@@ -120,6 +120,7 @@ object KeyRequests {
     host: String,
     port: Int,
     database: Int,
+    authOpt: Option[AuthConfig],
     timeout: FiniteDuration,
     copy: Boolean,
     replace: Boolean
@@ -127,6 +128,11 @@ object KeyRequests {
     Migrate,
     {
       val args = ListBuffer[Any](host, port, key, database, timeout.toMillis)
+      authOpt match {
+        case Some(AuthConfig(Some(username), password)) => args ++= List("AUTH2", username, password)
+        case Some(AuthConfig(None, password)) => args ++= List("AUTH", password)
+        case None => ()
+      }
       if (copy) {
         args += "COPY"
       }
@@ -137,7 +143,7 @@ object KeyRequests {
     }: _*
   ) with Key {
     override def decode = {
-      case s: SimpleStringResponse => ()
+      case SimpleStringResponse(_) => ()
     }
   }
   

@@ -437,16 +437,16 @@ class SetCommandsSpec extends AnyWordSpec
         client.sAdd("SET", "A", "B", "C")
 
         val member1 = client.sPop("SET").futureValue
-        member1 should contain oneOf ("A", "B", "C")
+        member1 should contain.oneOf("A", "B", "C")
         client.sIsMember("SET", member1.get).futureValue should be (false)
 
         val member2 = client.sPop("SET").futureValue
-        member2 should contain oneOf ("A", "B", "C")
+        member2 should contain.oneOf("A", "B", "C")
         member2 should not contain (member1)
         client.sIsMember("SET", member2.get).futureValue should be (false)
 
         val member3 = client.sPop("SET").futureValue
-        member3 should contain oneOf ("A", "B", "C")
+        member3 should contain.oneOf("A", "B", "C")
         member3 should not contain (member1)
         member3 should not contain (member2)
         client.sIsMember("SET", member3.get).futureValue should be (false)
@@ -463,7 +463,7 @@ class SetCommandsSpec extends AnyWordSpec
         val mbr = client.sPopCount("SET_C1", 1).futureValue
         client.sCard("SET_C1").futureValue should be(2)
         mbr should have size(1)
-        mbr should contain oneOf ("A", "B", "C")
+        mbr should contain.oneOf("A", "B", "C")
       }
 
       "return number of elements requested by count" in {
@@ -499,7 +499,7 @@ class SetCommandsSpec extends AnyWordSpec
         client.sAdd("SET", "B")
         client.sAdd("SET", "C")
 
-        client.sRandMember("SET").futureValue should contain oneOf ("A", "B", "C")
+        client.sRandMember("SET").futureValue should contain.oneOf("A", "B", "C")
         client.sCard("SET").futureValue should be (3)
         client.del("SET")
       }

@@ -43,29 +43,29 @@ class DecoderActor(subscriptionOption: Option[Subscription]) extends Actor with 
           val result = Protocol.decodePubSubResponse(Protocol.decode(buffer))
           result match {
             case Left(ErrorResponse(message)) =>
-              sender ! SubscriberListenerActor.Fail(message)
+              sender() ! SubscriberListenerActor.Fail(message)
 
             case Right(msgEither) => msgEither match {
               case Right(m: PubSubMessage.Subscribe) =>
-                sender ! SubscriberListenerActor.Complete(m)
+                sender() ! SubscriberListenerActor.Complete(m)
 
               case Right(m: PubSubMessage.PSubscribe) =>
-                sender ! SubscriberListenerActor.Complete(m)
+                sender() ! SubscriberListenerActor.Complete(m)
 
               case Right(m: PubSubMessage.Unsubscribe) =>
-                sender ! SubscriberListenerActor.Complete(m)
+                sender() ! SubscriberListenerActor.Complete(m)
 
               case Right(m: PubSubMessage.PUnsubscribe) =>
-                sender ! SubscriberListenerActor.Complete(m)
+                sender() ! SubscriberListenerActor.Complete(m)
 
               case Right(m: PubSubMessage.Error) =>
-                sender ! SubscriberListenerActor.Complete(m)
+                sender() ! SubscriberListenerActor.Complete(m)
 
               case Right(m: PubSubMessage.Message) =>
               case Right(m: PubSubMessage.PMessage) =>
 
               case Left(value) =>
-                sender ! SubscriberListenerActor.Confirm(value)
+                sender() ! SubscriberListenerActor.Confirm(value)
             }
           }
           result match {
