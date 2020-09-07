@@ -139,7 +139,7 @@ class IOActor(
   def connecting: Receive = {
     case Connected(remoteConnected, localAddress) =>
       log.info(s"Connected to $remoteConnected from $localAddress")
-      connection = sender
+      connection = sender()
       connection ! Register(listenerActor)
       context.watch(connection)
       listenerActor ! ListenerActor.Connected

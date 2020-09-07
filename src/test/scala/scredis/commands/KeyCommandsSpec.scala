@@ -13,6 +13,7 @@ import scala.concurrent.duration._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import scredis.protocol.AuthConfig
+import scredis.protocol.requests.KeyRequests
 
 class KeyCommandsSpec extends AnyWordSpec
   with GivenWhenThen
@@ -24,8 +25,6 @@ class KeyCommandsSpec extends AnyWordSpec
   private val client = Client()
   private val client2 = Client(port = 6380, authOpt = Some(AuthConfig(None, "foobar")))
   private val SomeValue = "HelloWorld!虫àéç蟲"
-
-  private var dumpedValue: Array[Byte] = _
 
   private val clientServerInfo = client.info("server").!
 
@@ -98,15 +97,16 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "deleting a single key that exists" should {
       "delete the key" taggedAs (V100) in {
-        client.set("I-EXIST", "YES")
-        client.del("I-EXIST").futureValue should be (1)
-        client.del("I-EXIST").futureValue should be (0)
+        val testkey = "DEL-I-EXIST"
+        client.set(testkey, "YES").!
+        client.del(testkey).futureValue should be (1)
+        client.del(testkey).futureValue should be (0)
       }
     }
     "deleting multiple keys that partially exist" should {
       "delete the existing keys" taggedAs (V100) in {
-        client.set("I-EXIST", "YES")
-        client.set("I-EXIST-2", "YES")
+        client.set("I-EXIST", "YES").!
+        client.set("I-EXIST-2", "YES").!
         client.del("I-EXIST", "I-EXIST-2", "I-EXIST-3").futureValue should be (2)
         client.del("I-EXIST", "I-EXIST-2", "I-EXIST-3").futureValue should be (0)
       }
@@ -121,10 +121,10 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the key exists" should {
       "return the serialized value for that key" taggedAs (V260) in {
-        client.set("TO-DUMP", SomeValue)
-        val dump = client.dump("TO-DUMP").!
+        val testKey = "TO-DUMP-SVAL"
+        client.set(testKey, SomeValue)
+        val dump = client.dump(testKey).!
         dump should be (defined)
-        dumpedValue = dump.get
       }
     }
   }
@@ -137,7 +137,9 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the key exists" should {
       "return true" taggedAs (V100) in {
-        client.exists("TO-DUMP").futureValue should be (true)
+        val testKey = "KEY-EXISTS"
+        client.set(testKey, SomeValue)
+        client.exists(testKey).futureValue should be (true)
       }
     }
   }
@@ -150,11 +152,12 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the key exists" should {
       "return true and the target key should expire after the ttl" taggedAs (V100) in {
-        client.set("TO-EXPIRE", "HEY")
-        client.expire("TO-EXPIRE", 1).futureValue should be (true)
-        client.get("TO-EXPIRE").futureValue should be (defined)
+        val testKey = "TO-EXPIRE-EXST-TTL-KEY"
+        client.set(testKey, "HEY").!
+        client.expire(testKey, 1).futureValue should be (true)
+        client.get(testKey).futureValue should be (defined)
         Thread.sleep(1050)
-        client.get("TO-EXPIRE").futureValue should be (empty)
+        client.get(testKey).futureValue should be (empty)
       }
     }
   }
@@ -168,12 +171,13 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the key exists" should {
       "return true and the target key should expire after the ttl" taggedAs (V120) in {
-        val unixTimestamp = (System.currentTimeMillis / 1000) + 2
-        client.set("TO-EXPIRE", "HEY")
-        client.expireAt("TO-EXPIRE", unixTimestamp).futureValue should be (true)
-        client.get("TO-EXPIRE").futureValue should be (defined)
-        Thread.sleep(2050)
-        client.get("TO-EXPIRE").futureValue should be (empty)
+        val unixTimestamp = (System.currentTimeMillis / 1000) + 1
+        val testKey = "TO-EXPIREAT-EXST-TTL-KEY"
+        client.set(testKey, "HEY").!
+        client.expireAt(testKey, unixTimestamp).futureValue should be (true)
+        client.get(testKey).futureValue should be (defined)
+        Thread.sleep(1050)
+        client.get(testKey).futureValue should be (empty)
       }
     }
   }
@@ -187,6 +191,7 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the database contains three keys" should {
       "return the keys accordingly" taggedAs (V100) in {
+        client.flushAll()
         client.set("a", "a")
         client.set("ab", "b")
         client.set("abc", "c")
@@ -202,47 +207,81 @@ class KeyCommandsSpec extends AnyWordSpec
   Migrate.toString when {
     "migrating a key to the same instance" should {
       "return an error" taggedAs (V260) in {
-        client.set("TO-MIGRATE", SomeValue)
+        val testkey = "TO-MIGRATE-SAME"
+        client.set(testkey, SomeValue).!
         a [RedisErrorResponseException] should be thrownBy { 
-          client.migrate("TO-MIGRATE", "127.0.0.1", timeout = defaultTimeout).!
+          client.migrate(testkey, "127.0.0.1", client.port, timeout = defaultTimeout).!
         }
       }
     }
     "migrating a key to a non-existing instance" should {
       "return an error" taggedAs (V260) in {
-        a [RedisErrorResponseException] should be thrownBy { 
-          client.migrate("TO-MIGRATE", "127.0.0.1", 6378, timeout = defaultTimeout).!
+        val testkey = "TO-MIGRATE-NE"
+        client.set(testkey, SomeValue).!
+        a [RedisErrorResponseException] should be thrownBy {
+          client.migrate(testkey, "127.0.0.1", 6378, timeout = defaultTimeout).!
         }
       }
     }
+    val auth6380 = AuthConfig(None, "foobar")
+
     "migrating a key to a valid instance" should {
       "succeed" taggedAs (V260) in {
-        // Remove password on 6380
-        client2.configSet("requirepass", "").futureValue should be (())
-        client.migrate("TO-MIGRATE", "127.0.0.1", 6380, timeout = defaultTimeout).futureValue
-        client.exists("TO-MIGRATE").futureValue should be (false)
-        client2.get("TO-MIGRATE").futureValue should contain (SomeValue)
-        // Set password back on 6380
-        client2.configSet("requirepass", "foobar").futureValue should be (())
+        val testkey = "TO-MIGRATE-VALID"
+        client.set(testkey, SomeValue).!
+        client.migrate(testkey, "127.0.0.1", client2.port, authOpt = Some(auth6380)).!
+        client.exists(testkey).futureValue should be(false)
+        client2.get(testkey).futureValue should contain(SomeValue)
       }
     }
     "migrating a key to a valid instance in another database" should {
       "succeed" taggedAs (V260) in {
-        client2.migrate(
-          "TO-MIGRATE", "127.0.0.1", 6379, database = 1, timeout = defaultTimeout
-        ).futureValue
-        client2.exists("TO-MIGRATE").futureValue should be (false)
+        val testkey = "TO-MIGRATE-AD"
+        client2.set(testkey, SomeValue).!
+        client2.migrate(testkey, "127.0.0.1", 6379, database = 1).!
+        client2.exists(testkey).futureValue should be (false)
         client.select(1).futureValue should be (())
-        client.get("TO-MIGRATE").futureValue should contain (SomeValue)
+        client.get(testkey).futureValue should contain (SomeValue)
         client.flushDB().futureValue should be (())
         client.select(0).futureValue should be (())
       }
+      "fail when exists" in {
+        val testkey = "TO-MIGRATE-VALID"
+        client.set(testkey, SomeValue).!
+        client2.set(testkey, "DontOverride").!
+        a [RedisErrorResponseException] should be thrownBy {
+          // ERR Target instance replied with error: BUSYKEY Target key name already exists.
+          client.migrate(testkey, "127.0.0.1", client2.port, authOpt = Some(auth6380)).!
+        }
+      }
     }
     "migrating a key to a valid instance with COPY option enabled" should {
-      "succeed and keep the original key" is (pending)
+      "succeed and keep the original key" in {
+        val testkey = "TO-MIGRATE-COPY"
+        client.set(testkey, SomeValue).!
+        client.migrate(testkey, "127.0.0.1", client2.port, copy = true, authOpt = Some(auth6380)).!
+        client.exists(testkey).futureValue should be (true)
+        client2.exists(testkey).futureValue should be (true)
+      }
     }
     "migrating a key to a valid instance with REPLACE option enabled" should {
-      "succeed and replace the target key" is (pending)
+      "succeed and replace the target key" in {
+        val testkey = "TO-MIGRATE-REPLACE"
+        client.set(testkey, SomeValue).!
+        client2.set(testkey, "WillBeReplaced").!
+        client.migrate(testkey, "127.0.0.1", client2.port, replace = true, authOpt = Some(auth6380)).!
+        client.exists(testkey).futureValue should be (false)
+        client2.get(testkey).futureValue should contain (SomeValue)
+      }
+
+      "succeed when target key not present" in {
+        val testkey = "TO-MIGRATE-REPLACE-NEW"
+        client.set(testkey, SomeValue).!
+        client.migrate(testkey, "127.0.0.1", client2.port, replace = true, authOpt = Some(auth6380)).!
+        client.exists(testkey).futureValue should be (false)
+        client.exists(testkey).futureValue should be (false)
+        client2.get(testkey).futureValue should contain (SomeValue)
+      }
     }
   }
 
@@ -255,23 +294,27 @@ class KeyCommandsSpec extends AnyWordSpec
     "moving a key from database 0 to 1" should {
       Given("that the key does not exist in database 1 yet")
       "succeed" taggedAs (V100) in {
-        client.set("TO-MOVE", SomeValue).futureValue
-        client.move("TO-MOVE", 1).futureValue should be (true)
-        client.exists("TO-MOVE").futureValue should be (false)
-        client.select(1).futureValue
-        client.get("TO-MOVE").futureValue should contain (SomeValue)
+        val testkey = "TO-MOVE"
+        client.set(testkey, SomeValue).!
+        client.move(testkey, 1).futureValue should be (true)
+        client.exists(testkey).futureValue should be (false)
+        client.select(1).!
+        client.get(testkey).futureValue should contain (SomeValue)
       }
       Given("that the key already exists in database 1")
       "fail" taggedAs (V100) in {
-        client.select(0).futureValue
-        client.set("TO-MOVE", SomeValue).futureValue
-        client.move("TO-MOVE", 1).futureValue should be (false)
-        client.exists("TO-MOVE").futureValue should be (true)
+        val testkey = "TO-MOVE-EXISTS"
+        client.select(1).!
+        client.set(testkey, SomeValue).!
+        client.select(0).!
+        client.set(testkey, SomeValue).!
+        client.move(testkey, 1).futureValue should be (false)
+        client.exists(testkey).futureValue should be (true)
         client.flushAll().futureValue
       }
     }
   }
-  
+
   ObjectRefCount.toString when {
     "the object does not exist" should {
       "return None" taggedAs (V223) in {
@@ -280,12 +323,13 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the object exists" should {
       "return its ref count" taggedAs (V223) in {
-        client.set("OBJECT-REF-COUNT", SomeValue)
-        client.objectRefCount("OBJECT-REF-COUNT").futureValue should be (defined)
+        val testkey = "OBJECT-REF-COUNT"
+        client.set(testkey, SomeValue).!
+        client.objectRefCount(testkey).futureValue should be (defined)
       }
     }
   }
-  
+
   ObjectEncoding.toString when {
     "the object does not exist" should {
       "return None" taggedAs (V223) in {
@@ -294,12 +338,12 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the object exists" should {
       "return its encoding" taggedAs (V223) in {
-        client.set("OBJECT-ENCODING", SomeValue)
+        client.set("OBJECT-ENCODING", SomeValue).!
         client.objectEncoding("OBJECT-ENCODING").futureValue should be (defined)
       }
     }
   }
-  
+
   ObjectIdleTime.toString when {
     "the object does not exist" should {
       "return None" taggedAs (V223) in {
@@ -308,8 +352,9 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the object exists" should {
       "return its idle time" taggedAs (V223) in {
-        client.set("OBJECT-IDLE-TIME", SomeValue)
-        client.objectIdleTime("OBJECT-IDLE-TIME").futureValue should be (defined)
+        val testkey = "OBJECT-IDLE-TIME"
+        client.set(testkey, SomeValue).!
+        client.objectIdleTime(testkey).futureValue should be (defined)
       }
     }
   }
@@ -322,20 +367,23 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "persisting a key that has no ttl" should {
       "return false" taggedAs (V220) in {
-        client.set("TO-PERSIST", SomeValue)
-        client.persist("TO-PERSIST").futureValue should be (false)
+        val testkey = "TO-PERSIST-NOTTL"
+        client.set(testkey, SomeValue).!
+        client.persist(testkey).futureValue should be (false)
       }
     }
     "persisting a key that has a ttl" should {
       "return true and the key should not expire" taggedAs (V220) in {
-        client.pExpire("TO-PERSIST", 500)
-        client.persist("TO-PERSIST").futureValue should be (true)
+        val testkey = "TO-PERSIST-TTL"
+        client.set(testkey, SomeValue).!
+        client.pExpire(testkey, 500).!
+        client.persist(testkey).futureValue should be (true)
         Thread.sleep(550)
-        client.exists("TO-PERSIST").futureValue should be (true)
+        client.exists(testkey).futureValue should be (true)
       }
     }
   }
-  
+
   PExpire.toString when {
     "the key does not exist" should {
       "return false" taggedAs (V260) in {
@@ -344,11 +392,12 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the key exists" should {
       "return true and the target key should expire after the ttl" taggedAs (V260) in {
-        client.set("TO-EXPIRE", "HEY")
-        client.pExpire("TO-EXPIRE", 500).futureValue should be (true)
-        client.get("TO-EXPIRE").futureValue should be (defined)
+        val testkey = "TO-EXPIRE-TTL"
+        client.set(testkey, "HEY").!
+        client.pExpire(testkey, 500).futureValue should be (true)
+        client.get(testkey).futureValue should be (defined)
         Thread.sleep(550)
-        client.get("TO-EXPIRE").futureValue should be (empty)
+        client.get(testkey).futureValue should be (empty)
       }
     }
   }
@@ -362,16 +411,17 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the key exists" should {
       "return true and the target key should expire after the ttl" taggedAs (V260) in {
+        val testkey = "TO-EXPIREAT-TTL"
         val unixTimestampMillis = System.currentTimeMillis + 500
-        client.set("TO-EXPIRE", "HEY")
-        client.pExpireAt("TO-EXPIRE", unixTimestampMillis).futureValue should be (true)
-        client.get("TO-EXPIRE").futureValue should be (defined)
+        client.set(testkey, "HEY").!
+        client.pExpireAt(testkey, unixTimestampMillis).futureValue should be (true)
+        client.get(testkey).futureValue should be (defined)
         Thread.sleep(550)
-        client.get("TO-EXPIRE").futureValue should be (empty)
+        client.get(testkey).futureValue should be (empty)
       }
     }
   }
-  
+
   PTTL.toString when {
     "key does not exist" should {
       "return Left(false)" taggedAs (V260) in {
@@ -380,15 +430,18 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "key exists but has no ttl" should {
       "return Left(true)" taggedAs (V280) in {
-        client.set("TO-TTL", SomeValue)
-        client.pTtl("TO-TTL").futureValue should be (Left(true))
+        val testkey = "TO-TTL-NOTSET"
+        client.set(testkey, SomeValue).!
+        client.pTtl(testkey).futureValue should be (Left(true))
       }
     }
     "key exists and has a ttl" should {
       "return None" taggedAs (V260) in {
-        client.pExpire("TO-TTL", 500)
-        client.pTtl("TO-TTL").futureValue.getOrElse(Long.MaxValue) should be <= 500L
-        client.del("TO-TTL")
+        val testkey = "TO-TTL-SET"
+        client.set(testkey, SomeValue).!
+        client.pExpire(testkey, 500).!
+        client.pTtl(testkey).futureValue.getOrElse(Long.MaxValue) should be <= 500L
+        client.del(testkey).!
       }
     }
   }
@@ -396,16 +449,17 @@ class KeyCommandsSpec extends AnyWordSpec
   RandomKey.toString when {
     "the database is empty" should {
       "return None" taggedAs (V100) in {
-        client.flushDB()
+        client.flushDB().!
         client.randomKey().futureValue should be (empty)
       }
     }
     "the database has some keys" should {
       "return None" taggedAs (V100) in {
-        client.set("key1", "value1")
-        client.set("key2", "value2")
-        client.set("key3", "value3")
-        client.randomKey().futureValue should contain oneOf ("key1", "key2", "key3")
+        client.flushDB().!
+        client.set("key1", "value1").!
+        client.set("key2", "value2").!
+        client.set("key3", "value3").!
+        client.randomKey().futureValue should contain.oneOf("key1", "key2", "key3")
       }
     }
   }
@@ -420,13 +474,13 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the source key exists but destination key is identical to source key" should {
       "do nothing if version > 3.2.0" taggedAs (V100) in {
-        val version = clientServerInfo("redis_version") 
+        val version = clientServerInfo("redis_version")
         client.set("sourceKey", SomeValue)
         if (version >= "3.2.0") {
              client.rename("sourceKey", "sourceKey").!
              client.exists("sourceKey").futureValue should be (true)
         } else if (version >= "2.0.0" && version <= "3.0.0") {
-          a [RedisErrorResponseException] should be thrownBy { 
+          a [RedisErrorResponseException] should be thrownBy {
              client.rename("sourceKey", "sourceKey").!
           }
         } else {
@@ -436,17 +490,21 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the source key exists and destination key is different" should {
       "succeed" taggedAs (V100) in {
-        client.rename("sourceKey", "destKey")
-        client.exists("sourceKey").futureValue should be (false)
-        client.get("destKey").futureValue should contain (SomeValue)
+        val (sourceKey, destKey) = ("sourceKeyDiff", "destKeyDiff")
+        client.set(sourceKey, SomeValue).!
+        client.rename(sourceKey, destKey).!
+        client.exists(sourceKey).futureValue should be (false)
+        client.get(destKey).futureValue should contain (SomeValue)
       }
     }
     "the source key exists and destination key is different but already exists" should {
       "succeed and overwrite destKey" taggedAs (V100) in {
-        client.set("sourceKey", "OTHERVALUE")
-        client.rename("sourceKey", "destKey")
-        client.exists("sourceKey").futureValue should be (false)
-        client.get("destKey").futureValue should contain ("OTHERVALUE")
+        val (sourceKey, destKey) = ("sourceKeyOver", "destKeyOver")
+        client.set(sourceKey, "OTHERVALUE").!
+        client.set(destKey, SomeValue).!
+        client.rename(sourceKey, destKey).!
+        client.exists(sourceKey).futureValue should be (false)
+        client.get(destKey).futureValue should contain ("OTHERVALUE")
       }
     }
   }
@@ -454,22 +512,23 @@ class KeyCommandsSpec extends AnyWordSpec
   RenameNX.toString when {
     "the key does not exist" should {
       "return an error" taggedAs (V100) in {
-        client.del("sourceKey")
-        client.del("destKey")
-        a [RedisErrorResponseException] should be thrownBy { 
+        client.del("sourceKey").!
+        client.del("destKey").!
+        a [RedisErrorResponseException] should be thrownBy {
           client.renameNX("sourceKey", "destKey").!
         }
       }
     }
     "the source key exists but destination key is identical to source key" should {
-      val version = clientServerInfo("redis_version") 
+      val version = clientServerInfo("redis_version")
       "return false if ver >= 3.2.0 " taggedAs (V100) in {
-        client.set("sourceKey", SomeValue)
+        val sourceKey = "sourceKeyRN-same"
+        client.set(sourceKey, SomeValue).!
         if (version >= "3.2.0") {
-            client.renameNX("sourceKey", "sourceKey").futureValue should be(false)
+            client.renameNX(sourceKey, sourceKey).futureValue should be(false)
         } else if ( version >= "2.0.0" && version <= "3.0.0") {
-          a [RedisErrorResponseException] should be thrownBy { 
-            client.renameNX("sourceKey", "sourceKey").!
+          a [RedisErrorResponseException] should be thrownBy {
+            client.renameNX(sourceKey, sourceKey).!
           }
         } else {
           "when version unknown" is (pending)
@@ -477,43 +536,54 @@ class KeyCommandsSpec extends AnyWordSpec
       }
     }
     "the source key exists and destination key is different" should {
-      client.set("sourceKey", SomeValue)
       "succeed" taggedAs (V100) in {
-        client.renameNX("sourceKey", "destKey").futureValue should be (true)
-        client.exists("sourceKey").futureValue should be (false)
-        client.get("destKey").futureValue should contain (SomeValue)
+        val (sourceKey, destKey) = ("sourceKeyRN-success", "destKeyRN-success")
+        client.set(sourceKey, SomeValue)
+        client.renameNX(sourceKey, destKey).futureValue should be (true)
+        client.exists(sourceKey).futureValue should be (false)
+        client.get(destKey).futureValue should contain (SomeValue)
       }
     }
     "the source key exists and destination key is different but already exists" should {
       "return an error" taggedAs (V100) in {
-        client.set("sourceKey", "OTHERVALUE")
-        client.renameNX("sourceKey", "destKey").futureValue should be (false)
+        val (sourceKey, destKey) = ("sourceKeyRN-exst", "destKeyRN-exst")
+        client.set(sourceKey, "OTHERVALUE").!
+        client.set(destKey, "OTHERVALUE").!
+        client.renameNX(sourceKey, destKey).futureValue should be (false)
       }
     }
   }
-  
+
   Restore.toString when {
     "the destination key does not exist" should {
       "restore the dumped value" taggedAs (V260) in {
-        client.restore("RESTORED", dumpedValue).futureValue should be (())
-        client.get("RESTORED").futureValue should contain (SomeValue)
-        client.del("RESTORED")
+        val testkey = "RESTORED-KEY"
+        client.set(testkey, SomeValue).!
+        val dump = client.dump(testkey).!
+        client.del(testkey).!
+        client.restore(testkey, dump.get).futureValue should be (())
+        client.get(testkey).futureValue should contain (SomeValue)
+        client.del(testkey).!
       }
     }
     "applying a ttl" should {
       "restore the dumped value which should expire after the ttl" taggedAs (V260) in {
-        client.restore("RESTORED", dumpedValue, Some(defaultTimeout)).futureValue should be (())
-        client.get("RESTORED").futureValue should contain (SomeValue)
+        val testkey = "RESTORED-KEY-TTL"
+        client.set(testkey, SomeValue).!
+        val dump = client.dump(testkey).!
+        client.del(testkey).!
+        client.restore(testkey, dump.get, Some(500.millis)).futureValue should be (())
+        client.get(testkey).futureValue should contain (SomeValue)
         Thread.sleep(600)
-        client.get("RESTORED").futureValue should be (empty)
+        client.get(testkey).futureValue should be (empty)
       }
     }
   }
-  
+
   Scan.toString when {
     "the database is empty" should {
       "return an empty set" taggedAs (V280) in {
-        client.flushDB().futureValue should be (())
+        client.flushDB().!
         val (next, set) = client.scan(0).!
         next should be (0)
         set should be (empty)
@@ -543,7 +613,7 @@ class KeyCommandsSpec extends AnyWordSpec
         full += ("foo" + i)
       }
       val fullList = full.toList
-      
+
       Given("that no pattern is set")
       "return all keys" taggedAs (V280) in {
         val keys = ListBuffer[String]()
@@ -552,8 +622,8 @@ class KeyCommandsSpec extends AnyWordSpec
           val (next, set) = client.scan(cursor).!
           keys ++= set
           cursor = next
-        }
-        while (cursor > 0)
+        } while (cursor > 0)
+
         keys.toList should contain theSameElementsAs fullList
       }
       Given("that a pattern is set")
@@ -564,8 +634,7 @@ class KeyCommandsSpec extends AnyWordSpec
           val (next, set) = client.scan(cursor, matchOpt = Some("foo*")).!
           keys ++= set
           cursor = next
-        }
-        while (cursor > 0)
+        } while (cursor > 0)
         keys.toList should contain theSameElementsAs fullList.filter(_.startsWith("foo"))
       }
       Given("that a pattern is set and count is set to 100")
@@ -579,13 +648,13 @@ class KeyCommandsSpec extends AnyWordSpec
           set.size should be (10)
           keys ++= set
           cursor = next
-        }
-        while (cursor > 0)
+        } while (cursor > 0)
+
         keys.toList should contain theSameElementsAs fullList.filter(_.startsWith("foo"))
       }
     }
   }
-  
+
   Sort.toString when {
     "the key does not exist" should {
       "return None" taggedAs (V100) in {
@@ -601,35 +670,35 @@ class KeyCommandsSpec extends AnyWordSpec
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("1"), Some("3"), Some("5"), Some("2"), Some("4")
         )
-        
+
         client.sort("LIST").futureValue should contain theSameElementsInOrderAs List(
           Some("1"), Some("2"), Some("3"), Some("4"), Some("5")
         )
-        
+
         client.sort[String](
           "LIST", desc = true
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("5"), Some("4"), Some("3"), Some("2"), Some("1")
         )
-        
+
         client.sort[String](
           "LIST", desc = true, limitOpt = Some((1, 2))
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("4"), Some("3")
         )
-        
+
         client.sort(
           "LIST", byOpt = Some("WEIGHT-*")
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("1"), Some("2"), Some("3"), Some("4"), Some("5")
         )
-        
+
         client.sort[String](
           "LIST", get = List("VALUE-*")
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("V1"), Some("V2"), Some("V3"), Some("V4"), Some("V5")
         )
-        
+
         client.sort[String](
           "LIST", get = List("VALUE-*", "WEIGHT-*")
         ).futureValue should contain theSameElementsInOrderAs List(
@@ -652,37 +721,37 @@ class KeyCommandsSpec extends AnyWordSpec
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("A"), Some("C"), Some("E"), Some("B"), Some("D")
         )
-        
+
         client.sort[String](
           "LIST-ALPHA", alpha = true
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("A"), Some("B"), Some("C"), Some("D"), Some("E")
         )
-        
+
         client.sort[String](
           "LIST-ALPHA", alpha = true, desc = true
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("E"), Some("D"), Some("C"), Some("B"), Some("A")
         )
-        
+
         client.sort[String](
           "LIST-ALPHA", alpha = true, desc = true, limitOpt = Some((1, 2))
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("D"), Some("C")
         )
-        
+
         client.sort[String](
           "LIST-ALPHA", alpha = true, byOpt = Some("WEIGHT-*")
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("A"), Some("B"), Some("C"), Some("D"), Some("E")
         )
-        
+
         client.sort[String](
           "LIST-ALPHA", alpha = true, get = List("VALUE-*")
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("VA"), Some("VB"), Some("VC"), Some("VD"), Some("VE")
         )
-        
+
         client.sort[String](
           "LIST-ALPHA", alpha = true, get = List("VALUE-*", "WEIGHT-*")
         ).futureValue should contain theSameElementsInOrderAs List(
@@ -707,35 +776,35 @@ class KeyCommandsSpec extends AnyWordSpec
         ).futureValue should contain theSameElementsAs List(
           Some("1"), Some("2"), Some("3"), Some("4"), Some("5")
         )
-        
+
         client.sort("SET").futureValue should contain theSameElementsInOrderAs List(
           Some("1"), Some("2"), Some("3"), Some("4"), Some("5")
         )
-        
+
         client.sort[String](
           "SET", desc = true
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("5"), Some("4"), Some("3"), Some("2"), Some("1")
         )
-        
+
         client.sort[String](
           "SET", desc = true, limitOpt = Some((1, 2))
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("4"), Some("3")
         )
-        
+
         client.sort[String](
           "SET", byOpt = Some("WEIGHT-*")
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("1"), Some("2"), Some("3"), Some("4"), Some("5")
         )
-        
+
         client.sort[String](
           "SET", get = List("VALUE-*")
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("V1"), Some("V2"), Some("V3"), Some("V4"), Some("V5")
         )
-        
+
         client.sort[String](
           "SET", get = List("VALUE-*", "WEIGHT-*")
         ).futureValue should contain theSameElementsInOrderAs List(
@@ -758,31 +827,31 @@ class KeyCommandsSpec extends AnyWordSpec
         ).futureValue should contain theSameElementsAs List(
           Some("A"), Some("B"), Some("C"), Some("D"), Some("E")
         )
-        
+
         client.sort[String](
           "SET-ALPHA", alpha = true
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("A"), Some("B"), Some("C"), Some("D"), Some("E")
         )
-        
+
         client.sort[String](
           "SET-ALPHA", alpha = true, desc = true
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("E"), Some("D"), Some("C"), Some("B"), Some("A")
         )
-        
+
         client.sort[String](
           "SET-ALPHA", alpha = true, desc = true, limitOpt = Some((1, 2))
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("D"), Some("C")
         )
-        
+
         client.sort[String](
           "SET-ALPHA", alpha = true, byOpt = Some("WEIGHT-*")
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("A"), Some("B"), Some("C"), Some("D"), Some("E")
         )
-        
+
         client.sort[String](
           "SET-ALPHA", alpha = true, get = List("VALUE-*")
         ).futureValue should contain theSameElementsInOrderAs List(
@@ -813,35 +882,35 @@ class KeyCommandsSpec extends AnyWordSpec
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("5"), Some("4"), Some("3"), Some("2"), Some("1")
         )
-        
+
         client.sort("ZSET").futureValue should contain theSameElementsInOrderAs List(
           Some("1"), Some("2"), Some("3"), Some("4"), Some("5")
         )
-        
+
         client.sort[String](
           "ZSET", desc = true
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("5"), Some("4"), Some("3"), Some("2"), Some("1")
         )
-        
+
         client.sort[String](
           "ZSET", desc = true, limitOpt = Some((1, 2))
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("4"), Some("3")
         )
-        
+
         client.sort[String](
           "ZSET", byOpt = Some("WEIGHT-*")
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("1"), Some("2"), Some("3"), Some("4"), Some("5")
         )
-        
+
         client.sort[String](
           "ZSET", get = List("VALUE-*")
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("V1"), Some("V2"), Some("V3"), Some("V4"), Some("V5")
         )
-        
+
         client.sort[String](
           "ZSET", get = List("VALUE-*", "WEIGHT-*")
         ).futureValue should contain theSameElementsInOrderAs List(
@@ -852,7 +921,7 @@ class KeyCommandsSpec extends AnyWordSpec
           Some("V3"),
           Some("3"),
           Some("V4"),
-          Some("4"), 
+          Some("4"),
           Some("V5"),
           Some("5")
         )
@@ -864,44 +933,44 @@ class KeyCommandsSpec extends AnyWordSpec
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("E"), Some("D"), Some("C"), Some("B"), Some("A")
         )
-        
+
         client.sort[String](
           "ZSET-ALPHA", alpha = true
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("A"), Some("B"), Some("C"), Some("D"), Some("E")
         )
-        
+
         client.sort[String](
           "ZSET-ALPHA", alpha = true, desc = true
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("E"), Some("D"), Some("C"), Some("B"), Some("A")
         )
-        
+
         client.sort[String](
           "ZSET-ALPHA", alpha = true, desc = true, limitOpt = Some((1, 2))
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("D"), Some("C")
         )
-        
+
         client.sort[String](
           "ZSET-ALPHA", alpha = true, byOpt = Some("WEIGHT-*")
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("A"), Some("B"), Some("C"), Some("D"), Some("E")
         )
-        
+
         client.sort[String](
           "ZSET-ALPHA", alpha = true, get = List("VALUE-*")
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("VA"), Some("VB"), Some("VC"), Some("VD"), Some("VE")
         )
-        
+
         client.sort[String](
           "ZSET-ALPHA", alpha = true, get = List("VALUE-*", "WEIGHT-*")
         ).futureValue should contain theSameElementsInOrderAs List(
           Some("VA"),
           Some("1"),
           Some("VB"),
-          Some("2"), 
+          Some("2"),
           Some("VC"),
           Some("3"),
           Some("VD"),
@@ -912,7 +981,7 @@ class KeyCommandsSpec extends AnyWordSpec
       }
     }
   }
-  
+
   TTL.toString when {
     "key does not exist" should {
       "return Left(false)" taggedAs (V100) in {
@@ -921,20 +990,23 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "key exists but has no ttl" should {
       "return Left(true)" taggedAs (V280) in {
-        client.set("TO-TTL", SomeValue)
-        client.ttl("TO-TTL").futureValue should be (Left(true))
+        val testkey = "TO-TTL-CLIENT-LEFT"
+        client.set(testkey, SomeValue).!
+        client.ttl(testkey).futureValue should be (Left(true))
       }
     }
     "key exists and has a ttl" should {
       "return Right(ttl)" taggedAs (V100) in {
-        client.expire("TO-TTL", 1)
-        client.ttl("TO-TTL").futureValue.getOrElse(Int.MaxValue) should be <= 1
-        client.del("TO-TTL")
+        val testkey = "TO-TTL-CLIENT-RIGHT"
+        client.set(testkey, SomeValue).!
+        client.expire(testkey, 1).!
+        client.ttl(testkey).futureValue.getOrElse(Int.MaxValue) should be <= 1
+        client.del(testkey).!
       }
     }
   }
 
-  scredis.protocol.requests.KeyRequests.Type.toString when {
+  KeyRequests.Type.toString when {
     "the key does not exist" should {
       "return None" taggedAs (V100) in {
         client.`type`("NONEXISTENTKEY").futureValue should be (empty)
@@ -942,37 +1014,37 @@ class KeyCommandsSpec extends AnyWordSpec
     }
     "the key is a string" should {
       "return string" taggedAs (V100) in {
-        client.set("STRING", "HELLO")
+        client.set("STRING", "HELLO").!
         client.`type`("STRING").futureValue should contain (scredis.Type.String)
-        client.del("STRING")
+        client.del("STRING").!
       }
     }
     "the key is a hash" should {
       "return hash" taggedAs (V100) in {
-        client.hSet("HASH", "FIELD", "VALUE")
+        client.hSet("HASH", "FIELD", "VALUE").!
         client.`type`("HASH").futureValue should contain (scredis.Type.Hash)
-        client.del("HASH")
+        client.del("HASH").!
       }
     }
     "the key is a list" should {
       "return list" taggedAs (V100) in {
-        client.rPush("LIST", "HELLO")
+        client.rPush("LIST", "HELLO").!
         client.`type`("LIST").futureValue should contain (scredis.Type.List)
-        client.del("LIST")
+        client.del("LIST").!
       }
     }
     "the key is a set" should {
       "return set" taggedAs (V100) in {
-        client.sAdd("SET", "HELLO")
+        client.sAdd("SET", "HELLO").!
         client.`type`("SET").futureValue should contain (scredis.Type.Set)
-        client.del("SET")
+        client.del("SET").!
       }
     }
     "the key is a sorted set" should {
       "return zset" taggedAs (V100) in {
-        client.zAdd("SORTED-SET", "HELLO", Score.Value(0))
+        client.zAdd("SORTED-SET", "HELLO", Score.Value(0)).!
         client.`type`("SORTED-SET").futureValue should contain (scredis.Type.SortedSet)
-        client.del("SORTED-SET")
+        client.del("SORTED-SET").!
       }
     }
   }

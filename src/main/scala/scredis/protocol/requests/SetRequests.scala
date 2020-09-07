@@ -84,8 +84,7 @@ object SetRequests {
     }
   }
   
-  case class SMembers[R: Reader](key: String)(
-  ) extends Request[Set[R]](SMembers, key) with Key {
+  case class SMembers[R: Reader](key: String) extends Request[Set[R]](SMembers, key) with Key {
     override def decode = {
       case a: ArrayResponse => a.parsed[R, Set] {
         case b: BulkStringResponse => b.flattened[R]
@@ -123,8 +122,7 @@ object SetRequests {
     }
   }
   
-  case class SRandMembers[R: Reader](key: String, count: Int)(
-  ) extends Request[Set[R]](SRandMember, key, count) with Key {
+  case class SRandMembers[R: Reader](key: String, count: Int) extends Request[Set[R]](SRandMember, key, count) with Key {
     override def decode = {
       case a: ArrayResponse => a.parsed[R, Set] {
         case b: BulkStringResponse => b.flattened[R]

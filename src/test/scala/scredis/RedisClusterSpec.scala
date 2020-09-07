@@ -77,5 +77,4 @@ class RedisClusterSpec extends AnyWordSpec
   override def afterAll(): Unit = {
     cluster.quit().!
   }
-
 }

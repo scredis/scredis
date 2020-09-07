@@ -27,7 +27,7 @@ package object scredis {
   
   implicit def shortToScoreValue(value: Short): Score.Value = Score.Value(value)
   implicit def intToScoreValue(value: Int): Score.Value = Score.Value(value)
-  implicit def longToScoreValue(value: Long): Score.Value = Score.Value(value)
+//  implicit def longToScoreValue(value: Long): Score.Value = Score.Value(value.toDouble)
   implicit def floatToScoreValue(value: Float): Score.Value = Score.Value(value)
   implicit def doubleToScoreValue(value: Double): Score.Value = Score.Value(value)
   

@@ -43,13 +43,11 @@ class ConnectionCommandsSpec extends AnyWordSpec
       }
     }
     "re-authenticating with a wrong password" should {
-      "return an error and unauthenticate the client" taggedAs (V100) in {
+      "keep client authorized with previous one" taggedAs (V100) in {
         a [RedisErrorResponseException] should be thrownBy {
           clientWithPassword.auth("foo").!
         }
-        a [RedisErrorResponseException] should be thrownBy {
-          clientWithPassword.ping().!
-        }
+        clientWithPassword.ping().!
       }
     }
     "re-authenticating with a correct password" should {
