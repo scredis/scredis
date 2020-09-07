@@ -42,7 +42,7 @@ abstract class ClusterConnection(
 
   type CONNECTIONS = Map[Server, (AkkaNonBlockingConnection, Int)]
 
-  private val maxHashMisses = 100
+  private val maxHashMisses = RedisConfigDefaults.Redis.MaxClusterHashMisses
   private val maxConnectionMisses = 3
   private val deadConnectionRemovalInterval: FiniteDuration = 1.minutes
 
@@ -134,9 +134,9 @@ abstract class ClusterConnection(
   }
 
   /** Delay a Future-returning operation. */
-  private def delayed[A](delay: Duration)(f: => Future[A]): Future[A] = {
+  private def delayed[A](delay: FiniteDuration)(f: => Future[A]): Future[A] = {
     val delayedF = Promise[A]()
-    scheduler.scheduleOnce(clusterDownWait) {
+    scheduler.scheduleOnce(delay) {
       delayedF.completeWith(f)
     }
     delayedF.future
@@ -195,7 +195,7 @@ abstract class ClusterConnection(
           val nextTriedServers = triedServers + server
           // try any server that isn't one we tried already
           connections.keys.find { s => !nextTriedServers.contains(s)  } match {
-            case Some(nextServer) => send(request, nextServer, nextTriedServers, retry - 1, remainingTimeout, Option(err))
+            case Some(nextServer) => send(request, nextServer, nextTriedServers, retry, remainingTimeout, Option(err))
             case None => Future.failed(RedisIOException("No valid connection available.", err))
           }
       }

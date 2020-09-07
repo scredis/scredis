@@ -2,10 +2,6 @@
 .classpath
 .project
 .settings/
-.idea
-.bloop
-.metals
-/project/metals.sbt
 target/
 /bin
 appendonly.aof
@@ -13,3 +9,10 @@ dump.rdb
 tmp/
 logs/
 version.tmp
+
+# editors
+.idea
+.vscode
+.bloop
+.metals
+metals.sbt

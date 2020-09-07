@@ -56,6 +56,7 @@ class RedisConfig(config: Config = ConfigFactory.load().getConfig("scredis")) {
     val NameOpt = optionally("name") {
       config.getString("name")
     }
+    val MaxClusterHashMisses = config.getInt("max-cluster-hash-misses")
 
     val ClusterNodes: List[Server] = config.getStringList("cluster-nodes").asScala.map { node =>
       node.split(':') match {
