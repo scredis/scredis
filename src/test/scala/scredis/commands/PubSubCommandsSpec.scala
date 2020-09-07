@@ -348,7 +348,10 @@ class PubSubCommandsSpec extends AnyWordSpec
       client2.auth("foobar", None).futureValue should be (())
     }
 
-    //TODO: ADD TESTS FOR USERNAME auth
+    "authorize with password" in {
+      client2.auth("wrongpass", Some("tester")).failed.futureValue shouldBe an[RedisErrorResponseException]
+      client2.auth("secretpass", Some("tester")).futureValue should be (())
+    }
   }
 
   "Automatic re-subscribe" when {
