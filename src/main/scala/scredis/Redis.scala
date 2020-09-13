@@ -76,7 +76,7 @@ class Redis private[scredis] (
   /**
    * Lazily initialized [[scredis.BlockingClient]].
    */
-  lazy val blocking = {
+  lazy val blocking: BlockingClient = {
     shouldShutdownBlockingClient = true
     BlockingClient(
       host = host,
