@@ -38,7 +38,7 @@ Scredis 2.2.5+ is compatible with Scala 2.11, 2.12 and 2.13.
 Binary releases are hosted on the Sonatype Central Repository.
 
 ```scala
-libraryDependencies += "com.github.scredis" %% "scredis" % "2.4.0"
+libraryDependencies += "com.github.scredis" %% "scredis" % "2.4.1"
 ```
 
 Snapshots / development versions are hosted on a separate bintray repository.
@@ -201,9 +201,9 @@ Manual step is needed to populate to [mvnrepository](https://mvnrepository.com/a
 Maintainer performing stable release should:
 * switch to master branch and update README with tag `X.Y.Z`
 * for simplicity execute: `export SCREDIS_VERSION="X.Y.Z"`
-* commit changes `git add README.md && git commit -m "Release version v${SCREDIS_VERSION}`
+* commit changes `git add README.md && git commit -m "Release version v${SCREDIS_VERSION}"`
 * `git tag -a "v${SCREDIS_VERSION}" -m "Release version v${SCREDIS_VERSION}"` # tag current commit with given tag
-* execute `./gen-doc.sh` and `git add -A && git commit --amend --no-edit` to append changes to last commit
+* execute `./gen-doc.sh && git add -A && git commit --amend --no-edit` to append changes to last commit
 * `git push origin v${SCREDIS_VERSION} && git push` # tags are not automatically pushed by `git push`
 * create new release on github
 * go to [bintray](https://bintray.com/scredis/maven/scredis#central) and click 'Sync' to push released version to mvnrepository.
