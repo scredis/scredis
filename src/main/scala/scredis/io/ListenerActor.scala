@@ -33,7 +33,7 @@ class ListenerActor(
   tcpReceiveBufferSizeHint: Int,
   akkaIODispatcherPath: String,
   akkaDecoderDispatcherPath: String,
-  failCommandOnConnecting:Boolean
+  failCommandOnConnecting: Boolean
 ) extends Actor with ActorLogging {
   
   import ListenerActor._
@@ -104,13 +104,9 @@ class ListenerActor(
         request.failure(RedisIOException("Shutting down"))
       } else {
         request match {
-          case auth @ Auth(password, username) => if (password.isEmpty) {
-            authOpt = None
-            auth.success(())
-          } else {
+          case auth @ Auth(password, username) =>
             authOpt = Some(AuthConfig(username, password))
             doSend(auth)
-          }
           case select @ Select(db) =>
             database = db
             doSend(select)

@@ -182,10 +182,13 @@ class SubscriberListenerActor(
 
       log.debug(s"Trying to complete ${request} with ${value}.")
 
-      if (request.isInstanceOf[Auth] || request.isInstanceOf[Echo] || request.isInstanceOf[Ping] || request.isInstanceOf[Quit] || request.isInstanceOf[Select] ) {
-        if (request.isInstanceOf[Auth]) {
+      if (request.isInstanceOf[Auth] || request.isInstanceOf[Quit] || request.isInstanceOf[Select] ||
+          request.isInstanceOf[Echo] || request.isInstanceOf[Ping] ) {
+        // those requests must support completing with `Unit`
+        if (request.isInstanceOf[Auth] || request.isInstanceOf[Quit] || request.isInstanceOf[Select]) {
           request.success(())
-        } else {
+        } else { // Echo or Ping
+          // other requests must support completing with `String`
           request.success(value.value)
         }
         requestOpt = None

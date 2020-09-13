@@ -38,17 +38,16 @@ abstract class AbstractAkkaConnection(
   protected val listenerActor: ActorRef
   
   protected def updateState(request: Request[_]): Unit = request match {
-    case Auth(password, username) => if (password.isEmpty) {
-      authOpt = None
-    } else {
+    case Auth(password, username) =>
       authOpt = Some(AuthConfig(username, password))
-    }
-    case Select(db) => database = db
-    case ClientSetName(name) => if (name.isEmpty) {
-      nameOpt = None
-    } else {
-      nameOpt = Some(name)
-    }
+    case Select(db) =>
+      database = db
+    case ClientSetName(name) =>
+      if (name.isEmpty) {
+        nameOpt = None
+      } else {
+        nameOpt = Some(name)
+      }
     case Quit() | Shutdown(_) =>
       logger.info(s"Shutting down connection to ${host}:${port}")
       isShuttingDown = true
