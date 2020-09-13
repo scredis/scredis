@@ -140,14 +140,11 @@ class SubscriberListenerActor(
         case x => throw RedisProtocolException(s"Unexpected pub sub message received: $x")
       }
       
-      val (request: Request[_], argsCount: Int) = requestOpt match {
-        case Some(request) => (request, request.argsCount)
-        case None => {
-          val request = requests.pop()
-          val argsCount = request.argsCount
-          (request, argsCount)
-        }
+      val request: Request[_] = requestOpt match {
+        case Some(request) => request
+        case None => requests.pop()
       }
+      val argsCount = request.argsCount
       // Unsubscribe() or PUnsubscribe()
       if (argsCount == 0) {
         val (count, otherCount) = message match {
@@ -198,15 +195,13 @@ class SubscriberListenerActor(
       }
 
     case Fail(message) => requests.pop().failure(RedisErrorResponseException(message))
-    case SaveSubscriptions => {
+    case SaveSubscriptions =>
       savedSubscribedChannels ++= subscribedChannels
       savedSubscribedPatterns ++= subscribedPatterns
-    }
-    case SendAsRegularClient(request) => {
+    case SendAsRegularClient(request) =>
       onConnect()
       send(request)
-    }
-    case RecoverPreviousSubscriberState => {
+    case RecoverPreviousSubscriberState =>
       shouldSendRequests = true
       subscribedChannels ++= savedSubscribedChannels
       subscribedPatterns ++= savedSubscribedPatterns
@@ -214,11 +209,9 @@ class SubscriberListenerActor(
       savedSubscribedPatterns.clear()
       onInitialized()
       shouldSendRequests = false
-    }
-    case Shutdown(quit) => {
+    case Shutdown(quit) =>
       onConnect()
       send(quit)
-    }
   }
   
 }

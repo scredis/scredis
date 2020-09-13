@@ -78,15 +78,17 @@ abstract class SubscriberAkkaConnection(
     val pUnsubscribe = PUnsubscribe()
     listenerActor ! unsubscribe
     unsubscribe.future.recover {
-      case e: Throwable => -1
+      case e: Throwable =>
+        logger.error("Error during unsubscribing", e)
+        -1
     }.flatMap { _ =>
       listenerActor ! pUnsubscribe
       pUnsubscribe.future.recover {
-        case e: Throwable => -1
-      }.map { _ =>
-        f
+        case e: Throwable =>
+          logger.error("Error during Punsubscribing", e)
+          -1
       }
-    }
+    }.map(_ => f)
   }
   
   override protected[scredis] def sendAsSubscriber(request: Request[_]): Future[Int] = {

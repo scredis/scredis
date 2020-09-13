@@ -338,6 +338,9 @@ class PubSubCommandsSpec extends AnyWordSpec
       publisher.configSet("requirepass", "foobar").futureValue should be (())
       client.auth("foobar", None).futureValue should be (())
 
+      subscribes.poll(2) should have size (2)
+      pSubscribes.poll(3) should have size (3)
+
       client.unsubscribe().futureValue should be (4)
       client.pUnsubscribe().futureValue should be (0)
     }

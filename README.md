@@ -200,10 +200,12 @@ Manual step is needed to populate to [mvnrepository](https://mvnrepository.com/a
 
 Maintainer performing stable release should:
 * switch to master branch and update README with tag `X.Y.Z`
-* commit changes `git add README.md && git commit -m "Release version vX.Y.Z`
-* `git tag -a "vX.Y.Z" -m "Release version vX.Y.Z"` # tag current commit with given tag
+* for simplicity execute: `export SCREDIS_VERSION="X.Y.Z"`
+* commit changes `git add README.md && git commit -m "Release version v${SCREDIS_VERSION}`
+* `git tag -a "v${SCREDIS_VERSION}" -m "Release version v${SCREDIS_VERSION}"` # tag current commit with given tag
 * execute `./gen-doc.sh` and `git add -A && git commit --amend --no-edit` to append changes to last commit
-* `git push origin vX.Y.Z && git push` # tags are not automatically pushed by `git push`
+* `git push origin v${SCREDIS_VERSION} && git push` # tags are not automatically pushed by `git push`
+* create new release on github
 * go to [bintray](https://bintray.com/scredis/maven/scredis#central) and click 'Sync' to push released version to mvnrepository.
 
 ## Documentation
