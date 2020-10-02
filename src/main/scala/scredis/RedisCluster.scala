@@ -178,7 +178,7 @@ object RedisCluster {
     * @param config a [[scredis.RedisConfig]]
     * @return the constructed $redisCluster
     */
-  def apply(config: RedisConfig, systemOpt:Option[ActorSystem]) = new RedisCluster(config, None)
+  def apply(config: RedisConfig, systemOpt:Option[ActorSystem]) = new RedisCluster(config, systemOpt)
 
   /**
     * Constructs a $redisCluster instance from a $typesafeConfig.
