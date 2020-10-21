@@ -143,6 +143,20 @@ class ProtocolSpec extends AnyWordSpec with ScalaCheckDrivenPropertyChecks with 
         }
       }
     }
+
+    "decode MOVED error IP v6" in {
+      val slot = 3999
+      val host = "2001:db8::1:0:0:1"
+      val port = 6381
+      val errMsg = s"MOVED $slot $host:$port"
+      val err = Protocol.decodeError(errMsg)
+      inside (err) { case (ClusterErrorResponse(Moved(s, h, p), msg)) =>
+        s should be (slot)
+        h should be (host)
+        p should be (port)
+        msg should include ("MOVED")
+      }
+    }
   }
 
 }
