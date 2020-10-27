@@ -1,6 +1,6 @@
 package scredis.protocol
 
-import java.nio.ByteBuffer
+import java.nio.{Buffer, ByteBuffer}
 import java.util.concurrent.Semaphore
 
 import akka.actor.ActorRef
@@ -180,7 +180,7 @@ object Protocol extends LazyLogging {
         .put(CrLf)
     }
     
-    buffer.flip()
+    (buffer: Buffer).flip()
     buffer
   }
   
@@ -307,10 +307,11 @@ object Protocol extends LazyLogging {
 
   private[scredis] def decodeMoveAsk(err: String, msg: String): ClusterError = {
     // shape of response: -MOVED 3999 127.0.0.1:6381
+    // when IP v6 used: -MOVED 3999 2001:db8::1:0:0:1:6381
     // let's just omit error handling here and leave it to the caller
     val space = msg.indexOf(' ')
     val hashSlot = Integer.parseInt(msg.substring(0, space))
-    val colon = msg.indexOf(':',space)
+    val colon = msg.lastIndexOf(':')
     val host = msg.substring(space + 1, colon)
     val port = Integer.parseInt(msg.substring(colon+1))
 
