@@ -12,6 +12,7 @@ version.tmp
 
 # editors
 .idea
+.bsp
 .vscode
 .bloop
 .metals
