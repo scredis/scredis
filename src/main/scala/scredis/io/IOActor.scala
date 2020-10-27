@@ -1,6 +1,7 @@
 package scredis.io
 
 import java.net.InetSocketAddress
+import java.nio.Buffer
 
 import akka.actor._
 import akka.io.{IO, Tcp}
@@ -88,7 +89,7 @@ class IOActor(
           Protocol.releaseBuffer(buff)
       }
     }
-    buffer.flip()
+    (buffer: Buffer).flip()
     val data = ByteString(buffer)
     log.debug(s"Writing data: ${data.decodeString("UTF-8")}")
     connection ! Write(data, WriteAck)

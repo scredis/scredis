@@ -1,6 +1,6 @@
 package scredis.protocol
 
-import java.nio.ByteBuffer
+import java.nio.{Buffer, ByteBuffer}
 import java.util.concurrent.Semaphore
 
 import akka.actor.ActorRef
@@ -180,7 +180,7 @@ object Protocol extends LazyLogging {
         .put(CrLf)
     }
     
-    buffer.flip()
+    (buffer: Buffer).flip()
     buffer
   }
   
