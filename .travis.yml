@@ -2,6 +2,7 @@ language: scala
 
 dist: bionic
 os: linux
+jdk: openjdk8
 
 git:
   depth: false
