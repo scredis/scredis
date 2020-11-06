@@ -40,7 +40,7 @@ libraryDependencies ++= Seq(
 
   "org.scalatest" %% "scalatest" % "3.2.2" % Test,
   "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test,
-  "org.scalacheck" %% "scalacheck" % "1.15.0" % Test,
+  "org.scalacheck" %% "scalacheck" % "1.15.1" % Test,
   "com.storm-enroute" %% "scalameter" % "0.19" % Test,
   "org.slf4j" % "slf4j-simple" % "1.7.30" % Test
 )
