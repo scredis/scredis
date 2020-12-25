@@ -7,6 +7,7 @@ import com.typesafe.scalalogging.LazyLogging
 import scredis.protocol.{AuthConfig, Request}
 import scredis.protocol.requests.ConnectionRequests.{Auth, Quit, Select}
 import scredis.protocol.requests.ServerRequests.{ClientSetName, Shutdown}
+import scredis.util.UniqueNameGenerator
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -58,13 +59,16 @@ abstract class AbstractAkkaConnection(
   protected def getDatabase: Int = database
   protected def getNameOpt: Option[String] = nameOpt
   
-  protected def watchTermination(): Unit = system.actorOf(
-    Props(
-      classOf[WatchActor],
-      listenerActor,
-      shutdownLatch
+  protected def watchTermination(): ActorRef =
+    system.actorOf(
+      Props(
+        classOf[WatchActor],
+        listenerActor,
+        shutdownLatch
+      ),
+      UniqueNameGenerator.getUniqueName(s"${nameOpt.getOrElse(s"$host-$port")}-watch-actor")
     )
-  )
+
   
   /**
    * Waits for all the internal actors to be shutdown.
@@ -88,11 +92,29 @@ abstract class AbstractAkkaConnection(
 class WatchActor(actor: ActorRef, shutdownLatch: CountDownLatch) extends Actor with ActorLogging {
   context.watch(actor)
 
+  override def preStart(): Unit = {
+    super.preStart()
+    context.watch(self)
+  }
+
+  override def postStop(): Unit = {
+    context.stop(self)
+    super.postStop()
+  }
+
   def receive: Receive = {
     case Terminated(_) =>
       log.info("AkkaConnection actor terminated {}", actor)
       shutdownLatch.countDown()
       context.stop(self)
-  }
 
+    case WatchActor.Shutdown =>
+      log.info("AkkaConnection actor terminated by Shutdown message")
+      shutdownLatch.countDown()
+      context.stop(self)
+  }
+}
+
+object WatchActor {
+  case object Shutdown
 }
