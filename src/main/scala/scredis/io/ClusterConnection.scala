@@ -155,7 +155,7 @@ abstract class ClusterConnection(
       }
 
       val watchActorRef = watchTermination()
-      watchActorRefList = watchActorRefList.append((server, watchActorRef))
+      watchActorRefList.append((server, watchActorRef))
     }
   }
 
