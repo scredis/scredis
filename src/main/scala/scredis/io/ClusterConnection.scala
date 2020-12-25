@@ -9,7 +9,7 @@ import scredis.protocol.requests.ConnectionRequests.Quit
 import scredis.util.UniqueNameGenerator
 import scredis.{ClusterSlotRange, RedisConfigDefaults, Server}
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.HashMap
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future, Promise}
@@ -40,7 +40,7 @@ abstract class ClusterConnection(
     authOpt: Option[AuthConfig] = RedisConfigDefaults.Config.Redis.AuthOpt
   ) extends NonBlockingConnection with LazyLogging {
 
-  private var watchActorRefList = ListBuffer[(Server, ActorRef)]()
+  private var watchActorRefMap = HashMap[Server, ActorRef]()
 
   // Int parameter - count number of errors for given connection.
   // When defined threshold is reached connection to this server is removed and no longer used.
@@ -147,26 +147,16 @@ abstract class ClusterConnection(
       akkaDecoderDispatcherPath,
       failCommandOnConnecting
     ) {
-      val item = findWatchActor(server)
+      val item = watchActorRefMap.get(server)
       if (item.isDefined) {
         logger.info("WatchActor for node server already exists: {}", server)
-        item.get._2 ! WatchActor.Shutdown
-        watchActorRefList.-=(item.get)
+        item.get ! WatchActor.Shutdown
+        watchActorRefMap.remove(server)
       }
 
       val watchActorRef = watchTermination()
-      watchActorRefList.append((server, watchActorRef))
+      watchActorRefMap.put(server, watchActorRef)
     }
-  }
-
-  private def findWatchActor(server: Server): Option[(Server, ActorRef)] = {
-    for (x <- watchActorRefList) {
-      if (x._1.equals(server)) {
-        return Some(x)
-      }
-    }
-
-    None
   }
 
   /** Delay a Future-returning operation. */
@@ -338,8 +328,8 @@ abstract class ClusterConnection(
     }
 
   def quit(): Future[Unit] = {
-    for (x <- watchActorRefList) {
-      x._2 ! WatchActor.Shutdown
+    for ((server, watchActorRef) <- watchActorRefMap) {
+      watchActorRef ! WatchActor.Shutdown
     }
 
     val toCloseConnections = this.synchronized {
