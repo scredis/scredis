@@ -7,7 +7,6 @@ import com.typesafe.scalalogging.LazyLogging
 import scredis.protocol.{AuthConfig, Request}
 import scredis.protocol.requests.ConnectionRequests.{Auth, Quit, Select}
 import scredis.protocol.requests.ServerRequests.{ClientSetName, Shutdown}
-import scredis.util.UniqueNameGenerator
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -60,11 +59,11 @@ abstract class AbstractAkkaConnection(
   protected def getNameOpt: Option[String] = nameOpt
   
   protected def watchTermination(): Unit = system.actorOf(
-      Props(
-        classOf[WatchActor],
-        listenerActor,
-        shutdownLatch
-      )
+    Props(
+      classOf[WatchActor],
+      listenerActor,
+      shutdownLatch
+    )
   )
   
   /**
