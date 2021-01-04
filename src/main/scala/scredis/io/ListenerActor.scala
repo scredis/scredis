@@ -277,6 +277,7 @@ class ListenerActor(
       request.success(())
       failAllQueuedRequests(RedisIOException("Connection has been shutdown by QUIT command"))
       isShuttingDownBeforeConnected = true
+      shutdown()
     case request: Request[_] =>
       if(failCommandOnConnecting) {
         request.failure(RedisIOException("Trying to connect..."))
