@@ -9,7 +9,6 @@ import scredis.protocol.requests.ConnectionRequests.Quit
 import scredis.util.UniqueNameGenerator
 import scredis.{ClusterSlotRange, RedisConfigDefaults, Server}
 
-import scala.collection.immutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future, Promise}
