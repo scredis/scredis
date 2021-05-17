@@ -2,8 +2,8 @@
 name := "scredis"
 organization := "com.github.scredis"
 
-scalaVersion := "2.13.3"
-crossScalaVersions := Seq("2.11.12", "2.12.13", scalaVersion.value)
+scalaVersion := "2.13.6"
+crossScalaVersions := Seq("2.11.12", "2.12.12", scalaVersion.value)
 
 scalacOptions ++= Seq(
   "-deprecation",
@@ -28,7 +28,7 @@ git.remoteRepo := "git@github.com:scredis/scredis.git"
 val akkaV = "2.5.32"
 val loggingV = "3.9.2"
 val configV = "1.4.0"
-val collectionCompatV = "2.4.2"
+val collectionCompatV = "2.4.4"
 val typesafeConfigV = "1.3.3"
 
 libraryDependencies ++= Seq(
@@ -38,7 +38,7 @@ libraryDependencies ++= Seq(
 
   "org.scala-lang.modules" %% "scala-collection-compat" % collectionCompatV,
 
-  "org.scalatest" %% "scalatest" % "3.2.3" % Test,
+  "org.scalatest" %% "scalatest" % "3.2.9" % Test,
   "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test,
   "org.scalacheck" %% "scalacheck" % "1.15.2" % Test,
   "com.storm-enroute" %% "scalameter" % "0.19" % Test,
