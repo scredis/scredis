@@ -247,7 +247,6 @@ trait KeyCommands { self: NonBlockingConnection =>
    * Returns a random key from the keyspace.
    *
    * @return the random key or $none when the database is empty
-   * associated timeout
    *
    * @since 1.0.0
    */
