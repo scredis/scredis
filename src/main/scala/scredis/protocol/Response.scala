@@ -156,6 +156,52 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
     }
   }
 
+  type StreamElement = (String, Map[String, String])
+  def parsedAsStreamResponse[List[X] <: Iterable[X]]()(
+    implicit factory: Factory[StreamElement, List[StreamElement]]
+  ): List[StreamElement] = {
+    val builder = factory.newBuilder
+    var i = 0
+    while (i < length) {
+      val elem = parseStreamElement()
+      builder += elem
+      i += 1
+    }
+    builder.result()
+  }
+
+  def parseStreamElement[CC[X] <: Iterable[X]]()(
+    implicit factory: Factory[String, CC[String]]
+  ): StreamElement = {
+    Protocol.decode(buffer) match {
+      case a: ArrayResponse =>
+        if (a.length != 2) {
+          throw RedisProtocolException(
+            s"Unexpected length for stream-like array response: $length"
+          )
+        }
+        val key = Protocol.decode(a.buffer) match {
+          case bulkString: BulkStringResponse => bulkString.flattened[String]
+          case other =>
+            throw RedisProtocolException(s"Unexpected value for key: $other")
+        }
+        val values = Protocol.decode(a.buffer) match {
+          case values: ArrayResponse =>
+            values.parsedAsPairsMap[String, String, Map] {
+              case b: BulkStringResponse => b.flattened[String]
+            } {
+              case b: BulkStringResponse => b.flattened[String]
+            }
+          case other: Response =>
+            throw RedisProtocolException(
+              s"unexpected value for stream element: ${other.getClass.getSimpleName}, expected bulk string response"
+            )
+        }
+        (key, values)
+      case x =>
+        throw RedisProtocolException(s"Unexpected response for scan elements: $x")
+    }
+  }
 
   def parsedAsClusterSlotsResponse[CC[X] <: Iterable[X]](
     implicit factory: Factory[ClusterSlotRange, CC[ClusterSlotRange]]) : CC[ClusterSlotRange] = {
