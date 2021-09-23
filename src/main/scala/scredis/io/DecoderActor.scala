@@ -72,7 +72,7 @@ class DecoderActor(subscriptionOption: Option[Subscription]) extends Actor with 
             case Right(Right(message)) =>
               subscriptionOption match {
                 case Some(subscription) =>
-                  Future {subscription.apply(message)}(ExecutionContext.global)
+                  Future {subscription.apply(message)}(context.dispatcher)
                 case None =>
                   log.error("Received SubscribePartition without any subscription")
               }

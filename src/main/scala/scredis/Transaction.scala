@@ -3,10 +3,10 @@ package scredis
 import scredis.protocol.Request
 import scredis.protocol.requests.TransactionRequests.{Exec, Multi}
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-private[scredis] final case class Transaction (requests: Seq[Request[_]]) {
+private[scredis] final case class Transaction (requests: Seq[Request[_]])(implicit ec: ExecutionContext) {
   val execRequest = Exec(requests.map(_.decode))
   private val future = execRequest.future
   

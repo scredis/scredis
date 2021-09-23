@@ -63,7 +63,7 @@ class RedisCluster private[scredis](
   //with SubscriberCommands
 {
   override implicit val dispatcher: ExecutionContext =
-    ExecutionContext.Implicits.global // TODO perhaps implement our own
+    systemOpt.map(_.dispatcher).getOrElse(ExecutionContext.Implicits.global) // TODO perhaps implement our own for the default
 
   /**
     * Constructs a $redisCluster instance from a [[scredis.RedisConfig]].

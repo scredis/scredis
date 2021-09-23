@@ -9,9 +9,8 @@ import scredis.protocol.requests.ConnectionRequests.Quit
 import scredis.util.UniqueNameGenerator
 import scredis.{ClusterSlotRange, RedisConfigDefaults, Server}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future, Promise}
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 
 /**
  * The connection logic for a whole Redis cluster. Handles redirection and sharding logic as specified in
@@ -38,6 +37,7 @@ abstract class ClusterConnection(
     failCommandOnConnecting: Boolean = RedisConfigDefaults.Global.FailCommandOnConnecting,
     authOpt: Option[AuthConfig] = RedisConfigDefaults.Config.Redis.AuthOpt
   ) extends NonBlockingConnection with LazyLogging {
+  implicit val ec: ExecutionContext = systemOpt.map(_.dispatcher).getOrElse(ExecutionContext.Implicits.global)
 
   // Int parameter - count number of errors for given connection.
   // When defined threshold is reached connection to this server is removed and no longer used.
