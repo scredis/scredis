@@ -43,7 +43,7 @@ class ListenerActor(
     case e: Exception => SupervisorStrategy.Stop
   }
   
-  private val remote = new InetSocketAddress(host, port)
+  private val remote = InetSocketAddress.createUnresolved(host, port)
   
   private var remainingByteStringOpt: Option[ByteString] = None
   private var initializationRequestsCount = 0
