@@ -73,7 +73,8 @@ class Client(
   with ScriptingCommands
   with HyperLogLogCommands
   with PubSubCommands
-  with TransactionCommands {
+  with TransactionCommands
+  with StreamCommands {
 
   /**
    * Constructs a $client instance from a [[scredis.RedisConfig]]
