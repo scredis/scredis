@@ -61,7 +61,8 @@ class BlockingClient(
   akkaIODispatcherPath = akkaIODispatcherPath,
   akkaDecoderDispatcherPath = akkaDecoderDispatcherPath,
   failCommandOnConnecting = failCommandOnConnecting
-) with BlockingListCommands {
+) with BlockingListCommands
+  with BlockingStreamCommands {
   
   /**
    * Constructs a $client instance from a [[scredis.RedisConfig]]
