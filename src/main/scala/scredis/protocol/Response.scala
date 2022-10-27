@@ -23,12 +23,12 @@ case class IntegerResponse(value: Long) extends Response {
 
 /** Errors specific to cluster operation */
 sealed trait ClusterError
+
 case class Moved(hashSlot: Int, host: String, port: Int) extends ClusterError
 case class Ask(hashSlot: Int, host: String, port: Int) extends ClusterError
 case object TryAgain extends ClusterError
 case object ClusterDown extends ClusterError
 case object CrossSlot extends ClusterError
-
 case class ClusterErrorResponse(error: ClusterError, message: String) extends Response
 
 case class BulkStringResponse(valueOpt: Option[Array[Byte]]) extends Response {
@@ -60,7 +60,7 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
 
   def parsed[R, CC[X] <: Iterable[X]](decoder: Decoder[R])(
     implicit factory: Factory[R, CC[R]]
-    ): CC[R] = {
+  ): CC[R] = {
     val builder = factory.newBuilder
     var i = 0
     while (i < length) {
@@ -156,6 +156,83 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
     }
   }
 
+  import scala.language.existentials
+
+  def parsedAsListOfStreamResponse(
+  )(
+    implicit factory: Factory[(String, List[RedisStreamElement]), Map[String, List[RedisStreamElement]]]
+  ): Map[String, List[RedisStreamElement]] = {
+    val builder = factory.newBuilder
+    var i = 0
+    while (i < length) {
+      val stream = Protocol.decode(buffer) match {
+        case a: ArrayResponse =>
+          assume(a.length == 2, "wrong number of array elements")
+          val streamName = Protocol.decode(a.buffer) match {
+            case s: BulkStringResponse => s.flattened[String]
+            case x => unexpectedTypeException("BulkString", x)
+          }
+          val streamElems = Protocol.decode(a.buffer) match {
+            case a: ArrayResponse => a.parsedAsStreamResponse()
+            case x => unexpectedTypeException("Array", x)
+          }
+          streamName -> streamElems
+        case x =>
+          throw unexpectedTypeException("Array", x)
+      }
+      builder += stream
+      i += 1
+    }
+    builder.result()
+  }
+
+  private def unexpectedTypeException(expected: String, actual: Response) = {
+    throw RedisProtocolException(s"expected $expected, got ${actual.getClass.getSimpleName}")
+  }
+
+  def parsedAsStreamResponse()(
+    implicit factory: Factory[RedisStreamElement, List[RedisStreamElement]]
+  ): List[RedisStreamElement] = {
+    val builder = factory.newBuilder
+    var i = 0
+    while (i < length) {
+      val elem = parseStreamElement()
+      builder += elem
+      i += 1
+    }
+    builder.result()
+  }
+
+  def parseStreamElement(): RedisStreamElement = {
+    Protocol.decode(buffer) match {
+      case a: ArrayResponse =>
+        if (a.length != 2) {
+          throw RedisProtocolException(
+            s"Unexpected length for stream-like array response: $length"
+          )
+        }
+        val key = Protocol.decode(a.buffer) match {
+          case bulkString: BulkStringResponse => bulkString.flattened[String]
+          case other =>
+            throw RedisProtocolException(s"Unexpected value for key: $other")
+        }
+        val values = Protocol.decode(a.buffer) match {
+          case values: ArrayResponse =>
+            values.parsedAsPairsMap[String, String, Map] {
+              case b: BulkStringResponse => b.flattened[String]
+            } {
+              case b: BulkStringResponse => b.flattened[String]
+            }
+          case other: Response =>
+            throw RedisProtocolException(
+              s"unexpected value for stream element: ${other.getClass.getSimpleName}, expected bulk string response"
+            )
+        }
+        (key, values)
+      case x =>
+        throw RedisProtocolException(s"Unexpected response for stream elements: $x")
+    }
+  }
 
   def parsedAsClusterSlotsResponse[CC[X] <: Iterable[X]](
     implicit factory: Factory[ClusterSlotRange, CC[ClusterSlotRange]]) : CC[ClusterSlotRange] = {
@@ -167,57 +244,52 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
           case a: ArrayResponse =>
             val begin = Protocol.decode(buffer).asInstanceOf[IntegerResponse].value
             val end = Protocol.decode(buffer).asInstanceOf[IntegerResponse].value
-
             // master for this slotrange
             val mha = Protocol.decode(buffer).asInstanceOf[ArrayResponse] // mast host/port header
             val masterHost = Protocol.decode(buffer).asInstanceOf[BulkStringResponse].parsed[String].get
             val masterPort = Protocol.decode(buffer).asInstanceOf[IntegerResponse].value
             val masterNodeId: Option[String] = if (mha.length > 2) {
-                              Some(Protocol.decode(buffer).asInstanceOf[BulkStringResponse].flattened[String])
-                            } else None
+              Some(Protocol.decode(buffer).asInstanceOf[BulkStringResponse].flattened[String])
+            } else None
             val master = ClusterSlotRangeNodeInfo(Server(masterHost,masterPort.toInt),masterNodeId)
 
-            // first replica begins at index 3 
-            var r = 3 
+            // first replica begins at index 3
+            var r = 3
             var replicaList: List[ClusterSlotRangeNodeInfo] = Nil
             while (r < a.length) {
-              val rh =   Protocol.decode(buffer).asInstanceOf[ArrayResponse] 
+              val rh =   Protocol.decode(buffer).asInstanceOf[ArrayResponse]
               val replicaHost = Protocol.decode(buffer).asInstanceOf[BulkStringResponse].flattened[String]
               val replicaPort = Protocol.decode(buffer).asInstanceOf[IntegerResponse].value
               val replicaNodeId = if (rh.length > 2) {
-                         Some(Protocol.decode(buffer).asInstanceOf[BulkStringResponse].flattened[String])
-                     } else {
-                         None
-                     }
+                Some(Protocol.decode(buffer).asInstanceOf[BulkStringResponse].flattened[String])
+              } else {
+                None
+              }
               // skip additional fields (which can be added in future according to doc)
               var skipIndex=3
               while(skipIndex < rh.length) {
-                 Protocol.decode(buffer)
-                 skipIndex += 1
+                Protocol.decode(buffer)
+                skipIndex += 1
               }
               val replica = ClusterSlotRangeNodeInfo(Server(replicaHost,replicaPort.toInt),replicaNodeId)
               replicaList = replica :: replicaList
               r += 1
             }
-
             builder += ClusterSlotRange((begin, end), master, replicaList)
-
           case other => throw RedisProtocolException(s"Expected an array parsing CLUSTER SLOTS reply, got $other")
         }
-
         i += 1
       }
     } catch {
       case rpe: RedisProtocolException => throw rpe
       case x: Exception => throw RedisProtocolException("Unexpected values parsing CLUSTER SLOTS reply", x)
     }
-
     builder.result()
   }
 
   def parsed[CC[X] <: Iterable[X]](decoders: Iterable[Decoder[Any]])(
     implicit factory: Factory[Try[Any], CC[Try[Any]]]
-    ): CC[Try[Any]] = {
+  ): CC[Try[Any]] = {
     val builder = factory.newBuilder
     var i = 0
     val decodersIterator = decoders.iterator
