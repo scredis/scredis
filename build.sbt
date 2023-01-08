@@ -39,7 +39,7 @@ libraryDependencies ++= Seq(
 
   "org.scala-lang.modules" %% "scala-collection-compat" % collectionCompatV,
 
-  "org.scalatest" %% "scalatest" % "3.2.14" % Test,
+  "org.scalatest" %% "scalatest" % "3.2.15" % Test,
   "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test,
   "org.scalacheck" %% "scalacheck" % "1.15.2" % Test,
   "com.storm-enroute" %% "scalameter" % "0.19" % Test,
