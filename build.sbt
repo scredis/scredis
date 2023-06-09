@@ -3,7 +3,7 @@ name := "scredis"
 organization := "com.github.scredis"
 
 
-scalaVersion := "2.13.10"
+scalaVersion := "2.13.11"
 crossScalaVersions := Seq("2.11.12", "2.12.17", scalaVersion.value)
 
 scalacOptions ++= Seq(
