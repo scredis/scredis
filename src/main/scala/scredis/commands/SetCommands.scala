@@ -114,7 +114,23 @@ trait SetCommands { self: NonBlockingConnection =>
   def sIsMember[W: Writer](key: String, member: W): Future[Boolean] = send(
     SIsMember(key, member)
   )
-  
+
+  /**
+   * Checks existence of members in a set.
+   *
+   * @param key set key
+   * @param members values to be tested
+   * @return list representing the membership of the given values, in the same order as they are requested where $true
+   *         means the value is a member of the set stored at key, $false otherwise
+   * @throws $e if key contains a value that is not a set
+   *
+   * @since 6.2.0
+   * @see [[https://redis.io/commands/smismember]]
+   */
+  def sMIsMember[W: Writer](key: String, members: W*): Future[Seq[Boolean]] = send(
+    SMIsMember(key, members: _*)
+  )
+
   /**
    * Returns all the members of a set.
    *
