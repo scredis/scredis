@@ -362,6 +362,30 @@ class SetCommandsSpec extends AnyWordSpec
     }
   }
 
+  SMIsMember.toString when {
+    "the key does not exist" should {
+      "return false" taggedAs (V100) in {
+        client.sMIsMember("SET", Seq("A"):_*).futureValue should be(Seq(false))
+      }
+    }
+    "the key does not contain a set" should {
+      "return an error" taggedAs (V100) in {
+        a[RedisErrorResponseException] should be thrownBy {
+          client.sMIsMember("HASH", Seq("A"):_*).!
+        }
+      }
+    }
+    "the set contains some elements" should {
+      "return the correct value" taggedAs (V100) in {
+        client.sAdd("SET", "1")
+        client.sAdd("SET", "2")
+        client.sAdd("SET", "3")
+        client.sMIsMember("SET", Seq("A", "1", "2", "3"):_*).futureValue should be(Seq(false, true, true, true))
+        client.del("SET")
+      }
+    }
+  }
+
   SMembers.toString when {
     "the key does not exist" should {
       "return None" taggedAs (V100) in {
