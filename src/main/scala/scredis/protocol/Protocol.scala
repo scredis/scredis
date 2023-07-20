@@ -280,6 +280,17 @@ object Protocol extends LazyLogging {
     case ArrayResponseByte         => ArrayResponse(parseInt(buffer), buffer)
   }
 
+  private[scredis] def skipNext(buffer: ByteBuffer): Unit = buffer.get() match {
+    case ErrorResponseByte | SimpleStringResponseByte => parseString(buffer)
+    case IntegerResponseByte => parseLong(buffer)
+    case BulkStringResponseByte =>
+      val offset = parseInt(buffer)
+      buffer.position(buffer.position() + offset + 2)
+    case ArrayResponseByte =>
+      val toSkip = parseInt(buffer)
+      for (_ <- 0 until toSkip) skipNext(buffer)
+  }
+
   /** Decode specific error responses to give clients more information for error handling. */
   private[scredis] def decodeError(message: String): Response = {
     lazy val default = ErrorResponse(message)

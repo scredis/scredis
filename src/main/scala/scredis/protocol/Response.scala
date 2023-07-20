@@ -252,6 +252,11 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
               Some(Protocol.decode(buffer).asInstanceOf[BulkStringResponse].flattened[String])
             } else None
             val master = ClusterSlotRangeNodeInfo(Server(masterHost,masterPort.toInt),masterNodeId)
+            var skipIndex=3
+            while(skipIndex < mha.length) {
+              Protocol.skipNext(buffer)
+              skipIndex += 1
+            }
 
             // first replica begins at index 3
             var r = 3
@@ -268,7 +273,7 @@ case class ArrayResponse(length: Int, buffer: ByteBuffer) extends Response {
               // skip additional fields (which can be added in future according to doc)
               var skipIndex=3
               while(skipIndex < rh.length) {
-                Protocol.decode(buffer)
+                Protocol.skipNext(buffer)
                 skipIndex += 1
               }
               val replica = ClusterSlotRangeNodeInfo(Server(replicaHost,replicaPort.toInt),replicaNodeId)
