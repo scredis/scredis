@@ -43,7 +43,7 @@ libraryDependencies ++= Seq(
   "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test,
   "org.scalacheck" %% "scalacheck" % "1.15.2" % Test,
   "com.storm-enroute" %% "scalameter" % "0.19" % Test,
-  "org.slf4j" % "slf4j-simple" % "2.0.3" % Test
+  "org.slf4j" % "slf4j-simple" % "2.0.9" % Test
 )
 
 Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-F", sys.props.getOrElse("F", "1.0"))
