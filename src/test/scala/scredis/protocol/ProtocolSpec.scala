@@ -96,6 +96,38 @@ class ProtocolSpec extends AnyWordSpec with ScalaCheckDrivenPropertyChecks with 
     }
   }
 
+  "skip" should {
+    "move the offset correctly for error response" in {
+      val buffer = (Error ++ SimpleString).toByteBuffer
+      Protocol.skipNext(buffer)
+      buffer.position() should be (Error.length)
+    }
+
+    "move the offset correctly for simple string response" in {
+      val buffer = (SimpleString ++ Error).toByteBuffer
+      Protocol.skipNext(buffer)
+      buffer.position() should be(SimpleString.length)
+    }
+
+    "move the offset correctly for integer response" in {
+      val buffer = (PositiveInteger ++ SimpleString).toByteBuffer
+      Protocol.skipNext(buffer)
+      buffer.position() should be(PositiveInteger.length)
+    }
+
+    "move the offset correctly for the bulk string" in {
+      val buffer = (BulkString ++ SimpleString).toByteBuffer
+      Protocol.skipNext(buffer)
+      buffer.position() should be(BulkString.length)
+    }
+
+    "move the offset correctly for the array response" in {
+      val buffer = (Array ++ SimpleString).toByteBuffer
+      Protocol.skipNext(buffer)
+      buffer.position() should be(Array.length)
+    }
+  }
+
   val hosts = for {
     a <- Gen.choose(0,255)
     b <- Gen.choose(0,255)
